@@ -1,0 +1,645 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"st",
+				"font_style"
+			],
+			[
+				"cp",
+				"caption\tTag"
+			],
+			[
+				"rea",
+				"remarkCheckboxes"
+			],
+			[
+				"item",
+				"itemRemarkCount"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "build.bat",
+			"settings":
+			{
+				"buffer_size": 198,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
+			"settings":
+			{
+				"buffer_size": 86,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "untitled.sublime-build"
+			}
+		},
+		{
+			"file": "src/main.cpp",
+			"settings":
+			{
+				"buffer_size": 143,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "Packages/Makefile/Make.sublime-build",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"c++",
+				"Set Syntax: C++"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"synta",
+				"Set Syntax: C++"
+			],
+			[
+				"scheme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"sche",
+				"UI: Select Color Scheme"
+			],
+			[
+				"brow",
+				"Preferences: Browse Packages"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"package",
+				"Package Control: Remove Package"
+			],
+			[
+				"browse",
+				"Preferences: Browse Packages"
+			],
+			[
+				"prefre",
+				"Preferences: Settings"
+			],
+			[
+				"json",
+				"Set Syntax: JSON"
+			],
+			[
+				"font",
+				"Set Syntax: Font"
+			],
+			[
+				"edi",
+				"Color Scheme Editor: Edit current color scheme"
+			],
+			[
+				"conver",
+				"Convert Color Scheme"
+			],
+			[
+				"inden",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"edit",
+				"Color Scheme Editor: Edit current color scheme"
+			],
+			[
+				"the",
+				"UI: Select Color Scheme"
+			],
+			[
+				"sc",
+				"UI: Select Color Scheme"
+			],
+			[
+				"pa",
+				"Package Control: Discover Packages"
+			],
+			[
+				"color",
+				"Preferences: Package Control Settings – User"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"edit theme",
+				"Color Scheme Editor: Edit current color scheme"
+			],
+			[
+				"settings",
+				"Preferences: Settings"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"theme",
+				"UI: Select Color Scheme"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			],
+			[
+				"synt py",
+				"Set Syntax: Python"
+			],
+			[
+				"ui",
+				"UI: Select Theme"
+			],
+			[
+				"install pa",
+				"Package Control: Install Package"
+			],
+			[
+				"space",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"mark",
+				"Set Syntax: Markdown"
+			],
+			[
+				"set syntax",
+				"Set Syntax: C#"
+			],
+			[
+				"syn mark",
+				"Set Syntax: Markdown"
+			],
+			[
+				"color ",
+				"UI: Select Color Scheme"
+			],
+			[
+				"javas",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"sql",
+				"Set Syntax: SQL"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 355.0,
+		"history":
+		[
+			"cmake",
+			"cd",
+			"dir"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/code/sacweather",
+		"/C/code/sacweather/src"
+	],
+	"file_history":
+	[
+		"/C/code/sacweather/envsetup.bat",
+		"/C/code/sacweather/build.bat",
+		"/C/code/bin/envsetup.bat",
+		"/C/code/bin/envsetup.ps1",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/tjdw_main.cpp",
+		"/C/Users/tjdic/colorscheme_repo/tjd-scheme1/sublime/tjd-theme1.sublime-color-scheme",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/gl_render.h",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/gl_render.cpp",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/win32_main.cpp",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/tjdw_main.h",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/nexrad_level3.cpp",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/IGEMS/BCR/bes46_bcr154132_notes.md",
+		"/C/Users/tjdic/Desktop/weatherdata.md",
+		"/D/app/oracle/igemsprofile/application.properties",
+		"/C/app/oracle/igemsprofile/application.properties",
+		"/C/Users/tjdic/Desktop/todo.md",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/nexrad_level3.h",
+		"/C/tmp/pyart_trans.py",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/tjd_share.h",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/THEME/tjd-theme1.sublime-color-scheme",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/THEME/tjd-theme1.tmTheme",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/Tomorrow Color Schemes/Tomorrow Night.sublime-color-scheme",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/THEME/tjd_colorscheme_1.sublime-color-scheme",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/Package Control.sublime-settings",
+		"/C/Users/tjdic/color_schemes/tjd_scheme_3.icls",
+		"/C/shapes/c_03mr20/c_03mr20.prj",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/Twilight+/Twilight+.tmTheme",
+		"/C/Users/tjdic/color_schemes/tjd-scheme3.tmTheme.xml",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/Nord/Nord.sublime-color-scheme",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/beshiqinf-201-xss.md",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/Theme - Nexus/Nexus.tmTheme",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Installed Packages/Theme - Nexus.sublime-package",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/build.bat",
+		"/C/Users/tjdic/cpplibs/bin/include/freetype2/freetype/config/ftoption.h",
+		"/C/Users/tjdic/cpplibs/bin/include/freetype2/freetype/config/ftconfig.h",
+		"/C/Users/tjdic/cpplibs/bin/include/freetype2/freetype/config/ftheader.h",
+		"/C/Users/tjdic/cpplibs/bin/lib/cmake/freetype/freetype-config.cmake",
+		"/C/Users/tjdic/cpplibs/bin/include/freetype2/freetype/config/ftmodule.h",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/CMakeLists.txt",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/glext.h",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/include/glext.h",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/notes/HDEC_deploy_request.md",
+		"/C/Users/tjdic/work/repos/igems/igems-core/src/main/java/mil/af/igems/IgemsStringUtils.java",
+		"/C/tmp/pyart3.py",
+		"/C/Users/tjdic/OneDrive/code/python/ChickenBot/telegram_bot/services/radartest.py",
+		"/C/tmp/pyart.py",
+		"/C/shapes/sn.last",
+		"/C/tmp/test.out",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/notes/dual_deploy.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/bes50_bcr153225_notes.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/vb_cs_conversion_risk.md",
+		"/C/Users/tjdic/work/repos/mict_cs/MICTAppBB/DataModels/MICTDB.cs",
+		"/C/Users/tjdic/work/repos/mict_cs/MICTAppBB/DataModels/ModelBase.cs",
+		"/C/Users/tjdic/work/repos/mict_cs/MICTAppBB/MICTData/MICTModel.Context.cs",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/shapefile.cpp",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/source/glsl.cpp",
+		"/C/shapes/cb_2018_us_nation_20m/cb_2018_us_nation_20m.shp",
+		"/C/Users/tjdic/Downloads/khrplatform.h",
+		"/C/Users/tjdic/Downloads/glxext.h",
+		"/C/Users/tjdic/OneDrive/Documents/convert_to_cs_from_vb.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/self-assessmet-flow.md",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/include/glApplication.h",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/include/glsl.h",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/main.cpp",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/include/glutwindow.h",
+		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/include/glWindow.h",
+		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems1_05122020.log",
+		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems1_05122020.out",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/condensed_vb_to_cs.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/dr154281/reports.txt",
+		"/C/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools/VsDevCmd.bat",
+		"/C/Users/tjdic/work/repos/mict/MICTAppBB/My Project/Resources.resx",
+		"/C/Users/tjdic/work/repos/mict/MICTAppBB/MICTAppBB.vbproj",
+		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems2_05122020.log",
+		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems2_05122020.out",
+		"/C/Users/tjdic/Downloads/igems1_05082020.out",
+		"/D/app/oracle/igemsprofile/igemsp-wpafb/application.properties",
+		"/D/app/oracle/igemsprofile/igemst-wpafb/application.properties",
+		"/C/Users/tjdic/AppData/Local/Temp/Temp1_IGEMS_v1.2.2.25_DB.zip/IGEMS_v1.2.2.25_Updates.sql",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict_db.ddl.txt",
+		"/C/Users/tjdic/Downloads/igems_compare/igems_current/Plan.xml",
+		"/C/Users/tjdic/Downloads/igems_compare/Plan.xml",
+		"/C/Users/tjdic/Downloads/igems1.out",
+		"/C/Users/tjdic/Downloads/igems_compare/igems_current/WEB-INF/classes/log4j.properties",
+		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/classes/log4j.properties",
+		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/web.xml",
+		"/D/WLSDomain/igems",
+		"/D/WLSDomain/igems_current",
+		"/D/Google Drive/work/forge/code/nodejs/branding_js_163/src/js/forge_utils.js",
+		"/D/Google Drive/work/forge/code/nodejs/branding_js_163/src/js/ctf_api.js",
+		"/C/Users/tjdic/Downloads/FT 19-05 NDR Final Report (FOUO).pdf",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict2.0.29_vuln_fixes.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/BCR/bes46_bcr154132_notes.md",
+		"/C/Users/tjdic/work/repos/mict/MICTAppBB/Utils/SecurityModules/Cryptography.vb",
+		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/bot/mainbot.py",
+		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/gwskillicon/gwskill.py",
+		"/C/Users/tjdic/OneDrive/work/teams.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/cete.dynamicPDF.md",
+		"/C/Users/tjdic/Downloads/17 IS Vertical Inspection Report (August 2019)_Final.pdf",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/bes58_bcr154249_notes.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/orphan_fams.sql",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/deprovision_email.md",
+		"/C/Users/tjdic/Downloads/Telegram Desktop/AL/Tigerroads2015.sty",
+		"/C/Users/tjdic/Downloads/Telegram Desktop/AL/AL.prj",
+		"/C/Users/tjdic/CLionProjects/WeatherTestBed/cmake-build-debug/Makefile",
+		"/C/Users/tjdic/UnityProjects/troids/README.md",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/bcr151852_notes.md",
+		"/C/Users/tjdic/CLionProjects/rust_test/src/image_draw.rs",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/igems-web/pom.xml",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/authentication/pom.xml",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/igems-core/pom.xml",
+		"/C/Users/tjdic/CLionProjects/rust_test/src/main.rs",
+		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/.gitignore"
+	],
+	"find":
+	{
+		"height": 44.0
+	},
+	"find_in_files":
+	{
+		"height": 133.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"scaleFactor",
+			"g_MapViewState",
+			"g_",
+			"makeBox",
+			"orange6",
+			"yellow8",
+			"orange2",
+			"orange7",
+			"caret"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "build.bat",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 198,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Batch File/Batch File.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 86,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								83,
+								83
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/main.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 143,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								117,
+								117
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++11/C++11.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 38.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": false,
+	"output.exec":
+	{
+		"height": 514.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/sacweather.sublime-build",
+	"project": "sacweather.sublime-project",
+	"replace":
+	{
+		"height": 72.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"build",
+				"build.bat"
+			],
+			[
+				"tjdw",
+				"src\\tjdw_main.h"
+			],
+			[
+				"gl_re",
+				"src\\gl_render.cpp"
+			],
+			[
+				"gl",
+				"src\\gl_render.h"
+			],
+			[
+				"win",
+				"src\\win32_main.cpp"
+			],
+			[
+				"tjd",
+				"src\\tjdw_main.cpp"
+			],
+			[
+				"nex",
+				"src\\nexrad_level3.cpp"
+			],
+			[
+				"nexr",
+				"src\\nexrad_level3.cpp"
+			],
+			[
+				"ftg",
+				"ftconfig.h"
+			],
+			[
+				"bui",
+				"build.bat"
+			],
+			[
+				"cma",
+				"CMakeLists.txt"
+			],
+			[
+				"shap",
+				"src\\shapefile.cpp"
+			],
+			[
+				"glren",
+				"src\\gl_render.h"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 226.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
