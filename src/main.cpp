@@ -1,7 +1,7 @@
 #include <cstdio>
 
 int main(int argc, char** argv) {
-    printf("Hello.\n");    
+    printf("Real Hello.\n");    
 
     return 0;
 }

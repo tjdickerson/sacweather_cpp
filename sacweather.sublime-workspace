@@ -21,37 +21,6 @@
 			]
 		]
 	},
-	"buffers":
-	[
-		{
-			"file": "build.bat",
-			"settings":
-			{
-				"buffer_size": 198,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
-			"settings":
-			{
-				"buffer_size": 86,
-				"encoding": "UTF-8",
-				"line_ending": "Windows",
-				"name": "untitled.sublime-build"
-			}
-		},
-		{
-			"file": "src/main.cpp",
-			"settings":
-			{
-				"buffer_size": 143,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		}
-	],
 	"build_system": "Packages/Makefile/Make.sublime-build",
 	"build_system_choices":
 	[
@@ -249,15 +218,13 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
-	"expanded_folders":
-	[
-		"/C/code/sacweather",
-		"/C/code/sacweather/src"
-	],
 	"file_history":
 	[
-		"/C/code/sacweather/envsetup.bat",
+		"/C/code/sacweather/src/main.cpp",
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
 		"/C/code/sacweather/build.bat",
+		"/C/code/sacweather/.gitignore",
+		"/C/code/sacweather/envsetup.bat",
 		"/C/code/bin/envsetup.bat",
 		"/C/code/bin/envsetup.ps1",
 		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/tjdw_main.cpp",
@@ -411,99 +378,6 @@
 		"whole_word": false,
 		"wrap": true
 	},
-	"groups":
-	[
-		{
-			"selected": 2,
-			"sheets":
-			[
-				{
-					"buffer": 0,
-					"file": "build.bat",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 198,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Batch File/Batch File.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 86,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								83,
-								83
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/main.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 143,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								117,
-								117
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++11/C++11.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
-			]
-		}
-	],
 	"incremental_find":
 	{
 		"height": 38.0
@@ -544,7 +418,6 @@
 		"height": 0.0
 	},
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
-	"project": "sacweather.sublime-project",
 	"replace":
 	{
 		"height": 72.0
@@ -556,6 +429,14 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"sacw",
+				"sacwdev.bat"
+			],
+			[
+				"sa",
+				"sacwdev.bat"
+			],
 			[
 				"build",
 				"build.bat"
@@ -629,7 +510,6 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 0,
 	"settings":
 	{
 	},
