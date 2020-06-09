@@ -127,6 +127,11 @@ HWND InitWindow(HINSTANCE instance)
     return hwnd;
 }
 
+void ShowError(const char* message)
+{
+	LogError(message);
+}
+
 
 void LogMessage(const char* message)
 {

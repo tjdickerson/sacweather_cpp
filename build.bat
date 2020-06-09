@@ -22,7 +22,7 @@ set compFlags= -Zi
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib	
+	set libs= user32.lib gdi32.lib ws2_32.lib
 ) else (
 	set libs= ws2_32.lib
 )
@@ -47,13 +47,5 @@ echo Running "cl %compFlags% %src% %libs%"
 cl %compFlags% %src% %libs%
 
 popd
-
-
-@rem Execute the application after build.
-if %BUILD_TYPE%==%TARG_WIN32% (
-	.\build\win32_main.exe
-) else (
-	.\build\main.exe
-)
 
 
