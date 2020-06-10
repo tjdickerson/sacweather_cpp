@@ -12,11 +12,11 @@ int main(int argc, char** argv)
     printf("SAC Weather\n");    
     sacw_Init();
 
-    int result = DownloadFile();
-    if (result != 0)
-    {
-    	printf("Error in download file. %d\n", result);
-    }
+    // int result = Win32DownloadFile();
+    // if (result != 0)
+    // {
+    // 	printf("Error in download file. %d\n", result);
+    // }
 
     return 0;
 }

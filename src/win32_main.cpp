@@ -129,7 +129,7 @@ HWND InitWindow(HINSTANCE instance)
 
 void ShowError(const char* message)
 {
-	LogError(message);
+    printf("%s\n", message);
 }
 
 

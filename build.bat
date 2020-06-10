@@ -7,9 +7,9 @@ set TARG_CLI=cli
 
 
 @rem Change this to build for different entry points
-@rem set BUILD_TYPE=%TARG_WIN32%
 @rem 
-set BUILD_TYPE=%TARG_CLI%
+set BUILD_TYPE=%TARG_WIN32%
+@rem set BUILD_TYPE=%TARG_CLI%
 
 
 echo Building for %BUILD_TYPE%
@@ -17,14 +17,18 @@ echo Building for %BUILD_TYPE%
 
 
 @rem VisualStudio compiler flags
-set compFlags= -Zi
+set compFlags= -Zi /o SACWeather 
+
+
+@rem When looking back at sockets:
+@rem ws2_32.lib
 
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib ws2_32.lib
+	set libs= user32.lib gdi32.lib urlmon.lib
 ) else (
-	set libs= ws2_32.lib
+	set libs= urlmon.lib
 )
 
 @rem Set the entry point based on target.
@@ -36,7 +40,7 @@ if %BUILD_TYPE%==%TARG_WIN32% (
 
 
 @rem Add the main source files.
-set src=%src% ..\src\sacw_main.cpp ..\src\tjd_ftp.cpp
+set src=%src% ..\src\sacw_main.cpp
 
 
 @rem Get into the build directory and build the application
