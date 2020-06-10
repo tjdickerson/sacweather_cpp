@@ -53,6 +53,18 @@
 		"selected_items":
 		[
 			[
+				"space",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"sp",
+				"Indentation: Convert to Spaces"
+			],
+			[
+				"spaces",
+				"Indentation: Convert to Spaces"
+			],
+			[
 				"edi",
 				"Color Scheme Editor: Edit current color scheme"
 			],
@@ -177,10 +189,6 @@
 				"Package Control: Install Package"
 			],
 			[
-				"space",
-				"Indentation: Convert to Spaces"
-			],
-			[
 				"mark",
 				"Set Syntax: Markdown"
 			],
@@ -228,19 +236,19 @@
 	},
 	"file_history":
 	[
+		"/C/code/sacweather/src/win32_main.cpp",
+		"/C/code/sacweather/src/sacw_main.cpp",
+		"/C/code/sacweather/src/tjd_shapefile.cpp",
+		"/C/code/sacweather/src/tjd_shapefile.h",
+		"/C/code/sacweather/src/tjd_share.h",
+		"/C/code/sacweather/src/main.cpp",
 		"/C/code/sacweather/src/tjd_ftp.cpp",
 		"/C/code/sacweather/src/tjd_ftp.h",
 		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
 		"/C/code/sacweather/build.bat",
-		"/C/code/sacweather/src/tjd_share.h",
 		"/C/code/sacweather/src/sacw_api.h",
 		"/C/code/sacweather/src/sacw_extern.h",
-		"/C/code/sacweather/src/sacw_main.cpp",
-		"/C/code/sacweather/src/tjd_shapefile.cpp",
-		"/C/code/sacweather/src/tjd_shapefile.h",
-		"/C/code/sacweather/src/main.cpp",
-		"/C/code/sacweather/src/win32_main.cpp",
 		"/C/code/sacweather/src/tjd_image.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/C++11.sublime-settings",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
@@ -460,6 +468,42 @@
 		"selected_items":
 		[
 			[
+				"build",
+				"build.bat"
+			],
+			[
+				"win32",
+				"src\\win32_main.cpp"
+			],
+			[
+				"shapefile",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"nws",
+				"src\\nws_info.cpp"
+			],
+			[
+				"sacw_ma",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"shape",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"main.cpp",
+				"src\\main.cpp"
+			],
+			[
+				"tjd",
+				"src\\tjd_share.h"
+			],
+			[
+				"win",
+				"src\\win32_main.cpp"
+			],
+			[
 				"nws_inf",
 				"src\\nws_info.h"
 			],
@@ -470,14 +514,6 @@
 			[
 				"exter",
 				"src\\sacw_extern.h"
-			],
-			[
-				"win",
-				"src\\win32_main.cpp"
-			],
-			[
-				"build",
-				"build.bat"
 			],
 			[
 				"main",
@@ -514,10 +550,6 @@
 			[
 				"gl",
 				"src\\gl_render.h"
-			],
-			[
-				"tjd",
-				"src\\tjdw_main.cpp"
 			],
 			[
 				"nex",

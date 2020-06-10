@@ -17,7 +17,8 @@ echo Building for %BUILD_TYPE%
 
 
 @rem VisualStudio compiler flags
-set compFlags= -Zi /o SACWeather 
+set compFlags= -Zi /FeSACWeather
+set linkFlags= /link /subsystem:console 
 
 
 @rem When looking back at sockets:
@@ -47,8 +48,11 @@ set src=%src% ..\src\sacw_main.cpp
 if not exist .\build mkdir .\build
 pushd .\build
 
-echo Running "cl %compFlags% %src% %libs%"
-cl %compFlags% %src% %libs%
+    @rem delete all contents for rebuild
+    del /F /Q *.*
+
+    echo Running "cl %compFlags% %src% %libs% %linkFLags%"
+    cl %compFlags% %src% %libs% %linkFLags%
 
 popd
 

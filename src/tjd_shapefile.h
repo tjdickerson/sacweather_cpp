@@ -8,8 +8,8 @@
 
 typedef struct ShapeIndexRecord_t
 {
-	u32 offset;
-	u32 contentLength;
+    u32 offset;
+    u32 contentLength;
 } ShapeIndexRecord;
 
 

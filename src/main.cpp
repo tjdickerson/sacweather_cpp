@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     // int result = Win32DownloadFile();
     // if (result != 0)
     // {
-    // 	printf("Error in download file. %d\n", result);
+    //  printf("Error in download file. %d\n", result);
     // }
 
     return 0;
@@ -24,19 +24,19 @@ int main(int argc, char** argv)
 
 void ShowError(const char* message)
 {
-	printf("Error Message: %s\n", message);
+    printf("Error Message: %s\n", message);
 }
 
 
 const char* GetBaseShapefileLocation()
 {
-	return BaseShapefile;
+    return BaseShapefile;
 }
 
 
 const char* GetCountiesShapefileLocation()
 {
-	return CountiesShapefile;
+    return CountiesShapefile;
 }
 
 

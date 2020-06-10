@@ -19,22 +19,22 @@ typedef float       f32;
 
 typedef struct Vector4f32_t
 {
-	union 
-	{
-		f32 x, y, z, w;
-		f32 r, g, b, a;
-	};
-	
+    union 
+    {
+        f32 x, y, z, w;
+        f32 r, g, b, a;
+    };
+    
 } v4f32;
 
 typedef struct Vector2s32_t
 {
-	s32 x, y;
+    s32 x, y;
 } v2s32;
 
 typedef struct Vector2f32_t
 {
-	s32 x, y;
+    s32 x, y;
 } v2f32;
 
 
