@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <cstdio>
+#include "tjd_ftp.h"
 
 // Forward declarations just so I can order these however.
 
@@ -10,6 +11,9 @@ HWND InitWindow(HINSTANCE);
 LRESULT CALLBACK WinMessageCallback(HWND, UINT, WPARAM, LPARAM);
 
 void LogMessage(const char* message);
+
+int DownloadFile(const char* url, const char* dest);
+
 
 static bool gIsRunning;
 
@@ -54,7 +58,20 @@ int CALLBACK WinMain(HINSTANCE instance,
 */
 int main(int argc, char** argv)
 {
-    return WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
+    int result = 0;
+
+    if (argc > 1) 
+    {
+        printf("Test...\n");
+        int errCode = DownloadFile();
+        printf("Error code: %d", errCode);
+    } 
+    else 
+    {
+        result = WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
+    }
+
+    return result;
 }
 
 
@@ -149,3 +166,16 @@ void LogMessage(const char* message)
 {
     printf("%s\n", message);
 }
+
+
+int DownloadFile(const char* url, const char* dest)
+{
+    // @todo
+    // Either implement the callback or make this the fallback in the case that the
+    // eventual FTP or HTTPs implementation doesn't work or whatever
+    int result = URLDownloadToFile(NULL, url, dest, 0, NULL);
+    return result;
+}
+
+
+

@@ -27,7 +27,7 @@ set linkFlags= /link /subsystem:console
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib urlmon.lib
+	set libs= user32.lib gdi32.lib urlmon.lib ws2_32.lib
 ) else (
 	set libs= urlmon.lib
 )
@@ -41,7 +41,7 @@ if %BUILD_TYPE%==%TARG_WIN32% (
 
 
 @rem Add the main source files.
-set src=%src% ..\src\sacw_main.cpp
+set src=%src% ..\src\sacw_main.cpp ..\src\tjd_ftp.cpp
 
 
 @rem Get into the build directory and build the application

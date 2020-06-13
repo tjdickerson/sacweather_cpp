@@ -17,6 +17,23 @@ typedef double      f64;
 typedef float       f32;
 
 
+static s16 swapBytes(s16 value) 
+{
+    return 
+        (value & 0x00ff) << 8 | 
+        (value & 0xff00) >> 8;
+}
+
+static s32 swapBytes(s32 value) 
+{
+    return 
+        (value & 0xff)          << 24   | 
+        (value & 0xff0000)      >>  8   | 
+        (value & 0xff00)        <<  8   | 
+        (value & 0xff000000)    >> 24;
+}
+
+
 typedef struct Vector4f32_t
 {
     union 

@@ -236,6 +236,8 @@
 	},
 	"file_history":
 	[
+		"/C/Users/tjdic/Desktop/weatherdata.md",
+		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/code/sacweather/src/win32_main.cpp",
 		"/C/code/sacweather/src/sacw_main.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.cpp",
@@ -244,7 +246,6 @@
 		"/C/code/sacweather/src/main.cpp",
 		"/C/code/sacweather/src/tjd_ftp.cpp",
 		"/C/code/sacweather/src/tjd_ftp.h",
-		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
 		"/C/code/sacweather/build.bat",
 		"/C/code/sacweather/src/sacw_api.h",
@@ -266,7 +267,6 @@
 		"/C/Users/tjdic/OneDrive/work/IGEMS/IGEMS/BCR/bes46_bcr154132_notes.md",
 		"/D/app/oracle/igemsprofile/application.properties",
 		"/C/app/oracle/igemsprofile/application.properties",
-		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/nexrad_level3.h",
 		"/C/tmp/pyart_trans.py",
 		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/tjd_share.h",
@@ -382,6 +382,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"socket",
+			"pasvConn",
+			"pasvResult",
+			"sockaddr_in",
+			"pasvConn",
+			"octet1",
+			"MSG_OOB",
+			"Recv",
 			"LogError",
 			"hostname",
 			"result",
@@ -468,11 +476,39 @@
 		"selected_items":
 		[
 			[
+				"ftp",
+				"src\\tjd_ftp.cpp"
+			],
+			[
+				"tjd_ftp",
+				"src\\tjd_ftp.cpp"
+			],
+			[
 				"build",
 				"build.bat"
 			],
 			[
+				"shape",
+				"src\\tjd_shapefile.h"
+			],
+			[
 				"win32",
+				"src\\win32_main.cpp"
+			],
+			[
+				"share",
+				"src\\tjd_share.h"
+			],
+			[
+				"exte",
+				"src\\sacw_extern.h"
+			],
+			[
+				"nw",
+				"src\\nws_info.cpp"
+			],
+			[
+				"win",
 				"src\\win32_main.cpp"
 			],
 			[
@@ -488,20 +524,12 @@
 				"src\\sacw_main.cpp"
 			],
 			[
-				"shape",
-				"src\\tjd_shapefile.cpp"
-			],
-			[
 				"main.cpp",
 				"src\\main.cpp"
 			],
 			[
 				"tjd",
 				"src\\tjd_share.h"
-			],
-			[
-				"win",
-				"src\\win32_main.cpp"
 			],
 			[
 				"nws_inf",
@@ -518,10 +546,6 @@
 			[
 				"main",
 				"src\\main.cpp"
-			],
-			[
-				"ftp",
-				"src\\tjd_ftp.cpp"
 			],
 			[
 				"f",
@@ -602,21 +626,6 @@
 	},
 	"settings":
 	{
-		"last_automatic_layout":
-		[
-			[
-				0,
-				0,
-				1,
-				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
-			]
-		]
 	},
 	"show_minimap": false,
 	"show_open_files": false,
