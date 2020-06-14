@@ -39,19 +39,6 @@ constexpr char* FTP_PORT = "21";
 constexpr char* HTTP_PORT = "80";
 
 
-
-void DebugOut(const char* fmt, ...)
-{
-#ifdef __DEBUG__
-    va_list list;
-    va_start(list, fmt);
-    printf(fmt, list);
-    va_end(list);
-#endif
-}
-
-
-
 typedef struct RecvResult_t
 {
     int bytesRecieved;
@@ -290,88 +277,46 @@ int DownloadFile()
     const char* user = "anonymous";
     const char* pass = "tjdickerson@gmail.com";
 
-    #if 1
+
+    LoginCommand(sock);
+    int size = SizeCommand(sock, filename);        
+    printf("Size of %s is %d bytes.\n", filename, size);
+
+    PasvResult pasvResult = PasvCommand(sock);
+
+    sockaddr_in pasvConn;
+    pasvConn.sin_family = AF_INET;
+    pasvConn.sin_port = htons(pasvResult.port);
+    pasvConn.sin_addr.s_addr = inet_addr(pasvResult.ip);
+
+    printf("Connecting data sock to: %s:%d\n", pasvResult.ip, pasvResult.port);
+
+    dataSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (dataSock == INVALID_SOCKET)
     {
-        LoginCommand(sock);
-        int size = SizeCommand(sock, filename);        
-        printf("Size of %s is %d bytes.\n", filename, size);
-
-        PasvResult pasvResult = PasvCommand(sock);
-
-        sockaddr_in pasvConn;
-        pasvConn.sin_family = AF_INET;
-        pasvConn.sin_port = htons(pasvResult.port);
-        pasvConn.sin_addr.s_addr = inet_addr(pasvResult.ip);
-
-        printf("Connecting data sock to: %s:%d\n", pasvResult.ip, pasvResult.port);
-
-        dataSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (dataSock == INVALID_SOCKET)
-        {
-            printf("Error creating data socket...\n");
-        }
-
-        resultCode = connect(dataSock, (LPSOCKADDR)&pasvConn, sizeof(struct sockaddr));
-        if(resultCode == SOCKET_ERROR)
-        {
-            int err = WSAGetLastError();
-            printf("Failed to connect datasocket.\n");
-            closesocket(dataSock);
-            closesocket(sock);
-            sock = INVALID_SOCKET;
-            dataSock = INVALID_SOCKET;
-            freeaddrinfo(result);
-            WSACleanup();
-            
-            return err;
-        }
-
-        printf("Connected data socket! Grats.\n");
-
-        RetrieveFile(sock, dataSock, filename, "C:\\tmp\\testing_radar.nx3");        
-
-        QuitCommand(sock);
-    }
-    #endif
-    // (5th * 256) + 6th
-    // control socket vs data socket?
-    #if 0
-    { 
-        char msg[2048];
-        char* format = "USER %s\r\nPASS %s\r\nQUIT\0";
-        //char* format = "Hello\r\n\0";
-        sprintf(msg, format, user, pass, filename);
-        int len = strlen(msg);
-
-        Send(sock, msg, strlen(msg));       
-        Sleep(1000); 
-        RecvResult res = Recv(sock);
-        printf("Recieved: %d\n", res.bytesRecieved);
-        printf("%s\n", res.message);
-
-        if (res.message)
-            free(res.message);
-
-        // shutdown before recv for some reason.
-        // if we dont it will like sit there and wait for userpass
-        resultCode = shutdown(sock, SD_SEND);
-        if (resultCode == SOCKET_ERROR)
-        {
-            printf("Failed to shutdown the socket...\n");
-            closesocket(sock);
-            WSACleanup();
-            return resultCode;
-        }   
-
+        printf("Error creating data socket...\n");
     }
 
+    resultCode = connect(dataSock, (LPSOCKADDR)&pasvConn, sizeof(struct sockaddr));
+    if(resultCode == SOCKET_ERROR)
     {
-        // char msg[2048];
-        // char* format = "\0";
-        // sprintf(msg, format, user, pass);
-        // int len = strlen(msg);        
+        int err = WSAGetLastError();
+        printf("Failed to connect datasocket.\n");
+        closesocket(dataSock);
+        closesocket(sock);
+        sock = INVALID_SOCKET;
+        dataSock = INVALID_SOCKET;
+        freeaddrinfo(result);
+        WSACleanup();
+        
+        return err;
     }
-    #endif
+
+    printf("Connected data socket! Grats.\n");
+
+    RetrieveFile(sock, dataSock, filename, "C:\\tmp\\testing_radar.nx3");        
+
+    QuitCommand(sock);
 
     resultCode = shutdown(sock, SD_SEND);
     if (resultCode == SOCKET_ERROR)

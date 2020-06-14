@@ -44,6 +44,11 @@ typedef struct Vector4f32_t
     
 } v4f32;
 
+typedef struct Vector2f64_t
+{
+    f64 x, y;
+} v2f64;
+
 typedef struct Vector2s32_t
 {
     s32 x, y;

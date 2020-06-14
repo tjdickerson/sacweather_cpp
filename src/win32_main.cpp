@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <cstdio>
 #include "tjd_ftp.h"
+#include "gl.h"
+#include "sacw_api.h"
 
 // Forward declarations just so I can order these however.
 
@@ -13,6 +15,8 @@ LRESULT CALLBACK WinMessageCallback(HWND, UINT, WPARAM, LPARAM);
 void LogMessage(const char* message);
 
 int DownloadFile(const char* url, const char* dest);
+
+static LRESULT Win32InitOpenGL(HDC hdc);
 
 
 static bool gIsRunning;
@@ -88,6 +92,13 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
         {
             HDC hdc = GetDC(hwnd);
             LogMessage("Window created.");
+
+            // initialize opengl for windows
+            result = Win32InitOpenGL(hdc);
+            if (result == 0)
+            {
+                sacw_Init();
+            }
 
             gIsRunning = true;
         }
@@ -179,3 +190,72 @@ int DownloadFile(const char* url, const char* dest)
 
 
 
+static LRESULT Win32InitOpenGL(HDC hdc) {
+    bool success = false;
+    PIXELFORMATDESCRIPTOR reqPfd = {};
+    reqPfd.nSize = sizeof(reqPfd);
+    reqPfd.nVersion = 1;
+    reqPfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    reqPfd.iPixelType = PFD_TYPE_RGBA;
+    reqPfd.cColorBits = 32;
+    reqPfd.cAlphaBits = 8;
+    reqPfd.cDepthBits = 24;
+
+    int reqPfdId = ChoosePixelFormat(hdc, &reqPfd);
+    if (!reqPfdId) {
+        LogMessage("No suitable pixel format found.");
+        return -1;
+    }
+
+    PIXELFORMATDESCRIPTOR pfd = {};
+    DescribePixelFormat(hdc, reqPfdId, sizeof(pfd), &pfd);
+
+    success = SetPixelFormat(hdc, reqPfdId, &pfd);
+    if (!success) {
+        LogMessage("Failed to set pixel format.");
+        return -2;
+    }
+
+    HGLRC glRC = wglCreateContext(hdc);
+    if (!glRC) {
+        LogMessage("Failed to create OpenGL context.");
+        return -3;
+    }
+
+    // todo: this may be redundant at the moment since we are requesting a sepcific
+    //       openGL feature set right after this. This might be useful as a fall back?
+    success = wglMakeCurrent(hdc, glRC);
+    if (!success) {
+        LogMessage("Failed to wglMakeCurrent.");
+        return -4;
+    }
+
+
+    // request context attributes so we can get a specific OpenGL version/feature set
+    GLint reqAttributes[] = {
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+            WGL_CONTEXT_PROFILE_MASK_ARB,
+            WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0
+    };
+
+    // todo: verify this somehow
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+    wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+            wglGetProcAddress("wglCreateContextAttribsARB");
+
+    HGLRC newGLRC = wglCreateContextAttribsARB(hdc, 0, reqAttributes);
+
+    if (!newGLRC) {
+        // todo: then in here we could fall back to a lower version or even
+        //       fallback to software rendering..
+        LogMessage("Failed to set new OpenGL context.");
+        return -5;
+    }
+
+    wglMakeCurrent(NULL, NULL);
+    wglMakeCurrent(hdc, newGLRC);
+
+    return 0;
+}

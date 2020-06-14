@@ -382,6 +382,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"khrplatform",
+			"ShowMessage",
 			"socket",
 			"pasvConn",
 			"pasvResult",
@@ -410,6 +412,7 @@
 		"regex": true,
 		"replace_history":
 		[
+			"LogMessage"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -434,18 +437,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.5,
 			1.0
 		],
 		"rows":
@@ -466,7 +462,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 62.0
+		"height": 82.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -476,24 +472,40 @@
 		"selected_items":
 		[
 			[
-				"ftp",
-				"src\\tjd_ftp.cpp"
-			],
-			[
-				"tjd_ftp",
-				"src\\tjd_ftp.cpp"
-			],
-			[
 				"build",
 				"build.bat"
 			],
 			[
+				"tjd_share",
+				"src\\tjd_share.h"
+			],
+			[
+				"tjd_sha",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
 				"shape",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"shapefil",
 				"src\\tjd_shapefile.h"
+			],
+			[
+				"sacw",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"ftp",
+				"src\\tjd_ftp.cpp"
 			],
 			[
 				"win32",
 				"src\\win32_main.cpp"
+			],
+			[
+				"tjd_ftp",
+				"src\\tjd_ftp.cpp"
 			],
 			[
 				"share",
@@ -534,10 +546,6 @@
 			[
 				"nws_inf",
 				"src\\nws_info.h"
-			],
-			[
-				"sacw",
-				"src\\sacw_main.cpp"
 			],
 			[
 				"exter",
