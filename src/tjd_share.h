@@ -36,12 +36,10 @@ static s32 swapBytes(s32 value)
 
 typedef struct Vector4f32_t
 {
-    union 
-    {
-        f32 x, y, z, w;
-        f32 r, g, b, a;
-    };
-    
+    union { f32 x; f32 r; };
+    union { f32 y; f32 g; };
+    union { f32 z; f32 b; };
+    union { f32 w; f32 a; };    
 } v4f32;
 
 typedef struct Vector2f64_t

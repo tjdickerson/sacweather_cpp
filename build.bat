@@ -21,10 +21,6 @@ set compFlags= /Zi /EHsc /FeSACWeather
 set linkFlags= /link /subsystem:console 
 
 
-@rem When looking back at sockets:
-@rem ws2_32.lib
-
-
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
 	set libs= user32.lib gdi32.lib urlmon.lib ws2_32.lib opengl32.lib
@@ -41,7 +37,7 @@ if %BUILD_TYPE%==%TARG_WIN32% (
 
 
 @rem Add the main source files.
-set src=%src% ..\src\sacw_main.cpp ..\src\tjd_ftp.cpp ..\src\tjd_shapefile.cpp
+set src=%src% ..\src\sacw_main.cpp ..\src\tjd_ftp.cpp ..\src\tjd_shapefile.cpp ..\src\gl_render.cpp
 
 
 @rem Get into the build directory and build the application

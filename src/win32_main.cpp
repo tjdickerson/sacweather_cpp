@@ -49,8 +49,16 @@ int CALLBACK WinMain(HINSTANCE instance,
         TranslateMessage(&message);
         DispatchMessage(&message);
 
+
+        // 
+        sacw_MainLoop();
+
+
         SwapBuffers(hdc);
     }   
+
+    // if this turns out to be needed, it may need to be moved elsewhere @todo
+    sacw_Cleanup();
 
     return (int)message.wParam;
 }
