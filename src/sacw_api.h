@@ -11,13 +11,22 @@ typedef struct RenderBufferData_t
     s32  vertexCount;
 } RenderBufferData;
 
+
+typedef struct RenderVertData_t
+{
+    s32 numParts;    
+    s32* starts;
+    s32* counts;
+} RenderVertData;
+
+
 void sacw_Init();
 
 void sacw_MainLoop();
 
 void sacw_Cleanup();
 
-void GetMapBufferData(RenderBufferData* rbd);
+void GetMapBufferData(RenderBufferData* rbd, RenderVertData* rvd);
 
 
 #define _SACW_API_H_

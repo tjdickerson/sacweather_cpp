@@ -48,9 +48,6 @@ static GLint  MapShaderModelAttribute;
 static GLint  MapShaderColorAttribute;
 
 
-static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
-
-
 static GLfloat ModelMatrix[] = 
 {
         1.0f, 0.0f, 0.0f, 0.0f,
@@ -76,14 +73,20 @@ static GLfloat IdentityMatrix[] =
 };
 
 
+static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
+
+
+static RenderVertData MapVertData;
+
 
 bool RenderInit()
 {    
     printf("Render init...\n");
     InitGLExtensions();
 
-    RenderBufferData mapBufferData = {};
-    GetMapBufferData(&mapBufferData);
+    RenderBufferData mapBufferData = {};    
+    MapVertData = {};
+    GetMapBufferData(&mapBufferData, &MapVertData);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -142,7 +145,8 @@ void Render()
 
         // states  #6c6c58
         glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
-        //glMultiDrawArrays(GL_LINE_STRIP, rd.sStarts, rd.sCounts, rd.sNumParts);
+        glMultiDrawArrays(
+            GL_LINE_STRIP, MapVertData.starts, MapVertData.counts, MapVertData.numParts);
 
     }
 
@@ -153,7 +157,8 @@ void Render()
 
 bool RenderCleanup()
 {
-    printf("Cleanup not implemented.\n");
+    if (MapVertData.starts) free(MapVertData.starts);
+    if (MapVertData.counts) free(MapVertData.counts);
 
     return true;
 }

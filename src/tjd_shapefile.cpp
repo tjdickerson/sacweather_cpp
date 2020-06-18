@@ -148,7 +148,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* name)
             assert(bytesRead == 1);
 
             // We want all the shapefile data to be one long array of information for all shapes
-            // instead of per-shape. Offset the starting by the current start points.
+            // instead of per-shape. Offset the starting by the current start points.            
             pidx += shapeData->numPoints;
 
             shapeData->parts.push_back(pidx);
@@ -174,7 +174,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* name)
         if (i < (shapeData->numParts - 1))
             shapeData->counts.push_back(shapeData->parts.at(i + 1) - shapeData->parts.at(i));
         else
-            shapeData->counts.push_back(shapeData->numPoints * 2 - shapeData->parts.at(i));
+            shapeData->counts.push_back(shapeData->numPoints - shapeData->parts.at(i));
     }
 
 

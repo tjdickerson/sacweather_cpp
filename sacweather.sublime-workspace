@@ -367,7 +367,7 @@
 	],
 	"find":
 	{
-		"height": 44.0
+		"height": 43.0
 	},
 	"find_in_files":
 	{
@@ -382,6 +382,13 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"clearColor",
+			"MapModelLocation",
+			"Model",
+			"ModelLocation",
+			"glActiveTexture",
+			"PFNGLUSEPROGRAM",
+			"^extern",
 			"glcreateshader",
 			"GlEnable",
 			"RenderInit",
@@ -418,6 +425,7 @@
 		"regex": true,
 		"replace_history":
 		[
+			"//extern",
 			"LogMessage"
 		],
 		"reverse": false,
@@ -478,12 +486,52 @@
 		"selected_items":
 		[
 			[
-				"gl_render",
+				"sacw",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"shapefile",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"build.bat",
+				"build.bat"
+			],
+			[
+				"tjd_conversion",
+				"src\\tjd_conversions.h"
+			],
+			[
+				"conv",
+				"src\\tjd_conversions.h"
+			],
+			[
+				"shape",
+				"src\\tjd_shapefile.h"
+			],
+			[
+				"sacw_api",
+				"src\\sacw_api.h"
+			],
+			[
+				"sacw_ma",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"tjd_sha",
+				"src\\tjd_share.h"
+			],
+			[
+				"gl_ren",
 				"src\\gl_render.cpp"
 			],
 			[
 				"gl.h",
 				"src\\gl.h"
+			],
+			[
+				"gl_render",
+				"src\\gl_render.cpp"
 			],
 			[
 				"gl_re",
@@ -510,32 +558,12 @@
 				"src\\gl_render.cpp"
 			],
 			[
-				"sacw",
-				"src\\sacw_main.cpp"
-			],
-			[
-				"shape",
-				"src\\tjd_shapefile.h"
-			],
-			[
-				"sacw_api",
-				"src\\sacw_api.h"
-			],
-			[
 				"tjd_share",
 				"src\\tjd_share.h"
 			],
 			[
 				"win",
 				"src\\win32_main.cpp"
-			],
-			[
-				"shapefile",
-				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"tjd_sha",
-				"src\\tjd_shapefile.cpp"
 			],
 			[
 				"shapefil",
@@ -568,10 +596,6 @@
 			[
 				"nws",
 				"src\\nws_info.cpp"
-			],
-			[
-				"sacw_ma",
-				"src\\sacw_main.cpp"
 			],
 			[
 				"main.cpp",
