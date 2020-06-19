@@ -101,7 +101,7 @@ bool RenderInit()
     glBindBuffer(GL_ARRAY_BUFFER, MapVbo);
     glBufferData(
         GL_ARRAY_BUFFER, 
-        mapBufferData.vertexCount * sizeof(f32), 
+        mapBufferData.vertexCount * 2 * sizeof(f32), 
         mapBufferData.vertices, 
         GL_STATIC_DRAW);
 
@@ -131,6 +131,12 @@ void Render()
     // 
     glClearColor(ClearColor.x, ClearColor.y, ClearColor.z, ClearColor.w);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    ModelMatrix[0] = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    ModelMatrix[5] = (MapViewInfo.scaleFactor / MapViewInfo.yScale);
+
+    ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
+    ModelMatrix[13] = MapViewInfo.yPan * ModelMatrix[5];
 
     // render map
     {
@@ -243,6 +249,28 @@ static GLchar* MapFragShaderSource()
 
     return (GLchar*)source;
 }
+
+
+void RenderViewportUpdate(f32 width, f32 height)
+{
+    if (width > height)
+    {
+        MapViewInfo.xScale = width / height;
+        MapViewInfo.yScale = 1.0f;
+    }
+
+    else
+    {
+        MapViewInfo.xScale = 1.0f;
+        MapViewInfo.yScale = height / width;
+    }
+
+    MapViewInfo.mapWidthPixels = width;
+    MapViewInfo.mapHeightPixels = height;
+
+    glViewport(0, 0, width, height);
+}
+
 
 void InitGLExtensions() 
 {

@@ -20,11 +20,30 @@ typedef struct RenderVertData_t
 } RenderVertData;
 
 
+typedef struct MapViewState_t
+{
+    f32 mapWidthPixels;
+    f32 mapHeightPixels;
+    f32 scaleFactor;
+    f32 xPan;
+    f32 yPan;
+    f32 xScale;
+    f32 yScale;
+} MapViewState;
+
+
+extern MapViewState MapViewInfo;
+
+
 void sacw_Init();
 
 void sacw_MainLoop();
 
 void sacw_Cleanup();
+
+void sacw_UpdateViewport(f32 width, f32 height);
+
+void sacw_ZoomMap(f32 zoom);
 
 void GetMapBufferData(RenderBufferData* rbd, RenderVertData* rvd);
 

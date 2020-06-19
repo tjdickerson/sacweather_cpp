@@ -108,7 +108,25 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
                 sacw_Init();
             }
 
+            CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+            sacw_UpdateViewport(cs->cx, cs->cy);
+
             gIsRunning = true;
+        }
+        break;
+
+        case WM_SIZE:
+        {
+            f32 width = (f32)LOWORD(lParam);
+            f32 height = (f32)HIWORD(lParam);
+            sacw_UpdateViewport(width, height);
+        }
+        break;
+
+        case WM_MOUSEWHEEL:
+        {
+            f32 delta = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f; // @todo
+            sacw_ZoomMap(delta);
         }
         break;
 

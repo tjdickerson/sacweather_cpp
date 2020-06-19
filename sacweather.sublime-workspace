@@ -236,11 +236,11 @@
 	},
 	"file_history":
 	[
+		"/C/code/sacweather/src/sacw_main.cpp",
 		"/C/code/sacweather/src/gl_render.cpp",
 		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/code/sacweather/src/win32_main.cpp",
-		"/C/code/sacweather/src/sacw_main.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.h",
 		"/C/code/sacweather/src/tjd_share.h",
@@ -486,12 +486,48 @@
 		"selected_items":
 		[
 			[
-				"sacw",
+				"rend",
+				"src\\render_extern.h"
+			],
+			[
+				"sacw_e",
+				"src\\sacw_extern.h"
+			],
+			[
+				"win",
+				"src\\win32_main.cpp"
+			],
+			[
+				"sacw_api",
+				"src\\sacw_api.h"
+			],
+			[
+				"gl",
+				"src\\gl_render.cpp"
+			],
+			[
+				"shape",
+				"src\\tjd_shapefile.h"
+			],
+			[
+				"sacw_n",
 				"src\\sacw_main.cpp"
+			],
+			[
+				"sacw_main",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"shapefile.cp",
+				"src\\tjd_shapefile.cpp"
 			],
 			[
 				"shapefile",
 				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"sacw",
+				"src\\sacw_main.cpp"
 			],
 			[
 				"build.bat",
@@ -504,14 +540,6 @@
 			[
 				"conv",
 				"src\\tjd_conversions.h"
-			],
-			[
-				"shape",
-				"src\\tjd_shapefile.h"
-			],
-			[
-				"sacw_api",
-				"src\\sacw_api.h"
 			],
 			[
 				"sacw_ma",
@@ -554,16 +582,8 @@
 				"src\\sacw_api.h"
 			],
 			[
-				"gl",
-				"src\\gl_render.cpp"
-			],
-			[
 				"tjd_share",
 				"src\\tjd_share.h"
-			],
-			[
-				"win",
-				"src\\win32_main.cpp"
 			],
 			[
 				"shapefil",
