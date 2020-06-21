@@ -198,7 +198,7 @@ bool RetrieveFile(SOCKET controlSock,
     return true;
 }
 
-int DownloadFile()
+int DownloadFile(const char* hostname, const char* remoteFilepath)
 {
     // This may be able to be done once at application startup @todo
     // init winsock
@@ -221,7 +221,7 @@ int DownloadFile()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    char* hostname = "tgftp.nws.noaa.gov\0";
+    //char* hostname = "tgftp.nws.noaa.gov\0";
 
     resultCode = getaddrinfo(TARGET_HOSTNAME, FTP_PORT, &hints, &result);  
     if (resultCode != 0)
@@ -272,15 +272,15 @@ int DownloadFile()
 
     printf("Connected!\n");
 
-    const char* filename = "/SL.us008001/DF.of/DC.radar/DS.p19r0/SI.kmxx/sn.last\0";
+    //const char* filename = "/SL.us008001/DF.of/DC.radar/DS.p19r0/SI.kmxx/sn.last\0";
 
     const char* user = "anonymous";
     const char* pass = "tjdickerson@gmail.com";
 
 
     LoginCommand(sock);
-    int size = SizeCommand(sock, filename);        
-    printf("Size of %s is %d bytes.\n", filename, size);
+    int size = SizeCommand(sock, remoteFilepath);        
+    printf("Size of %s is %d bytes.\n", remoteFilepath, size);
 
     PasvResult pasvResult = PasvCommand(sock);
 
@@ -314,7 +314,7 @@ int DownloadFile()
 
     printf("Connected data socket! Grats.\n");
 
-    RetrieveFile(sock, dataSock, filename, "C:\\tmp\\testing_radar.nx3");        
+    RetrieveFile(sock, dataSock, remoteFilepath, "C:\\tmp\\testing_radar.nx3");        
 
     QuitCommand(sock);
 

@@ -34,7 +34,10 @@ set src=%src% ^
 ..\src\sacw_main.cpp ^
 ..\src\tjd_ftp.cpp ^
 ..\src\tjd_shapefile.cpp ^
-..\src\gl_render.cpp
+..\src\gl_render.cpp ^
+..\src\tjd_radar.cpp ^
+..\src\tjd_conversions.cpp ^
+..\src\nws_info.cpp
 
 
 @rem Get into the build directory and build the application

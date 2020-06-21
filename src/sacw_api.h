@@ -35,7 +35,7 @@ typedef struct MapViewState_t
 extern MapViewState MapViewInfo;
 
 
-void sacw_Init();
+void sacw_Init(char* args);
 
 void sacw_MainLoop();
 
@@ -45,8 +45,11 @@ void sacw_UpdateViewport(f32 width, f32 height);
 
 void sacw_ZoomMap(f32 zoom);
 
-void GetMapBufferData(RenderBufferData* rbd, RenderVertData* rvd);
+void sacw_PanMap(f32 x, f32 y);
 
+void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* rvd);
+
+void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
 
 #define _SACW_API_H_
 #endif

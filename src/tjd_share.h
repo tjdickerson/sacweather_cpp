@@ -5,6 +5,8 @@
 #include <cstdint>
 
 
+#define ColorHexToFloat(x) (x / (float)0xff)
+
 typedef int8_t      s8;
 typedef int16_t     s16;
 typedef int32_t     s32;
@@ -54,7 +56,7 @@ typedef struct Vector2s32_t
 
 typedef struct Vector2f32_t
 {
-    s32 x, y;
+    f32 x, y;
 } v2f32;
 
 

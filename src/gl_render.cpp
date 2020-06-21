@@ -38,6 +38,8 @@ GLuint GLCreateShaderProgram(const GLchar* vertexSource, const GLchar* fragSourc
 
 static GLchar* MapFragShaderSource();
 static GLchar* MapVertShaderSource();
+static GLchar* RadarFragShaderSource();
+static GLchar* RadarVertShaderSource();
 
 
 static GLuint MapVao;
@@ -46,6 +48,13 @@ static GLuint MapShader;
 static GLint  MapShaderPositionAttribute;
 static GLint  MapShaderModelAttribute;
 static GLint  MapShaderColorAttribute;
+
+static GLuint RadarVao;
+static GLuint RadarVbo;
+static GLuint RadarShader;
+static GLint  RadarShaderPositionAttribute;
+static GLint  RadarShaderModelAttribute;
+static GLint  RadarShaderColorAttribute;
 
 
 static GLfloat ModelMatrix[] = 
@@ -77,23 +86,26 @@ static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
 
 
 static RenderVertData MapVertData;
+static RenderVertData RadarVertData;
 
 
 bool RenderInit()
 {    
     printf("Render init...\n");
     InitGLExtensions();
-
-    RenderBufferData mapBufferData = {};    
-    MapVertData = {};
-    GetMapBufferData(&mapBufferData, &MapVertData);
+  
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+
+    // init map
+    RenderBufferData mapBufferData = {};    
+    MapVertData = {};
+    sacw_GetMapRenderData(&mapBufferData, &MapVertData);
 
     MapShader = GLCreateShaderProgram(MapVertShaderSource(), MapFragShaderSource());
 
-    // init map
     glGenVertexArrays(1, &MapVao);
     glBindVertexArray(MapVao);
 
@@ -105,7 +117,7 @@ bool RenderInit()
         mapBufferData.vertices, 
         GL_STATIC_DRAW);
 
-    MapShaderPositionAttribute = glGetAttribLocation(MapShader, "position");
+    MapShaderPositionAttribute = glGetAttribLocation(MapShader, "Position");
     glEnableVertexAttribArray(MapShaderPositionAttribute);
     glVertexAttribPointer(
         MapShaderPositionAttribute,
@@ -116,11 +128,56 @@ bool RenderInit()
         NULL);
 
     MapShaderModelAttribute = glGetUniformLocation(MapShader, "Model");
-    MapShaderColorAttribute = glGetUniformLocation(MapShader, "color");
+    MapShaderColorAttribute = glGetUniformLocation(MapShader, "Color");
+
+
+    // init radar
+    RenderBufferData radarBufferData = {};
+    RadarVertData = {};
+    sacw_GetRadarRenderData(&radarBufferData, &RadarVertData);
+
+    RadarShader = GLCreateShaderProgram(RadarVertShaderSource(), RadarFragShaderSource());
     
+    glGenVertexArrays(1, &RadarVao);
+    glBindVertexArray(RadarVao);
+
+    glGenBuffers(1, &RadarVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, RadarVbo);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        radarBufferData.vertexCount * 6 * sizeof(f32),
+        radarBufferData.vertices,
+        GL_DYNAMIC_DRAW);
+
+    RadarShaderPositionAttribute = glGetAttribLocation(RadarShader, "Position");
+    glEnableVertexAttribArray(RadarShaderPositionAttribute);
+    glVertexAttribPointer(
+        RadarShaderPositionAttribute,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(f32),
+        NULL);
+
+    RadarShaderColorAttribute = glGetAttribLocation(RadarShader, "Color");
+    glEnableVertexAttribArray(RadarShaderColorAttribute);
+    glVertexAttribPointer(
+        RadarShaderColorAttribute,
+        4, 
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(f32),
+        (void*)(2 * sizeof(f32)));
+
+    RadarShaderModelAttribute = glGetUniformLocation(RadarShader, "Model");
+
 
     // cleanup
     if(mapBufferData.vertices) free(mapBufferData.vertices);
+    
+    // Don't Free
+    // The memory allocated for the vertices is reused.
+    //if(radarBufferData.vertices) free(radarBufferData.vertices);
 
     return true;
 }
@@ -154,6 +211,17 @@ void Render()
         glMultiDrawArrays(
             GL_LINE_STRIP, MapVertData.starts, MapVertData.counts, MapVertData.numParts);
 
+    }
+
+
+    // radar data
+    {
+        glUseProgram(RadarShader);
+        glBindVertexArray(RadarVao);
+        glUniformMatrix4fv(RadarShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
+
+        glMultiDrawArrays(
+            GL_TRIANGLE_FAN, RadarVertData.starts, RadarVertData.counts, RadarVertData.numParts);
     }
 
     glUseProgram(0);
@@ -215,42 +283,6 @@ GLuint GLCreateShaderProgram(const GLchar* vertexSource, const GLchar* fragSourc
     return shaderProgram;
 }
 
-
-static GLchar* MapVertShaderSource() 
-{
-    const char* source = R"glsl(
-        #version 150
-
-        in vec2 position;
-
-        uniform mat4 Model;
-
-        void main() {
-            gl_Position = Model * vec4(position, 0.0, 1.0);
-        }
-    )glsl";
-
-    return (GLchar*)source;
-}
-
-static GLchar* MapFragShaderSource() 
-{
-    const char* source = R"glsl(
-        #version 150
-
-        out vec4 outColor;
-
-        uniform vec4 color;
-
-        void main() {
-            outColor = color;
-        }
-    )glsl";
-
-    return (GLchar*)source;
-}
-
-
 void RenderViewportUpdate(f32 width, f32 height)
 {
     if (width > height)
@@ -302,3 +334,75 @@ void InitGLExtensions()
     glBindFragDataLocation = 
         (PFNGLBINDFRAGDATALOCATIONPROC)GLGetProcAddress("glBindFragDataLocation");
 }
+
+static GLchar* MapVertShaderSource() 
+{
+    const char* source = R"glsl(
+        #version 150
+
+        in vec2 Position;
+
+        uniform mat4 Model;
+
+        void main() {
+            gl_Position = Model * vec4(Position, 0.0, 1.0);
+        }
+    )glsl";
+
+    return (GLchar*)source;
+}
+
+static GLchar* MapFragShaderSource() 
+{
+    const char* source = R"glsl(
+        #version 150
+
+        out vec4 outColor;
+
+        uniform vec4 Color;
+
+        void main() {
+            outColor = Color;
+        }
+    )glsl";
+
+    return (GLchar*)source;
+}
+
+static GLchar* RadarVertShaderSource() 
+{
+    const char* source = R"glsl(
+        #version 150
+
+        in vec2 Position;
+        in vec4 Color;
+
+        uniform mat4 Model;
+
+        out vec4 FragColor;
+
+        void main() {
+            FragColor = Color;
+            gl_Position = Model * vec4(Position, 0.0, 1.0);
+        }
+    )glsl";
+
+    return (GLchar*)source;
+}
+
+static GLchar* RadarFragShaderSource() 
+{
+    const char* source = R"glsl(
+        #version 150
+
+        in vec4 FragColor;
+        out vec4 outColor;
+
+        void main() {
+            outColor = FragColor;
+        }
+    )glsl";
+
+    return (GLchar*)source;
+}
+
