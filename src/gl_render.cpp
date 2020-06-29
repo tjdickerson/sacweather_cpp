@@ -85,7 +85,8 @@ static GLfloat IdentityMatrix[] =
 static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
 
 
-static RenderVertData MapVertData;
+static RenderVertData StateVertData;
+static RenderVertData CountyVertData;
 static RenderVertData RadarVertData;
 
 
@@ -94,15 +95,14 @@ bool RenderInit()
     printf("Render init...\n");
     InitGLExtensions();
   
-
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);    
 
-    // init map
+    // init map    
     RenderBufferData mapBufferData = {};    
-    MapVertData = {};
-    sacw_GetMapRenderData(&mapBufferData, &MapVertData);
+    StateVertData = {};
+    CountyVertData = {};
+    sacw_GetMapRenderData(&mapBufferData, &StateVertData, &CountyVertData);
 
     MapShader = GLCreateShaderProgram(MapVertShaderSource(), MapFragShaderSource());
 
@@ -173,11 +173,8 @@ bool RenderInit()
 
 
     // cleanup
-    if(mapBufferData.vertices) free(mapBufferData.vertices);
-    
-    // Don't Free
-    // The memory allocated for the vertices is reused.
-    //if(radarBufferData.vertices) free(radarBufferData.vertices);
+    if(mapBufferData.vertices) free(mapBufferData.vertices);   
+    if(radarBufferData.vertices) free(radarBufferData.vertices);
 
     return true;
 }
@@ -203,13 +200,14 @@ void Render()
 
 
         // counties
-        //glUniform4f(MapShaderColorAttribute, 0.5f, 0.5f, 0.5f, 0.5f);
-        //glMultiDrawArrays(GL_LINE_STRIP, rd.cStarts, rd.cCounts, rd.cNumParts);
+        glUniform4f(MapShaderColorAttribute, 0.5f, 0.5f, 0.5f, 0.5f);
+        glMultiDrawArrays(
+            GL_LINE_STRIP, CountyVertData.starts, CountyVertData.counts, CountyVertData.numParts);
 
         // states  #6c6c58
         glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
         glMultiDrawArrays(
-            GL_LINE_STRIP, MapVertData.starts, MapVertData.counts, MapVertData.numParts);
+            GL_LINE_STRIP, StateVertData.starts, StateVertData.counts, StateVertData.numParts);
 
     }
 
@@ -231,8 +229,8 @@ void Render()
 
 bool RenderCleanup()
 {
-    if (MapVertData.starts) free(MapVertData.starts);
-    if (MapVertData.counts) free(MapVertData.counts);
+    if (StateVertData.starts) free(StateVertData.starts);
+    if (StateVertData.counts) free(StateVertData.counts);
 
     return true;
 }

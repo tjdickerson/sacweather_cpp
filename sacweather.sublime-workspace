@@ -236,20 +236,33 @@
 	},
 	"file_history":
 	[
+		"/C/Users/tjdic/Downloads/bzip2-windows-1.0.8.0/Build-Bzip2.ps1",
+		"/C/Users/tjdic/cpplibs/source/bzip2-1.0.8/win-build.bat",
+		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.shp.xml",
+		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.prj",
+		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.cpg",
+		"/C/code/sacweather/src/tjd_conversions.cpp",
+		"/C/code/sacweather/src/tjd_conversions.h",
+		"/C/code/sacweather/src/tjd_radar.h",
+		"/C/code/sacweather/src/gl.h",
 		"/C/code/sacweather/src/sacw_main.cpp",
+		"/C/code/sacweather/src/sacw_api.h",
+		"/C/code/sacweather/src/tjd_radar.cpp",
 		"/C/code/sacweather/src/gl_render.cpp",
+		"/C/code/sacweather/build.bat",
+		"/C/code/sacweather/src/render_extern.h",
+		"/C/code/sacweather/src/win32_main.cpp",
+		"/C/code/sacweather/src/nws_info.cpp",
+		"/C/code/sacweather/src/tjd_shapefile.cpp",
+		"/C/code/sacweather/src/tjd_share.h",
+		"/C/code/sacweather/src/nws_info.h",
 		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/Users/tjdic/Desktop/todo.md",
-		"/C/code/sacweather/src/win32_main.cpp",
-		"/C/code/sacweather/src/tjd_shapefile.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.h",
-		"/C/code/sacweather/src/tjd_share.h",
 		"/C/code/sacweather/src/main.cpp",
 		"/C/code/sacweather/src/tjd_ftp.cpp",
 		"/C/code/sacweather/src/tjd_ftp.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
-		"/C/code/sacweather/build.bat",
-		"/C/code/sacweather/src/sacw_api.h",
 		"/C/code/sacweather/src/sacw_extern.h",
 		"/C/code/sacweather/src/tjd_image.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/C++11.sublime-settings",
@@ -350,24 +363,11 @@
 		"/C/Users/tjdic/work/repos/mict/MICTAppBB/Utils/SecurityModules/Cryptography.vb",
 		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/bot/mainbot.py",
 		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/gwskillicon/gwskill.py",
-		"/C/Users/tjdic/OneDrive/work/teams.md",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/cete.dynamicPDF.md",
-		"/C/Users/tjdic/Downloads/17 IS Vertical Inspection Report (August 2019)_Final.pdf",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/bes58_bcr154249_notes.md",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/orphan_fams.sql",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/deprovision_email.md",
-		"/C/Users/tjdic/Downloads/Telegram Desktop/AL/Tigerroads2015.sty",
-		"/C/Users/tjdic/Downloads/Telegram Desktop/AL/AL.prj",
-		"/C/Users/tjdic/CLionProjects/WeatherTestBed/cmake-build-debug/Makefile",
-		"/C/Users/tjdic/UnityProjects/troids/README.md",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/BCR/bcr151852_notes.md",
-		"/C/Users/tjdic/CLionProjects/rust_test/src/image_draw.rs",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/igems-web/pom.xml",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/local_dev_config/codebase_changes/authentication/pom.xml"
+		"/C/Users/tjdic/OneDrive/work/teams.md"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 44.0
 	},
 	"find_in_files":
 	{
@@ -382,6 +382,30 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"loUncompProdSize",
+			"StateVertData",
+			"MapVertData",
+			"states",
+			"stateData",
+			"countyData",
+			"rvd",
+			"mapData",
+			"Failed to open radar file",
+			"filename",
+			"remoteFile",
+			"DownloadFile",
+			"nexradProduct",
+			"colorIndex",
+			"binIndex",
+			"radialIndex",
+			"tjd_conversions",
+			"bin.p",
+			"ParseNexradRadarFil",
+			"bufferPointer",
+			"sacw_GetMapRenderData",
+			"bufferPointer",
+			"h8tof",
+			"ClickStart",
 			"clearColor",
 			"MapModelLocation",
 			"Model",
@@ -425,6 +449,9 @@
 		"regex": true,
 		"replace_history":
 		[
+			"bin->p",
+			"bp",
+			"ColorHexToFloat",
 			"//extern",
 			"LogMessage"
 		],
@@ -486,20 +513,140 @@
 		"selected_items":
 		[
 			[
-				"rend",
-				"src\\render_extern.h"
+				"sacw_m",
+				"src\\sacw_main.cpp"
 			],
 			[
-				"sacw_e",
-				"src\\sacw_extern.h"
+				"radar",
+				"src\\tjd_radar.h"
+			],
+			[
+				"rada",
+				"src\\tjd_radar.cpp"
+			],
+			[
+				"build",
+				"build.bat"
+			],
+			[
+				"nws",
+				"src\\nws_info.cpp"
+			],
+			[
+				"sacw_api",
+				"src\\sacw_api.h"
+			],
+			[
+				"gl_ren",
+				"src\\gl_render.cpp"
+			],
+			[
+				"saw_main",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"ftp",
+				"src\\tjd_ftp.cpp"
+			],
+			[
+				"tjd_ftp",
+				"src\\tjd_ftp.h"
 			],
 			[
 				"win",
 				"src\\win32_main.cpp"
 			],
 			[
-				"sacw_api",
+				"nwsInfo",
+				"src\\nws_info.h"
+			],
+			[
+				"conv",
+				"src\\tjd_conversions.cpp"
+			],
+			[
+				"tjd",
+				"src\\tjd_radar.cpp"
+			],
+			[
+				"tjd_rada",
+				"src\\tjd_radar.h"
+			],
+			[
+				"tjd_share",
+				"src\\tjd_share.h"
+			],
+			[
+				"sacw_",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"tjd_radar",
+				"src\\tjd_radar.h"
+			],
+			[
+				"gl_render",
+				"src\\gl_render.cpp"
+			],
+			[
+				"conver",
+				"src\\tjd_conversions.h"
+			],
+			[
+				"sacw_ma",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"tjd_",
+				"src\\tjd_radar.h"
+			],
+			[
+				"gl.",
+				"src\\gl.h"
+			],
+			[
+				"sa",
 				"src\\sacw_api.h"
+			],
+			[
+				"render",
+				"src\\render_extern.h"
+			],
+			[
+				"gl_re",
+				"src\\gl_render.cpp"
+			],
+			[
+				"tjd_ra",
+				"src\\tjd_radar.cpp"
+			],
+			[
+				"tjd_con",
+				"src\\tjd_conversions.h"
+			],
+			[
+				"shapefile",
+				"src\\tjd_shapefile.cpp"
+			],
+			[
+				"nw",
+				"src\\nws_info.cpp"
+			],
+			[
+				"sacw_ap",
+				"src\\sacw_api.h"
+			],
+			[
+				"win32",
+				"src\\win32_main.cpp"
+			],
+			[
+				"rend",
+				"src\\render_extern.h"
+			],
+			[
+				"sacw_e",
+				"src\\sacw_extern.h"
 			],
 			[
 				"gl",
@@ -522,10 +669,6 @@
 				"src\\tjd_shapefile.cpp"
 			],
 			[
-				"shapefile",
-				"src\\tjd_shapefile.cpp"
-			],
-			[
 				"sacw",
 				"src\\sacw_main.cpp"
 			],
@@ -538,68 +681,24 @@
 				"src\\tjd_conversions.h"
 			],
 			[
-				"conv",
-				"src\\tjd_conversions.h"
-			],
-			[
-				"sacw_ma",
-				"src\\sacw_main.cpp"
-			],
-			[
 				"tjd_sha",
 				"src\\tjd_share.h"
-			],
-			[
-				"gl_ren",
-				"src\\gl_render.cpp"
 			],
 			[
 				"gl.h",
 				"src\\gl.h"
 			],
 			[
-				"gl_render",
-				"src\\gl_render.cpp"
-			],
-			[
-				"gl_re",
-				"src\\gl_render.cpp"
-			],
-			[
 				"redner.",
 				"src\\render_extern.h"
-			],
-			[
-				"render",
-				"src\\gl_render.cpp"
-			],
-			[
-				"build",
-				"build.bat"
 			],
 			[
 				"sacw_a",
 				"src\\sacw_api.h"
 			],
 			[
-				"tjd_share",
-				"src\\tjd_share.h"
-			],
-			[
 				"shapefil",
 				"src\\tjd_shapefile.h"
-			],
-			[
-				"ftp",
-				"src\\tjd_ftp.cpp"
-			],
-			[
-				"win32",
-				"src\\win32_main.cpp"
-			],
-			[
-				"tjd_ftp",
-				"src\\tjd_ftp.cpp"
 			],
 			[
 				"share",
@@ -610,20 +709,8 @@
 				"src\\sacw_extern.h"
 			],
 			[
-				"nw",
-				"src\\nws_info.cpp"
-			],
-			[
-				"nws",
-				"src\\nws_info.cpp"
-			],
-			[
 				"main.cpp",
 				"src\\main.cpp"
-			],
-			[
-				"tjd",
-				"src\\tjd_share.h"
 			],
 			[
 				"nws_inf",
@@ -648,10 +735,6 @@
 			[
 				"buil",
 				"build.bat"
-			],
-			[
-				"sa",
-				"sacwdev.bat"
 			],
 			[
 				"tjdw",

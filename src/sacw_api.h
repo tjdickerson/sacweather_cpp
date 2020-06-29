@@ -47,7 +47,7 @@ void sacw_ZoomMap(f32 zoom);
 
 void sacw_PanMap(f32 x, f32 y);
 
-void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* rvd);
+void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties);
 
 void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
 

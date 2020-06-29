@@ -15,7 +15,7 @@ MapViewState MapViewInfo;
 static NexradProduct* CurrentProduct;
 
 // temp?
-constexpr int DefaultProduct = 19;
+constexpr int DefaultProduct = 94;
 constexpr char* DefaultWSR = "kmxx";
 
 
@@ -31,7 +31,6 @@ void sacw_Init(char* args)
     CurrentProduct = GetProductInfo(DefaultProduct);
     WSR88DInfo wsrInfo = {};  
 
-
     // download file
     char remoteFile[512];
     strcat(remoteFile, NWS_NOAA_RADAR_DIR);
@@ -46,8 +45,6 @@ void sacw_Init(char* args)
     printf("Download file: %s\n", remoteFile);
 
     DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
-
-
 
     tjd_RadarInit();
 
@@ -101,32 +98,60 @@ void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
 }
 
 
-void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* rvd)
+void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties)
 {
-    ShapeData mapData = {};
-    ReadShapeFile(&mapData, "st_us");
+    ShapeData stateData = {};
+    ReadShapeFile(&stateData, "st_us");
 
-    rbd->vertexCount = mapData.numPoints;
+    ShapeData countyData = {};
+    ReadShapeFile(&countyData, "cnt_us");
+
+    rbd->vertexCount = stateData.numPoints + countyData.numPoints;
     s32 arraySize = rbd->vertexCount * 2 * sizeof(f32);
     rbd->vertices = (f32*)malloc(arraySize);
 
+    int countiesOffset = stateData.numPoints;
     int idx = 0;
-    for(int i = 0; i < mapData.numPoints; i++)
-    {
-        v2f64 point = mapData.points.at(i);
-        rbd->vertices[idx] = ConvertLonToScreen(point.x);
-        rbd->vertices[idx + 1] = ConvertLatToScreen(point.y);
-        idx += 2;
-    }    
 
-    rvd->numParts = mapData.numParts;
-    rvd->starts = (s32*)malloc(rvd->numParts * sizeof(s32));
-    rvd->counts = (s32*)malloc(rvd->numParts * sizeof(s32));
-
-    for(int i = 0; i < rvd->numParts; i++)
     {
-        rvd->starts[i] = mapData.parts.at(i);
-        rvd->counts[i] = mapData.counts.at(i);
+        
+        for(int i = 0; i < stateData.numPoints; i++)
+        {
+            v2f64 point = stateData.points.at(i);
+            rbd->vertices[idx] = ConvertLonToScreen(point.x);
+            rbd->vertices[idx + 1] = ConvertLatToScreen(point.y);
+            idx += 2;
+        }    
+
+        states->numParts = stateData.numParts;
+        states->starts = (s32*)malloc(states->numParts * sizeof(s32));
+        states->counts = (s32*)malloc(states->numParts * sizeof(s32));
+
+        for(int i = 0; i < states->numParts; i++)
+        {
+            states->starts[i] = stateData.parts.at(i);
+            states->counts[i] = stateData.counts.at(i);
+        }
     }
+
+    {
+        for(int i = 0; i < countyData.numPoints; i++)
+        {
+            v2f64 point = countyData.points.at(i);
+            rbd->vertices[idx] = ConvertLonToScreen(point.x);
+            rbd->vertices[idx + 1] = ConvertLatToScreen(point.y);
+            idx += 2;
+        }    
+
+        counties->numParts = countyData.numParts;
+        counties->starts = (s32*)malloc(counties->numParts * sizeof(s32));
+        counties->counts = (s32*)malloc(counties->numParts * sizeof(s32));
+
+        for(int i = 0; i < counties->numParts; i++)
+        {
+            counties->starts[i] = countiesOffset + countyData.parts.at(i);
+            counties->counts[i] = countyData.counts.at(i);
+        }
+    }    
 
 }

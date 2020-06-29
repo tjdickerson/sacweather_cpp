@@ -5,6 +5,8 @@
 #include <cmath>
 #include <cassert>
 
+#include "bzlib.h"
+
 #include "tjd_conversions.h"
 #include "tjd_radar.h"
 
@@ -221,6 +223,14 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     memcpy(messageHeaderBuffer, &buffer[bp], 18);
     bp += 18;
 
+    int messageHeaderLength = 18;    
+    int productLength = 0;
+
+    {
+        int p = 2;
+        memcpy(&productLength, &messageHeaderBuffer[p], 2);
+    }
+
 
     // The product description block is 102 bytes long. Unfortunately because of my current
     // uncertainty with the struct padding, I'm going to pluck these out one at a time. The way
@@ -240,6 +250,12 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     memcpy(&pd.lon, &buffer[bp], 4);
     bp += 4;
     pd.lon = swapBytes(pd.lon);
+
+    f32 siteLat = pd.lat * 0.001f;
+    f32 siteLon = pd.lon * 0.001f;
+
+    wsrInfo->lat = siteLat;
+    wsrInfo->lon = siteLon;
 
 
     // Height of the radar site in feet above sea level.
@@ -320,7 +336,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 
 
     // Halfword 30 changes based on product, see TABLE V for parameter 3
-    if (pd.productCode == 19) 
+    if (pd.productCode == 19 || pd.productCode == 94) 
     {
         memcpy(&pd.elevationAngle, &buffer[bp], 2);
         bp += 2;
@@ -341,6 +357,12 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     // TABLE V parameters 4 - 10 @todo
     memcpy(&pd.h47_53, &buffer[bp], 14);
     bp += 14;
+
+    bool compressed = false;
+    if (pd.productCode == 94)
+    {
+        compressed = !(pd.br.compressionMethod[0] == 0 && pd.br.compressionMethod[1] == 0);
+    }
 
 
     // Product version number, might be interesting to show on screen.
@@ -365,6 +387,41 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     memcpy(&pd.tabularOffset, &buffer[bp], 4);
     bp += 4;
 
+
+    if (compressed)
+    {
+        printf("Do shit here\n");
+
+        int srcLen = productLength - (messageHeaderLength + sizeof(pd));
+        s16 hi = swapBytes((s16)pd.br.hiUncompProdSize);
+        s16 lo = swapBytes((s16)pd.br.loUncompProdSize);
+        u32 len = ((hi << 16) & 0xFF00) | (lo & 0xFF);
+        
+        printf("Length: %d\n", len);
+
+        char* compBuffer = (char*)malloc(len * sizeof(char));
+        BZ2_bzBuffToBuffDecompress(compBuffer, &len, (char*)&buffer[bp], srcLen, 0, 0);
+
+        bp = 0;
+        free(buffer);
+        buffer = NULL;
+
+        unsigned char* tempBuffer = NULL;
+        tempBuffer = (unsigned char*)realloc(buffer, len * sizeof(char));    
+        if (tempBuffer != NULL)
+        {
+            buffer = tempBuffer;
+        }
+        else
+        {
+            printf("Failed to reallocate buffer.\n");
+            return false;
+        }
+
+        memcpy(buffer, compBuffer, len); 
+
+        if (compBuffer) free(compBuffer);
+    }
 
     SymbologyHeader sh = {};
     memcpy(&sh, &buffer[bp], sizeof(sh));
@@ -391,7 +448,6 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         printf("Unsupported packet type: %d\n", packetCode);
         return false;
     }    
-
 
     s16 firstBin;
     s16 iCenterSweep;
@@ -433,12 +489,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     s16 i_angleStart, i_angleDelta;
     f32 f_angleStart, f_angleDelta;
     f32 f_elevationAngle = pd.elevationAngle * 0.1f;
-
-    f32 siteLat = pd.lat * 0.001f;
-    f32 siteLon = pd.lon * 0.001f;
-
-    wsrInfo->lat = siteLat;
-    wsrInfo->lon = siteLon;
+    
     
     int binIndex;
     for (int i = 0; i < radialCount; i++)

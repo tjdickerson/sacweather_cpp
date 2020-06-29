@@ -14,13 +14,13 @@ echo Building for %BUILD_TYPE%
 
 
 @rem VisualStudio compiler flags
-set compFlags= /Zi /EHsc /FeSACWeather 
-set linkFlags= /link /subsystem:console 
+set compFlags= /Zi /EHsc /FeSACWeather /MD
+set linkFlags= /link /subsystem:console
 
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib urlmon.lib ws2_32.lib opengl32.lib
+	set libs= user32.lib gdi32.lib urlmon.lib ws2_32.lib opengl32.lib ..\lib\libbz2.lib
 )
 
 @rem Set the entry point based on target.

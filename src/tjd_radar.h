@@ -89,6 +89,14 @@ static f32 VelocityMap[] =
 //  Unsure about everything below this line
 // -------------------------------------------------------------
 
+typedef struct brda_t
+{
+    unsigned char maxReflectivity[8];
+    unsigned char compressionMethod [2];
+    unsigned char hiUncompProdSize[2];
+    unsigned char loUncompProdSize[2];                
+} brda;
+
 // Product Codes (Table III) 2620001X.pdf
 // code 19: NTR 1, Name Base Reflectivity, Res .54 x 1, Range 124, Data Level 16, Radial Image
 // Data Structure Figure 3-6 sheet 2,6, 7
@@ -116,7 +124,13 @@ typedef struct ProductDescription_t {
     };
 
     unsigned char thresholdData[32];
-    unsigned char h47_53[14];
+
+    union 
+    {
+        unsigned char h47_53[14];
+        brda br;
+    };
+
     unsigned char version;
     unsigned char spotBlank;
     s32 symbologyOffset;
