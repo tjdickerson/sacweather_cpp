@@ -160,9 +160,10 @@ int SizeCommand(SOCKET socket, const char* filename)
 }
 
 bool RetrieveFile(SOCKET controlSock,
-                  SOCKET dataSock, 
+                  SOCKET dataSock,                   
                   const char* remoteFilename, 
-                  const char* localFilename)
+                  const char* localFilename,
+                  unsigned int fileSize)
 {
     char* fmt = "RETR %s\r\n\0";
     char cmd[1024];
@@ -191,7 +192,7 @@ bool RetrieveFile(SOCKET controlSock,
         bytesRead = recv(dataSock, buffer, MAX_RECV_SIZE, 0);
         fwrite(buffer, sizeof(unsigned char), bytesRead, fp);
 
-        if (bytesRead < MAX_RECV_SIZE) break;
+        if (bytesRead < MAX_RECV_SIZE && bytesRead >= fileSize) break;
     }
 
     if (fp) fclose(fp);
@@ -314,7 +315,7 @@ int DownloadFile(const char* hostname, const char* remoteFilepath)
 
     printf("Connected data socket! Grats.\n");
 
-    RetrieveFile(sock, dataSock, remoteFilepath, "C:\\tmp\\testing_radar.nx3");        
+    RetrieveFile(sock, dataSock, remoteFilepath, "C:\\tmp\\testing_radar.nx3", size);        
 
     QuitCommand(sock);
 

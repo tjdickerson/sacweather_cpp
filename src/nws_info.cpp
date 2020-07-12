@@ -40,7 +40,53 @@ void InitNexradProducts()
 
         AddProduct(NexradInfo, br);
     }
+
+    // Base Radial Velocity - 162 nmi Range
+    {
+        const char* name = "Base Radial Velocity - 248 nmi Range\0";
+        const char* dir  = "DS.p99v0";
+
+        NexradProduct br = {};
+        br.productCode = 99;      
+        br.range = 162.0f;
+
+        strncpy(br.name, name, strlen(name));
+        strncpy(br.dir, dir, strlen(dir));
+
+        AddProduct(NexradInfo, br);
+    }    
+
+    // Composite Reflectivity - 124
+    {
+        const char* name = "Composite Reflectivity - 124 nmi Range\0";
+        const char* dir  = "DS.p37cr";
+
+        NexradProduct br = {};
+        br.productCode = 37;      
+        br.range = 124.0f;
+        br.resolution = 0.54f;
+
+        strncpy(br.name, name, strlen(name));
+        strncpy(br.dir, dir, strlen(dir));
+
+        AddProduct(NexradInfo, br);
+    }
     
+    // Composite Reflectivity - 248
+    {
+        const char* name = "Composite Reflectivity - 248 nmi Range\0";
+        const char* dir  = "DS.p38cr";
+
+        NexradProduct br = {};
+        br.productCode = 38;      
+        br.range = 248.0f;
+        br.resolution = 2.2f;
+
+        strncpy(br.name, name, strlen(name));
+        strncpy(br.dir, dir, strlen(dir));
+
+        AddProduct(NexradInfo, br);
+    }
 }
 
 

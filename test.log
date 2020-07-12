@@ -1,0 +1,53 @@
+Window created.
+Site name: kmxx
+Download file: /SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last
+Connecting to: 
+Connected!
+Sending: 
+USER anonymous
+PASS tjdickerson@gmail.com
+Response: 
+220-******************************************************************
+220-                 **WARNING**WARNING**WARNING**
+220-This is a United States (Agency) computer system, which may be accessed
+220-and used only for official Government business by authorized personnel.
+220-Unauthorized access or use of this computer system may subject violators
+220-to criminal, civil, and/or administrative action.
+220-All information on this computer system may be intercepted, recorded,
+220-read, copied, and disclosed by and to authorized personnel for official
+220-purposes, including criminal investigations. Access or use of this
+220-computer system by any person whether authorized or unauthorized,
+220-constitutes consent to these terms.
+220-                **WARNING**WARNING**WARNING**
+220-******************************************************************
+220-
+220 
+331 Please specify the password.
+230 Login successful.
+
+Size of /SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last is 22758 bytes.
+Response: 
+227 Entering Passive Mode (140,172,138,79,47,192).
+
+140,172,138,79,47,192
+IP:   140.172.138.79
+Port: 12224
+Connecting data sock to: 140.172.138.79:12224
+Connected data socket! Grats.
+Response for RETR: 150 Opening BINARY mode data connection for /SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last (22758 bytes).
+226 Transfer complete.
+
+Downloading...Response: 
+221 Goodbye.
+
+Do shit here
+Length: 167790
+Unsupported packet type: 16
+Render init...
+Shapefile Done.
+Shapefile Done.
+1 shader compiled.
+2 shader compiled.
+4 shader compiled.
+5 shader compiled.
+Key code: 1

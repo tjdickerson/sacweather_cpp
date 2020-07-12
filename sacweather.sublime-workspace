@@ -236,27 +236,27 @@
 	},
 	"file_history":
 	[
+		"/C/Users/tjdic/Desktop/weatherdata.md",
+		"/C/code/sacweather/src/sacw_main.cpp",
+		"/C/code/sacweather/src/tjd_share.h",
+		"/C/code/sacweather/src/tjd_radar.h",
+		"/C/code/sacweather/src/tjd_radar.cpp",
+		"/C/code/sacweather/src/tjd_conversions.cpp",
+		"/C/code/sacweather/src/nws_info.cpp",
 		"/C/Users/tjdic/Downloads/bzip2-windows-1.0.8.0/Build-Bzip2.ps1",
 		"/C/Users/tjdic/cpplibs/source/bzip2-1.0.8/win-build.bat",
 		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.shp.xml",
 		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.prj",
 		"/C/Users/tjdic/Downloads/tl_2016_us_primaryroads/tl_2016_us_primaryroads.cpg",
-		"/C/code/sacweather/src/tjd_conversions.cpp",
 		"/C/code/sacweather/src/tjd_conversions.h",
-		"/C/code/sacweather/src/tjd_radar.h",
 		"/C/code/sacweather/src/gl.h",
-		"/C/code/sacweather/src/sacw_main.cpp",
 		"/C/code/sacweather/src/sacw_api.h",
-		"/C/code/sacweather/src/tjd_radar.cpp",
 		"/C/code/sacweather/src/gl_render.cpp",
 		"/C/code/sacweather/build.bat",
 		"/C/code/sacweather/src/render_extern.h",
 		"/C/code/sacweather/src/win32_main.cpp",
-		"/C/code/sacweather/src/nws_info.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.cpp",
-		"/C/code/sacweather/src/tjd_share.h",
 		"/C/code/sacweather/src/nws_info.h",
-		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/code/sacweather/src/tjd_shapefile.h",
 		"/C/code/sacweather/src/main.cpp",
@@ -382,6 +382,15 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"BinCount",
+			";\n",
+			"binCount",
+			"totalBinCount",
+			"pd",
+			"Composite",
+			"run_color",
+			"BIN_COUNT",
+			"compresse",
 			"loUncompProdSize",
 			"StateVertData",
 			"MapVertData",
@@ -513,12 +522,40 @@
 		"selected_items":
 		[
 			[
-				"sacw_m",
+				"sacw_ma",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"nws_inf",
+				"src\\nws_info.h"
+			],
+			[
+				"nws",
+				"src\\nws_info.cpp"
+			],
+			[
+				"conve",
+				"src\\tjd_conversions.cpp"
+			],
+			[
+				"tjd_rada",
+				"src\\tjd_radar.cpp"
+			],
+			[
+				"nw",
+				"src\\nws_info.cpp"
+			],
+			[
+				"sacw",
 				"src\\sacw_main.cpp"
 			],
 			[
 				"radar",
 				"src\\tjd_radar.h"
+			],
+			[
+				"sacw_m",
+				"src\\sacw_main.cpp"
 			],
 			[
 				"rada",
@@ -527,10 +564,6 @@
 			[
 				"build",
 				"build.bat"
-			],
-			[
-				"nws",
-				"src\\nws_info.cpp"
 			],
 			[
 				"sacw_api",
@@ -569,10 +602,6 @@
 				"src\\tjd_radar.cpp"
 			],
 			[
-				"tjd_rada",
-				"src\\tjd_radar.h"
-			],
-			[
 				"tjd_share",
 				"src\\tjd_share.h"
 			],
@@ -591,10 +620,6 @@
 			[
 				"conver",
 				"src\\tjd_conversions.h"
-			],
-			[
-				"sacw_ma",
-				"src\\sacw_main.cpp"
 			],
 			[
 				"tjd_",
@@ -627,10 +652,6 @@
 			[
 				"shapefile",
 				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"nw",
-				"src\\nws_info.cpp"
 			],
 			[
 				"sacw_ap",
@@ -667,10 +688,6 @@
 			[
 				"shapefile.cp",
 				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"sacw",
-				"src\\sacw_main.cpp"
 			],
 			[
 				"build.bat",
@@ -711,10 +728,6 @@
 			[
 				"main.cpp",
 				"src\\main.cpp"
-			],
-			[
-				"nws_inf",
-				"src\\nws_info.h"
 			],
 			[
 				"exter",

@@ -15,8 +15,8 @@ MapViewState MapViewInfo;
 static NexradProduct* CurrentProduct;
 
 // temp?
-constexpr int DefaultProduct = 94;
-constexpr char* DefaultWSR = "kmxx";
+constexpr int DefaultProduct = 99;
+constexpr char* DefaultWSR = "klot";
 
 
 void sacw_Init(char* args)
@@ -46,11 +46,9 @@ void sacw_Init(char* args)
 
     DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
 
-    tjd_RadarInit();
-
     //const char* filename = "C:\\tmp\\nor.last";
+    //const char* filename = "C:\\tmp\\test_vel.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";
-    //const char* filename = "C:\\tmp\\testing_radar1.nx3";
     ParseNexradRadarFile(filename, &wsrInfo, CurrentProduct);
 
     MapViewInfo.scaleFactor = 45.0f;

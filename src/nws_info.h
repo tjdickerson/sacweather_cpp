@@ -12,6 +12,7 @@ typedef struct NexradProduct_t
 {
     int productCode;
     float range;
+    float resolution;
     char name[128];
     char dir[16];
 } NexradProduct;

@@ -64,8 +64,8 @@ static f32 ReflectivityMap[] =
 static f32 VelocityMap[] = 
 {
     0.20f,  0.20f,  0.20f,  0.20f,   // 0 - black transparent
-    ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.20f,   
-    ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.90f,   
+    ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.99f,   
+    ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.99f,   
     ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f,   
     ColorHexToFloat(0x07), ColorHexToFloat(0xac), ColorHexToFloat(0x04), 0.99f,   
     ColorHexToFloat(0x06), ColorHexToFloat(0x8f), ColorHexToFloat(0x03), 0.99f,   
@@ -97,6 +97,14 @@ typedef struct brda_t
     unsigned char loUncompProdSize[2];                
 } brda;
 
+typedef struct ReflectivityThreshold_t
+{
+    s16 minimumDbz;
+    s16 dbzIncrement;
+    s16 levelCount;
+    unsigned char reserved[26];
+} ReflectivityThreshold;
+
 // Product Codes (Table III) 2620001X.pdf
 // code 19: NTR 1, Name Base Reflectivity, Res .54 x 1, Range 124, Data Level 16, Radial Image
 // Data Structure Figure 3-6 sheet 2,6, 7
@@ -118,12 +126,17 @@ typedef struct ProductDescription_t {
     unsigned char h27_28[4];
     s16 elevationNum;
 
-    union {
+    union 
+    {
         s16 elevationAngle;
         unsigned char h30[2];
     };
 
-    unsigned char thresholdData[32];
+    union 
+    {
+        unsigned char thresholdData[32];
+        ReflectivityThreshold reflectivityThreshold;
+    };
 
     union 
     {

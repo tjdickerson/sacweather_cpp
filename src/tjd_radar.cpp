@@ -10,46 +10,51 @@
 #include "tjd_conversions.h"
 #include "tjd_radar.h"
 
-#define RADIAL_COUNT    360
-#define BIN_COUNT       230
+s16 RadialCount = 1;
+s16 BinCount = 1;
+
 
 static NexradProduct* CurrentProduct;
-RangeBin* RangeBins;
 
 s32* StartsArray;
 s32* CountsArray;
 
-bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo);
+RangeBin* RangeBins;
 void CalcRangeBinLocations(f32 cx, f32 cy, f32 range);
-RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex);
+RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 
 
-void tjd_RadarInit()
-{    
-    int binCount = BIN_COUNT * RADIAL_COUNT;
-    RangeBins = (RangeBin*)malloc(binCount * sizeof(RangeBin));
+bool RadialImagePacket(
+    unsigned char* buffer, 
+    u32 bp, 
+    NexradProduct* nexradProduct, 
+    WSR88DInfo* wsrInfo,
+    ProductDescription* pd,
+    s16 packetCode);
 
-    StartsArray = (s32*)malloc(binCount * sizeof(*StartsArray));
-    CountsArray = (s32*)malloc(binCount * sizeof(*CountsArray));
 
-    for(int i = 0; i < binCount; i++)
-    {
-        RangeBins[i] = {};
-        StartsArray[i] = i * 4;
-        CountsArray[i] = 4;
-    }     
-    
-}
+bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo);
+
+
+void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 colorIndex);
+
+bool RasterImagePacket(
+    unsigned char* buffer, 
+    u32 bp, 
+    NexradProduct* nexradProduct, 
+    WSR88DInfo* wsrInfo,
+    ProductDescription* pd,
+    s16 packetCode);
 
 
 void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
 {
-    rbd->vertexCount = BIN_COUNT * RADIAL_COUNT * 4;
+    rbd->vertexCount = BinCount * RadialCount * 4;
     rbd->vertices = (f32*)malloc(rbd->vertexCount * 6 * sizeof(f32));
 
     int vi = 0;
-    for(int i = 0; i < BIN_COUNT * RADIAL_COUNT; i++)
+    for(int i = 0; i < BinCount * RadialCount; i++)
     {
         rbd->vertices[vi++] = RangeBins[i].p1.x;
         rbd->vertices[vi++] = RangeBins[i].p1.y;
@@ -80,7 +85,7 @@ void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
         rbd->vertices[vi++] = RangeBins[i].color.a;        
     }
 
-    rvd->numParts = BIN_COUNT * RADIAL_COUNT;
+    rvd->numParts = BinCount * RadialCount;
     rvd->starts = (s32*)malloc(rvd->numParts * sizeof(s32));
     rvd->counts = (s32*)malloc(rvd->numParts * sizeof(s32));
 
@@ -107,11 +112,11 @@ void CalcRangeBinLocation(
     f32 sweepCenterLeft  = angleStart - (angleDelta * 0.5f);
     f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);
 
-    dx1 = (binIndex + 1) * (range / (float)BIN_COUNT) / (cos(cy * PI / 180.0f));
-    dy1 = (binIndex + 1) * (range / (float)BIN_COUNT);
+    dx1 = (binIndex + 1) * (range / (float)BinCount) / (cos(cy * PI / 180.0f));
+    dy1 = (binIndex + 1) * (range / (float)BinCount);
 
-    dx2 = (binIndex + 2) * (range / (float)BIN_COUNT) / (cos(cy * PI / 180.0f));
-    dy2 = (binIndex + 2) * (range / (float)BIN_COUNT);
+    dx2 = (binIndex + 2) * (range / (float)BinCount) / (cos(cy * PI / 180.0f));
+    dy2 = (binIndex + 2) * (range / (float)BinCount);
 
     // "bottom" left
     bin->p1.x = dx1 * sin(DegToRad(sweepCenterLeft));
@@ -161,7 +166,7 @@ void CalcRangeBinLocation(
 
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 {
-    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * 360)]);
+    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);
     return bin;
 }
 
@@ -169,11 +174,81 @@ RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex)
 {
     int ci = (colorIndex * 4);
-    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * 360)]);        
-    bin->color.r = ReflectivityMap[ci];
-    bin->color.g = ReflectivityMap[ci + 1];
-    bin->color.b = ReflectivityMap[ci + 2];
-    bin->color.a = ReflectivityMap[ci + 3];
+    f32* colorMap = VelocityMap;
+    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);        
+    bin->color.r = colorMap[ci];
+    bin->color.g = colorMap[ci + 1];
+    bin->color.b = colorMap[ci + 2];
+    bin->color.a = colorMap[ci + 3];
+}
+
+
+void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 colorIndex)
+{
+    // moveme @todo
+    f32 halfRes = res / 2.0f;
+    f32 x, y;
+
+    RangeBin* cell = &(RangeBins[iy + (ix * rowCount)]);
+
+
+    // bottom left
+    cell->p1.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
+    cell->p1.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);
+
+    // top left
+    cell->p2.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
+    cell->p2.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
+
+    // top right
+    cell->p3.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
+    cell->p3.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
+
+    // bottom right
+    cell->p4.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
+    cell->p4.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);    
+
+
+    // x adsjut
+    cell->p1.x /= (cos(cy * PI / 180.0f));
+    cell->p2.x /= (cos(cy * PI / 180.0f));
+    cell->p3.x /= (cos(cy * PI / 180.0f));
+    cell->p4.x /= (cos(cy * PI / 180.0f));
+
+
+    // convert to lat/lon from nautical miles
+    cell->p1.x = (cx + (cell->p1.x / 60.0f));
+    cell->p1.y = (cy - (cell->p1.y / 60.0f));
+
+    cell->p2.x = (cx + (cell->p2.x / 60.0f));
+    cell->p2.y = (cy - (cell->p2.y / 60.0f));
+
+    cell->p3.x = (cx + (cell->p3.x / 60.0f));
+    cell->p3.y = (cy - (cell->p3.y / 60.0f));
+
+    cell->p4.x = (cx + (cell->p4.x / 60.0f));
+    cell->p4.y = (cy - (cell->p4.y / 60.0f));
+
+
+    // convert to screen coords
+    cell->p1.x = ConvertLonToScreen(cell->p1.x);
+    cell->p1.y = ConvertLatToScreen(cell->p1.y);
+
+    cell->p2.x = ConvertLonToScreen(cell->p2.x);
+    cell->p2.y = ConvertLatToScreen(cell->p2.y);
+
+    cell->p3.x = ConvertLonToScreen(cell->p3.x);
+    cell->p3.y = ConvertLatToScreen(cell->p3.y);
+
+    cell->p4.x = ConvertLonToScreen(cell->p4.x);
+    cell->p4.y = ConvertLatToScreen(cell->p4.y);
+
+    int ci = (colorIndex * 4);
+    cell->color.r = ReflectivityMap[ci];
+    cell->color.g = ReflectivityMap[ci + 1];
+    cell->color.b = ReflectivityMap[ci + 2];
+    cell->color.a = ReflectivityMap[ci + 3];
+
 }
 
 
@@ -224,11 +299,12 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     bp += 18;
 
     int messageHeaderLength = 18;    
-    int productLength = 0;
+    u32 productLength = 0;
 
     {
-        int p = 2;
-        memcpy(&productLength, &messageHeaderBuffer[p], 2);
+        int p = 8;
+        memcpy(&productLength, &messageHeaderBuffer[p], 4);
+        productLength = swapBytes(productLength);
     }
 
 
@@ -359,7 +435,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     bp += 14;
 
     bool compressed = false;
-    if (pd.productCode == 94)
+    if (pd.productCode == 94 || pd.productCode == 99)
     {
         compressed = !(pd.br.compressionMethod[0] == 0 && pd.br.compressionMethod[1] == 0);
     }
@@ -379,12 +455,15 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 
 
     memcpy(&pd.symbologyOffset, &buffer[bp], 4);
+    pd.symbologyOffset = swapBytes(pd.symbologyOffset);
     bp += 4;
 
     memcpy(&pd.graphicOffset, &buffer[bp], 4);
+    pd.graphicOffset = swapBytes(pd.graphicOffset);
     bp += 4;
 
     memcpy(&pd.tabularOffset, &buffer[bp], 4);
+    pd.tabularOffset = swapBytes(pd.tabularOffset);
     bp += 4;
 
 
@@ -392,15 +471,35 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     {
         printf("Do shit here\n");
 
-        int srcLen = productLength - (messageHeaderLength + sizeof(pd));
-        s16 hi = swapBytes((s16)pd.br.hiUncompProdSize);
-        s16 lo = swapBytes((s16)pd.br.loUncompProdSize);
-        u32 len = ((hi << 16) & 0xFF00) | (lo & 0xFF);
-        
-        printf("Length: %d\n", len);
+        // @todo .... why no work
+        //unsigned int srcLen = productLength - (messageHeaderLength + sizeof(pd));
+        unsigned int srcLen = fileLength - bp;
 
-        char* compBuffer = (char*)malloc(len * sizeof(char));
-        BZ2_bzBuffToBuffDecompress(compBuffer, &len, (char*)&buffer[bp], srcLen, 0, 0);
+        /*u16 hi = 0;
+        u16 lo = 0;
+        memcpy(&hi, &pd.br.hiUncompProdSize[0], 2);
+        memcpy(&lo, &pd.br.loUncompProdSize[0], 2);
+
+        hi = swapBytes(hi);
+        lo = swapBytes(lo);       
+
+        u32 len = (hi << 16) | lo;*/
+
+        u32 temp = 0;
+        memcpy(&temp, &pd.br.hiUncompProdSize[0], 4);
+        u32 len = swapBytes(temp);
+
+        char* compBuffer = (char*)malloc(len * sizeof(char));    
+        unsigned int* plen = &len;
+        int ret = BZ2_bzBuffToBuffDecompress(&compBuffer[0], plen, (char*)&buffer[bp], srcLen, 0, 4);
+
+        if (ret != BZ_OK)
+        {
+            printf("Something went wrong trying to decompress the file: %d\n", ret);
+            // @todo
+            // potential big boi leak here if application doesn't exit...
+            return false;
+        }
 
         bp = 0;
         free(buffer);
@@ -439,7 +538,17 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     packetCode = swapBytes(packetCode);
     bp += 2;
 
-    if ((packetCode & 0xffff) != 0xaf1f) 
+    bool result = false;
+    if ((packetCode & 0xffff) == 0xaf1f ||
+        (packetCode & 0xffff) == 16)
+    {
+        result = RadialImagePacket(buffer, bp, nexradProduct, wsrInfo, &pd, packetCode);
+    }    
+    else if ((packetCode & 0xffff) == 0xba07) 
+    {
+        result = RasterImagePacket(buffer, bp, nexradProduct, wsrInfo, &pd, packetCode);
+    }
+    else
     {
         // @todo
         // log error of unsupported data packet and exit @todo
@@ -447,8 +556,81 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         // @todo
         printf("Unsupported packet type: %d\n", packetCode);
         return false;
-    }    
+    }
 
+    return result;
+}
+
+
+s8 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
+{
+    f32 dbz = minDbz + (level * incDbz);
+    s8 color = 0;
+    if (dbz < 5) color = 0;
+    else if (dbz < 10) color = 1;
+    else if (dbz < 15) color = 2;
+    else if (dbz < 20) color = 3;
+    else if (dbz < 25) color = 4;
+    else if (dbz < 30) color = 5;
+    else if (dbz < 35) color = 6;
+    else if (dbz < 40) color = 7;
+    else if (dbz < 45) color = 8;
+    else if (dbz < 50) color = 9;
+    else if (dbz < 55) color = 10;
+    else if (dbz < 60) color = 11;
+    else if (dbz < 65) color = 12;
+    else if (dbz < 70) color = 13;
+    else if (dbz < 75) color = 14;
+    else if (dbz >= 75) color = 15;
+
+    return color;
+}
+
+s8 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
+{
+    s8 color = 0;
+    if (level == 0)
+    {
+        color = 0;
+    }
+
+    else if (level == 1)
+    {
+        color = 15;
+    }
+
+    else
+    {
+        f32 vel = minVal + (level * inc);
+
+        if (vel <= -99) color = 1;
+        else if (vel <= -80) color = 2;
+        else if (vel <= -60) color = 3;
+        else if (vel <= -45) color = 4;
+        else if (vel <= -20) color = 5;
+        else if (vel <= -5) color = 6;
+        //else if (vel <= -5) color = 7;
+        else if (vel <= 0) color = 8;
+        else if (vel <= 5) color = 9;
+        else if (vel <= 20) color = 10;
+        else if (vel <= 45) color = 11;
+        else if (vel <= 60) color = 12;
+        else if (vel <= 80) color = 13;
+        else if (vel <= 99) color = 14;        
+    }
+
+    return color;
+}
+
+
+bool RadialImagePacket(
+    unsigned char* buffer, 
+    u32 bp, 
+    NexradProduct* nexradProduct, 
+    WSR88DInfo* wsrInfo,
+    ProductDescription* pd,
+    s16 packetCode)
+{
     s16 firstBin;
     s16 iCenterSweep;
     s16 jCenterSweep;
@@ -470,10 +652,27 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     scaleFactor = swapBytes(scaleFactor);
     radialCount = swapBytes(radialCount);
 
-    // ??? @todo
-    assert(binCount == 230);
-    assert(radialCount == 360);   
+    BinCount = binCount;
+    RadialCount = radialCount;   
 
+    // @todo
+    f32 minDbz = swapBytes(pd->reflectivityThreshold.minimumDbz) * 0.1f;
+    f32 incDbz = swapBytes(pd->reflectivityThreshold.dbzIncrement) * 0.1f;
+    f32 dbzLevels = swapBytes(pd->reflectivityThreshold.levelCount);
+
+    // init stuff
+    int totalBinCount = BinCount * RadialCount;
+    RangeBins = (RangeBin*)malloc(totalBinCount * sizeof(RangeBin));
+
+    StartsArray = (s32*)malloc(totalBinCount * sizeof(*StartsArray));
+    CountsArray = (s32*)malloc(totalBinCount * sizeof(*CountsArray));
+
+    for(int i = 0; i < totalBinCount; i++)
+    {
+        RangeBins[i] = {};
+        StartsArray[i] = i * 4;
+        CountsArray[i] = 4;
+    }     
 
     // page 3-109 IC Doc
     // scale factor is 230 / binCount, avoid fp errors by just making it 1 unless it needs to 
@@ -483,13 +682,13 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         fScaleFactor = scaleFactor * 0.001f;
 
 
-    s8 run_color;
+    u8 run_color;
     s8 run, color;
     s16 rleCount;
     s16 i_angleStart, i_angleDelta;
     f32 f_angleStart, f_angleDelta;
-    f32 f_elevationAngle = pd.elevationAngle * 0.1f;
-    
+    f32 f_elevationAngle = pd->elevationAngle * 0.1f;
+
     
     int binIndex;
     for (int i = 0; i < radialCount; i++)
@@ -508,24 +707,176 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         bp += sizeof(i_angleDelta);        
         f_angleDelta = swapBytes(i_angleDelta) * 0.1f;
 
-        for (int j = 0; j < rleCount * 2; j++) 
+        if ((packetCode & 0xffff) == 0xaf1f)
         {
-            run_color = (s8)(buffer[bp]);
-            bp += 1;
+            for (int j = 0; j < rleCount * 2; j++) 
+            {            
+                run_color = (u8)(buffer[bp]);
+                bp += 1;
 
-            run = (run_color & 0xf0) >> 4;
-            color = (run_color & 0x0f);
+                run = (run_color & 0xf0) >> 4;
+                color = (run_color & 0x0f);
 
-            for (s8 k = 0; k < run; k++) 
-            {               
+                for (s8 k = 0; k < run; k++) 
+                {               
+                    CalcRangeBinLocation(
+                        i, binIndex, wsrInfo->lon, wsrInfo->lat, 
+                        nexradProduct->range, f_angleStart, f_angleDelta);
+                    SetRangeBin(i, binIndex, color);
+                    binIndex += 1;
+                }
+            }
+        }
+
+        else
+        {
+            for (int j = 0; j < rleCount; j++)
+            {
+                run_color = (u8)buffer[bp];
+                bp += 1;
+
                 CalcRangeBinLocation(
-                    i, binIndex, siteLon, siteLat, nexradProduct->range, f_angleStart, f_angleDelta);
+                        i, binIndex, wsrInfo->lon, wsrInfo->lat, 
+                        nexradProduct->range, f_angleStart, f_angleDelta);
+
+                s8 color = 0;
+
+                if(nexradProduct->productCode == 99)
+                    color = GetColorFromSpeed(run_color, minDbz, incDbz);
+                else
+                    color = GetColorFromDbz(run_color, minDbz, incDbz);
+                
+
+                
+
                 SetRangeBin(i, binIndex, color);
                 binIndex += 1;
             }
         }
 
     }
+
+    return true;
+}
+
+
+bool RasterImagePacket(
+    unsigned char* buffer, 
+    u32 bp, 
+    NexradProduct* nexradProduct, 
+    WSR88DInfo* wsrInfo,
+    ProductDescription* pd,
+    s16 packetCode)
+{
+    s16 packetCode1, packetCode2;
+
+    memcpy(&packetCode1, &buffer[bp], 2); 
+    bp += 2;
+    packetCode1 = swapBytes(packetCode1);    
+
+    memcpy(&packetCode2, &buffer[bp], 2); 
+    bp += 2;
+    packetCode2 = swapBytes(packetCode2);    
+
+    assert((packetCode1 & 0xffff) == 0x8000);
+    assert((packetCode2 & 0xffff) == 0x00c0);
+
+
+    s16 iStart, jStart;
+    memcpy(&iStart, &buffer[bp], 2); 
+    bp += 2;
+    iStart = swapBytes(iStart);
+
+    memcpy(&jStart, &buffer[bp], 2); 
+    bp += 2;
+    jStart = swapBytes(jStart);
+
+
+    s16 xScale, yScale;
+    memcpy(&xScale, &buffer[bp], 2); 
+    bp += 2;
+    xScale = swapBytes(xScale);
+
+    // skip xScale fractional
+    bp += 2;
+    
+    memcpy(&yScale, &buffer[bp], 2); 
+    bp += 2;
+    yScale = swapBytes(yScale);
+
+    // skip xScale fractional
+    bp += 2;
+
+
+    s16 numberOfRows;
+    memcpy(&numberOfRows, &buffer[bp], 2);
+    bp += 2;
+    numberOfRows = swapBytes(numberOfRows);
+
+
+    s16 packingDescriptor;
+    memcpy(&packingDescriptor, &buffer[bp], 2);
+    bp += 2;
+    packingDescriptor = swapBytes(packingDescriptor);
+
+    assert(packingDescriptor == 2);
+
+
+    // @todo
+    // change this for realz
+    BinCount = 920;
+    RadialCount = numberOfRows;
+
+    // init stuff
+    // @todo
+    // There may be a more efficient way to determine this size
+    int gridCellCount = RadialCount * BinCount;
+    RangeBins = (RangeBin*)malloc(gridCellCount * sizeof(RangeBin));
+
+    StartsArray = (s32*)malloc(gridCellCount * sizeof(*StartsArray));
+    CountsArray = (s32*)malloc(gridCellCount * sizeof(*CountsArray));
+
+    for(int i = 0; i < gridCellCount; i++)
+    {
+        RangeBins[i] = {};
+        StartsArray[i] = i * 4;
+        CountsArray[i] = 4;
+    }
+
+
+
+    u8 run_color;
+    s8 run, color;
+
+    s32 colIndex;
+    s16 rowBytes;
+    for(int i = 0; i < numberOfRows; i++)
+    {
+        colIndex = 0;
+
+        memcpy(&rowBytes, &buffer[bp], 2);
+        bp += 2;
+        rowBytes = swapBytes(rowBytes);
+
+        for(int j = 0; j < rowBytes; j++)
+        {
+            run_color = (u8)buffer[bp];
+            bp += 1;
+
+            run = (run_color & 0xf0) >> 4;
+            color = (run_color & 0x0f);
+
+            for (int k = 0; k < run; k++)
+            {
+                SetRasterCell(wsrInfo->lon, wsrInfo->lat, 
+                    numberOfRows, colIndex, i, nexradProduct->resolution, color);          
+
+                colIndex += 1;
+            }
+
+        }
+    }
+
 
     return true;
 }
