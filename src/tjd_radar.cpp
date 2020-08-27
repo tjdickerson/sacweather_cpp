@@ -21,7 +21,7 @@ s32* CountsArray;
 
 RangeBin* RangeBins;
 void CalcRangeBinLocations(f32 cx, f32 cy, f32 range);
-void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex);
+void SetRangeBin(s32 radialIndex, s32 binIndex, color4 colorIndex);
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 
 
@@ -171,15 +171,16 @@ RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 }
 
 
-void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex)
+void SetRangeBin(s32 radialIndex, s32 binIndex, color4 color)
 {
-    int ci = (colorIndex * 4);
-    f32* colorMap = VelocityMap;
+    // int ci = (colorIndex * 4);
+    // f32* colorMap = VelocityMap;
     RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);        
-    bin->color.r = colorMap[ci];
-    bin->color.g = colorMap[ci + 1];
-    bin->color.b = colorMap[ci + 2];
-    bin->color.a = colorMap[ci + 3];
+    bin->color = color;
+    // bin->color.r = colorMap[ci];
+    // bin->color.g = colorMap[ci + 1];
+    // bin->color.b = colorMap[ci + 2];
+    // bin->color.a = colorMap[ci + 3];
 }
 
 
@@ -243,11 +244,12 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     cell->p4.x = ConvertLonToScreen(cell->p4.x);
     cell->p4.y = ConvertLatToScreen(cell->p4.y);
 
-    int ci = (colorIndex * 4);
-    cell->color.r = ReflectivityMap[ci];
-    cell->color.g = ReflectivityMap[ci + 1];
-    cell->color.b = ReflectivityMap[ci + 2];
-    cell->color.a = ReflectivityMap[ci + 3];
+    cell->color = ReflectivityMap[colorIndex];
+    // int ci = (colorIndex * 4);
+    // cell->color.r = ReflectivityMap[ci];
+    // cell->color.g = ReflectivityMap[ci + 1];
+    // cell->color.b = ReflectivityMap[ci + 2];
+    // cell->color.a = ReflectivityMap[ci + 3];
 
 }
 
@@ -562,7 +564,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 }
 
 
-s8 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
+color4 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
 {
     f32 dbz = minDbz + (level * incDbz);
     s8 color = 0;
@@ -583,10 +585,10 @@ s8 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
     else if (dbz < 75) color = 14;
     else if (dbz >= 75) color = 15;
 
-    return color;
+    return ReflectivityMap[color];
 }
 
-s8 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
+color4 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
 {
     s8 color = 0;
     if (level == 0)
@@ -609,7 +611,7 @@ s8 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
         else if (vel <= -45) color = 4;
         else if (vel <= -20) color = 5;
         else if (vel <= -5) color = 6;
-        //else if (vel <= -5) color = 7;
+        //else if (vel <= -5) color = 7;???
         else if (vel <= 0) color = 8;
         else if (vel <= 5) color = 9;
         else if (vel <= 20) color = 10;
@@ -619,7 +621,7 @@ s8 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
         else if (vel <= 99) color = 14;        
     }
 
-    return color;
+    return VelocityMap[color];
 }
 
 
@@ -683,7 +685,8 @@ bool RadialImagePacket(
 
 
     u8 run_color;
-    s8 run, color;
+    s8 run, colorIndex;
+    color4 color;
     s16 rleCount;
     s16 i_angleStart, i_angleDelta;
     f32 f_angleStart, f_angleDelta;
@@ -715,13 +718,15 @@ bool RadialImagePacket(
                 bp += 1;
 
                 run = (run_color & 0xf0) >> 4;
-                color = (run_color & 0x0f);
+                colorIndex = (run_color & 0x0f);
 
                 for (s8 k = 0; k < run; k++) 
                 {               
                     CalcRangeBinLocation(
                         i, binIndex, wsrInfo->lon, wsrInfo->lat, 
                         nexradProduct->range, f_angleStart, f_angleDelta);
+
+                    color = ReflectivityMap[colorIndex];
                     SetRangeBin(i, binIndex, color);
                     binIndex += 1;
                 }
@@ -739,7 +744,7 @@ bool RadialImagePacket(
                         i, binIndex, wsrInfo->lon, wsrInfo->lat, 
                         nexradProduct->range, f_angleStart, f_angleDelta);
 
-                s8 color = 0;
+                color4 color;
 
                 if(nexradProduct->productCode == 99)
                     color = GetColorFromSpeed(run_color, minDbz, incDbz);

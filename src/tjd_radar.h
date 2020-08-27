@@ -38,47 +38,45 @@ void tjd_RadarInit();
 void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
 bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProduct* nexradProduct);
 
-
-
-// nws color scheme
-static f32 ReflectivityMap[] = 
+static color4 ReflectivityMap[] =
 {
-    0.20f,  0.20f,  0.20f,  0.20f,   // 0 - black transparent
-    ColorHexToFloat(0x04), ColorHexToFloat(0xe9), ColorHexToFloat(0xe7), 0.20f,   
-    ColorHexToFloat(0x01), ColorHexToFloat(0x9f), ColorHexToFloat(0xf4), 0.90f,   
-    ColorHexToFloat(0x03), ColorHexToFloat(0x00), ColorHexToFloat(0xf4), 0.99f,   
-    ColorHexToFloat(0x02), ColorHexToFloat(0xfd), ColorHexToFloat(0x02), 0.99f,   
-    ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f,   
-    ColorHexToFloat(0x00), ColorHexToFloat(0x8e), ColorHexToFloat(0x00), 0.99f,   
-    ColorHexToFloat(0xfd), ColorHexToFloat(0xf8), ColorHexToFloat(0x02), 0.99f,   
-    ColorHexToFloat(0xe5), ColorHexToFloat(0xbc), ColorHexToFloat(0x00), 0.99f,   
-    ColorHexToFloat(0xfd), ColorHexToFloat(0x95), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xfd), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xd4), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xbc), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xf8), ColorHexToFloat(0x00), ColorHexToFloat(0xfd), 0.99f,   
-    ColorHexToFloat(0x98), ColorHexToFloat(0x54), ColorHexToFloat(0xc6), 0.99f,   
-    ColorHexToFloat(0xff), ColorHexToFloat(0xff), ColorHexToFloat(0xff), 0.99f,   
+    { 0.20f,  0.20f,  0.20f,  0.20f },   // 0 - black transparent
+    { ColorHexToFloat(0x04), ColorHexToFloat(0xe9), ColorHexToFloat(0xe7), 0.20f },   
+    { ColorHexToFloat(0x01), ColorHexToFloat(0x9f), ColorHexToFloat(0xf4), 0.90f },   
+    { ColorHexToFloat(0x03), ColorHexToFloat(0x00), ColorHexToFloat(0xf4), 0.99f },   
+    { ColorHexToFloat(0x02), ColorHexToFloat(0xfd), ColorHexToFloat(0x02), 0.99f },   
+    { ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f },   
+    { ColorHexToFloat(0x00), ColorHexToFloat(0x8e), ColorHexToFloat(0x00), 0.99f },   
+    { ColorHexToFloat(0xfd), ColorHexToFloat(0xf8), ColorHexToFloat(0x02), 0.99f },   
+    { ColorHexToFloat(0xe5), ColorHexToFloat(0xbc), ColorHexToFloat(0x00), 0.99f },   
+    { ColorHexToFloat(0xfd), ColorHexToFloat(0x95), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xfd), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xd4), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xbc), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xf8), ColorHexToFloat(0x00), ColorHexToFloat(0xfd), 0.99f },   
+    { ColorHexToFloat(0x98), ColorHexToFloat(0x54), ColorHexToFloat(0xc6), 0.99f },   
+    { ColorHexToFloat(0xff), ColorHexToFloat(0xff), ColorHexToFloat(0xff), 0.99f },      
 };
 
-static f32 VelocityMap[] = 
+
+static color4 VelocityMap[] = 
 {
-    0.20f,  0.20f,  0.20f,  0.20f,   // 0 - black transparent
-    ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.99f,   
-    ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.99f,   
-    ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f,   
-    ColorHexToFloat(0x07), ColorHexToFloat(0xac), ColorHexToFloat(0x04), 0.99f,   
-    ColorHexToFloat(0x06), ColorHexToFloat(0x8f), ColorHexToFloat(0x03), 0.99f,   
-    ColorHexToFloat(0x04), ColorHexToFloat(0x72), ColorHexToFloat(0x02), 0.99f,   
-    ColorHexToFloat(0x7c), ColorHexToFloat(0x97), ColorHexToFloat(0x7b), 0.99f,   
-    ColorHexToFloat(0x98), ColorHexToFloat(0x77), ColorHexToFloat(0x77), 0.99f,   
-    ColorHexToFloat(0x89), ColorHexToFloat(0x00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xa2), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xb9), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xd8), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
-    ColorHexToFloat(0xef), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f,   
-    ColorHexToFloat(0xfe), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f,   
-    ColorHexToFloat(0x90), ColorHexToFloat(0x00), ColorHexToFloat(0xa0), 0.99f,   
+    { 0.20f,  0.20f,  0.20f,  0.20f },   // 0 - black transparent
+    { ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.99f },   
+    { ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.99f },   
+    { ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f },   
+    { ColorHexToFloat(0x07), ColorHexToFloat(0xac), ColorHexToFloat(0x04), 0.99f },   
+    { ColorHexToFloat(0x06), ColorHexToFloat(0x8f), ColorHexToFloat(0x03), 0.99f },   
+    { ColorHexToFloat(0x04), ColorHexToFloat(0x72), ColorHexToFloat(0x02), 0.99f },   
+    { ColorHexToFloat(0x7c), ColorHexToFloat(0x97), ColorHexToFloat(0x7b), 0.99f },   
+    { ColorHexToFloat(0x98), ColorHexToFloat(0x77), ColorHexToFloat(0x77), 0.99f },   
+    { ColorHexToFloat(0x89), ColorHexToFloat(0x00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xa2), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xb9), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xd8), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f },   
+    { ColorHexToFloat(0xef), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f },   
+    { ColorHexToFloat(0xfe), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f },   
+    { ColorHexToFloat(0x90), ColorHexToFloat(0x00), ColorHexToFloat(0xa0), 0.99f },   
 };
 
 

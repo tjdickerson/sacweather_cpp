@@ -236,6 +236,9 @@
 	},
 	"file_history":
 	[
+		"/C/Program Files (x86)/GRLevelX/GRLevel3_2/GIS/radars.gis",
+		"/C/Users/tjdic/cpplibs/source/bzip2-1.0.8/bzlib.h",
+		"/C/Users/tjdic/cpplibs/source/bzip2-1.0.8/bzip2.1.preformatted",
 		"/C/Users/tjdic/Desktop/weatherdata.md",
 		"/C/code/sacweather/src/sacw_main.cpp",
 		"/C/code/sacweather/src/tjd_share.h",
@@ -360,10 +363,7 @@
 		"/C/Users/tjdic/Downloads/FT 19-05 NDR Final Report (FOUO).pdf",
 		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict2.0.29_vuln_fixes.md",
 		"/C/Users/tjdic/OneDrive/work/IGEMS/BCR/bes46_bcr154132_notes.md",
-		"/C/Users/tjdic/work/repos/mict/MICTAppBB/Utils/SecurityModules/Cryptography.vb",
-		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/bot/mainbot.py",
-		"/C/Users/tjdic/OneDrive/code/python/GW1SkillQuiz/gw1skillquiz/gwskillicon/gwskill.py",
-		"/C/Users/tjdic/OneDrive/work/teams.md"
+		"/C/Users/tjdic/work/repos/mict/MICTAppBB/Utils/SecurityModules/Cryptography.vb"
 	],
 	"find":
 	{
@@ -382,6 +382,13 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"NWS_NOAA_RADAR_DIR",
+			"ReflectivityMap",
+			"level",
+			"dbz",
+			"compress",
+			"productLength",
+			"compresse",
 			"BinCount",
 			";\n",
 			"binCount",
@@ -522,16 +529,44 @@
 		"selected_items":
 		[
 			[
+				"nw",
+				"src\\nws_info.h"
+			],
+			[
 				"sacw_ma",
 				"src\\sacw_main.cpp"
 			],
 			[
-				"nws_inf",
-				"src\\nws_info.h"
-			],
-			[
 				"nws",
 				"src\\nws_info.cpp"
+			],
+			[
+				"sacw",
+				"src\\sacw_main.cpp"
+			],
+			[
+				"gl_ren",
+				"src\\gl_render.cpp"
+			],
+			[
+				"ft",
+				"src\\tjd_ftp.cpp"
+			],
+			[
+				"tjd_sha",
+				"src\\tjd_share.h"
+			],
+			[
+				"nws_info",
+				"src\\nws_info.cpp"
+			],
+			[
+				"radar",
+				"src\\tjd_radar.cpp"
+			],
+			[
+				"nws_inf",
+				"src\\nws_info.h"
 			],
 			[
 				"conve",
@@ -540,18 +575,6 @@
 			[
 				"tjd_rada",
 				"src\\tjd_radar.cpp"
-			],
-			[
-				"nw",
-				"src\\nws_info.cpp"
-			],
-			[
-				"sacw",
-				"src\\sacw_main.cpp"
-			],
-			[
-				"radar",
-				"src\\tjd_radar.h"
 			],
 			[
 				"sacw_m",
@@ -568,10 +591,6 @@
 			[
 				"sacw_api",
 				"src\\sacw_api.h"
-			],
-			[
-				"gl_ren",
-				"src\\gl_render.cpp"
 			],
 			[
 				"saw_main",
@@ -696,10 +715,6 @@
 			[
 				"tjd_conversion",
 				"src\\tjd_conversions.h"
-			],
-			[
-				"tjd_sha",
-				"src\\tjd_share.h"
 			],
 			[
 				"gl.h",

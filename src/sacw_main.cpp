@@ -16,7 +16,7 @@ static NexradProduct* CurrentProduct;
 
 // temp?
 constexpr int DefaultProduct = 99;
-constexpr char* DefaultWSR = "klot";
+constexpr char* DefaultWSR = "klch";
 
 
 void sacw_Init(char* args)
@@ -33,6 +33,8 @@ void sacw_Init(char* args)
 
     // download file
     char remoteFile[512];
+    memset(remoteFile, 0, 512);
+    
     strcat(remoteFile, NWS_NOAA_RADAR_DIR);
     strcat(remoteFile, "/");
     strcat(remoteFile, CurrentProduct->dir);
@@ -40,7 +42,7 @@ void sacw_Init(char* args)
     strcat(remoteFile, "SI.");
     strcat(remoteFile, siteName);
     strcat(remoteFile, "/");
-    strcat(remoteFile, "sn.last");
+    strcat(remoteFile, "sn.last\0");
 
     printf("Download file: %s\n", remoteFile);
 
