@@ -30,7 +30,7 @@ typedef signed long long int GLintptr;
 #if defined(_WIN32)
 #define GLGetProcAddress wglGetProcAddress
 #else
-#define GLGetProcAddress 0
+#define GLGetProcAddress AndroidGLESLayer_GetProcAddress
 #endif
 
 // proc declarations

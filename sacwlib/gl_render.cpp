@@ -200,14 +200,20 @@ void Render()
 
 
         // counties
-        glUniform4f(MapShaderColorAttribute, 0.5f, 0.5f, 0.5f, 0.5f);
+/*        glUniform4f(MapShaderColorAttribute, 0.5f, 0.5f, 0.5f, 0.5f);
         glMultiDrawArrays(
-            GL_LINE_STRIP, CountyVertData.starts, CountyVertData.counts, CountyVertData.numParts);
+            GL_LINE_STRIP, CountyVertData.starts, CountyVertData.counts, CountyVertData.numParts);*/
 
         // states  #6c6c58
         glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
-        glMultiDrawArrays(
-            GL_LINE_STRIP, StateVertData.starts, StateVertData.counts, StateVertData.numParts);
+        /*glMultiDrawArrays(
+            GL_LINE_STRIP, StateVertData.starts, StateVertData.counts, StateVertData.numParts);*/
+
+        for (int i = 0; i < StateVertData.numParts; i++)
+        {
+            //int offset = (StateVertData.numParts * i);
+            glDrawArrays(GL_LINE_STRIP, StateVertData.starts[i], StateVertData.counts[i]);
+        }
 
     }
 

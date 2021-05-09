@@ -15,8 +15,8 @@ MapViewState MapViewInfo;
 static NexradProduct* CurrentProduct;
 
 // temp?
-constexpr int DefaultProduct = 99;
-constexpr char* DefaultWSR = "klch";
+constexpr int DefaultProduct = 94;
+constexpr char* DefaultWSR = "kmxx";
 
 
 void sacw_Init(char* args)
@@ -56,6 +56,8 @@ void sacw_Init(char* args)
     MapViewInfo.scaleFactor = 45.0f;
     MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
     MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
+
+    printf("x: %2.4f, y: %2.4f\n", wsrInfo.lon, wsrInfo.lat);
 
     RenderInit();
 }
