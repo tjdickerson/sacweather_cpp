@@ -4,6 +4,7 @@
 
 #include "tjd_share.h"
 
+bool LoadLatestRadarData();
 
 bool RenderInit();
 

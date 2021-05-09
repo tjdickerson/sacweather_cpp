@@ -5,28 +5,25 @@
 #include <cstdlib>
 #include <assert.h>
 
-constexpr char* SHAPE_FILE_DIR = "C:\\shapes\\weather\\\0";
-
 static unsigned char* INDEX_BUFFER;
 
-void GenerateFilename(char* buffer, const char* name, const char* ext)
-{   
-    strcat(buffer, SHAPE_FILE_DIR);
-    strcat(buffer, name);
+void GenerateFilename(char* buffer, const char* filepath, const char* ext)
+{       
+    strcat(buffer, filepath);
     strcat(buffer, ".");
     strcat(buffer, ext);
     strcat(buffer, "\0");
 }
 
 
-bool ReadIndexFile(unsigned char* &buffer, const char* name)
+bool ReadIndexFile(unsigned char* &buffer, const char* filepath)
 {
     bool result = true;
 
     // read in shapefile index
     char indexFilename[256];
     indexFilename[0] = '\0';
-    GenerateFilename(indexFilename, name, SF_INDEX_EXT);
+    GenerateFilename(indexFilename, filepath, SF_INDEX_EXT);
 
     FILE* fp; 
     fp = fopen(indexFilename, "rb");
@@ -52,15 +49,15 @@ bool ReadIndexFile(unsigned char* &buffer, const char* name)
 }
 
 
-bool ReadShapeFile(ShapeData* shapeData, const char* name)
+bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
 {
     bool result = true;
     unsigned char* sfIndex = NULL;
     unsigned int bp = 0;
 
-    if (!ReadIndexFile(sfIndex, name) || sfIndex == NULL)
+    if (!ReadIndexFile(sfIndex, filepath) || sfIndex == NULL)
     {
-        printf("Failed to load index file.\n");
+        LOGERR("Failed to load index file.\n");
         return false;
     }    
 
@@ -79,19 +76,19 @@ bool ReadShapeFile(ShapeData* shapeData, const char* name)
 
     if (indexHeader.shapeType != 3 && indexHeader.shapeType != 5)
     {
-        printf("Unsupported shape type: %d\n", indexHeader.shapeType);
+        LOGERR("Unsupported shape type: %d\n", indexHeader.shapeType);
         return false;
     }    
 
 
     char shapeFilename[256];
     shapeFilename[0] = '\0';
-    GenerateFilename(shapeFilename, name, SF_SHAPE_EXT);
+    GenerateFilename(shapeFilename, filepath, SF_SHAPE_EXT);
 
     FILE *fp = fopen(shapeFilename, "rb");
     if (fp == NULL)
     {
-        printf("Failed to open shapefile...\n");
+        LOGERR("Failed to open shapefile...\n");
         return false;
     }
 
@@ -118,7 +115,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* name)
         bytesRead = fread(&sfRec, sizeof(s32), 2, fp);
         if (bytesRead != 2)
         {
-            printf("Error while reading shapefile record header %d.\n", indexRec.offset);
+            LOGERR("Error while reading shapefile record header %d.\n", indexRec.offset);
             result = false;
             break;
         }
@@ -180,7 +177,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* name)
 
     if (fp) fclose(fp);
     if (sfIndex) free(sfIndex);
-    printf("Shapefile Done.\n");
+    LOGINF("Shapefile Done. (%s, %s)\n", shapeFilename, filepath);
 
     return result;
 }

@@ -260,11 +260,11 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     f32 maxRange = 124.0f;
 
     FILE* fp = NULL;
-    int err = fopen_s(&fp, filename, "rb");
-    if (err != 0)
+    fp = fopen(filename, "rb");
+    if (fp == NULL)
     {
         // error reading file.
-        printf("Failed to open radar file %s\n", filename);
+        LOGERR("Failed to open radar file %s\n", filename);
         return false;
     }
 
@@ -280,7 +280,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 
     if (bytesRead != fileLength)
     {
-        printf("Failed to read radar file %s\n", filename);
+        LOGERR("Failed to read radar file %s\n", filename);
 
         if (buffer) free(buffer);
         return false;
@@ -471,7 +471,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 
     if (compressed)
     {
-        printf("Do shit here\n");
+        LOGINF("Compressed data...");
 
         // @todo .... why no work
         //unsigned int srcLen = productLength - (messageHeaderLength + sizeof(pd));
@@ -497,9 +497,17 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
 
         if (ret != BZ_OK)
         {
-            printf("Something went wrong trying to decompress the file: %d\n", ret);
+            LOGERR("Something went wrong trying to decompress the file: %d\n", ret);
             // @todo
             // potential big boi leak here if application doesn't exit...
+
+            bp = 0;
+            if(buffer)
+            {
+                free(buffer);
+                buffer = NULL;
+            }
+            
             return false;
         }
 
@@ -515,7 +523,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         }
         else
         {
-            printf("Failed to reallocate buffer.\n");
+            LOGINF("Failed to reallocate buffer.\n");
             return false;
         }
 
@@ -556,7 +564,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         // log error of unsupported data packet and exit @todo
         // big boi leaks @todo
         // @todo
-        printf("Unsupported packet type: %d\n", packetCode);
+        LOGINF("Unsupported packet type: %d\n", packetCode);
         return false;
     }
 

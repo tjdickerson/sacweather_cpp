@@ -53,6 +53,10 @@
 		"selected_items":
 		[
 			[
+				"sche",
+				"Color Scheme Editor: Edit current color scheme"
+			],
+			[
 				"space",
 				"Indentation: Convert to Spaces"
 			],
@@ -86,10 +90,6 @@
 			],
 			[
 				"scheme",
-				"UI: Select Color Scheme"
-			],
-			[
-				"sche",
 				"UI: Select Color Scheme"
 			],
 			[
@@ -236,6 +236,8 @@
 	},
 	"file_history":
 	[
+		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
+		"/C/code/SWTestApp/app/src/main/cpp/tjd_share.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
 		"/C/code/sacweather/src/tjd_radar.cpp",
 		"/C/code/sacweather/src/tjd_radar.h",
@@ -266,7 +268,6 @@
 		"/C/code/sacweather/src/main.cpp",
 		"/C/code/sacweather/src/tjd_ftp.cpp",
 		"/C/code/sacweather/src/tjd_ftp.h",
-		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
 		"/C/code/sacweather/src/sacw_extern.h",
 		"/C/code/sacweather/src/tjd_image.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/C++11.sublime-settings",
@@ -362,8 +363,7 @@
 		"/D/Google Drive/work/forge/code/nodejs/branding_js_163/src/js/ctf_api.js",
 		"/C/Users/tjdic/Downloads/FT 19-05 NDR Final Report (FOUO).pdf",
 		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict2.0.29_vuln_fixes.md",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/BCR/bes46_bcr154132_notes.md",
-		"/C/Users/tjdic/work/repos/mict/MICTAppBB/Utils/SecurityModules/Cryptography.vb"
+		"/C/Users/tjdic/OneDrive/work/IGEMS/BCR/bes46_bcr154132_notes.md"
 	],
 	"find":
 	{
@@ -382,6 +382,10 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"glViewport",
+			"GLCREATESHA",
+			"sacw_init",
+			"frag",
 			"build.bat",
 			"src",
 			"NWS_NOAA_RADAR_DIR",
@@ -524,7 +528,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 82.0
+		"height": 62.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -533,6 +537,22 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"sacw_main",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"win32",
+				"windows\\win32_main.cpp"
+			],
+			[
+				"tjd_g",
+				"sacwlib\\tjd_gl.h"
+			],
+			[
+				"gl_ren",
+				"sacwlib\\gl_render.cpp"
+			],
 			[
 				"win",
 				"windows\\win32_main.cpp"
@@ -580,10 +600,6 @@
 			[
 				"sacw_exte",
 				"src\\sacw_extern.h"
-			],
-			[
-				"gl_ren",
-				"src\\gl_render.cpp"
 			],
 			[
 				"sacw",
@@ -738,10 +754,6 @@
 				"src\\sacw_api.h"
 			],
 			[
-				"win32",
-				"src\\win32_main.cpp"
-			],
-			[
 				"rend",
 				"src\\render_extern.h"
 			],
@@ -755,10 +767,6 @@
 			],
 			[
 				"sacw_n",
-				"src\\sacw_main.cpp"
-			],
-			[
-				"sacw_main",
 				"src\\sacw_main.cpp"
 			],
 			[
@@ -868,7 +876,7 @@
 	"show_minimap": false,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": true,
+	"side_bar_visible": false,
 	"side_bar_width": 226.0,
 	"status_bar_visible": true,
 	"template_settings":

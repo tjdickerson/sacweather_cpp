@@ -4,6 +4,23 @@
 
 #include <cstdint>
 
+#define TJD_LOG_ENABLED 1
+
+// logging
+#ifdef TJD_LOG_ENABLED
+
+#define LOG_TAG "sacweather"
+
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGINF(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGERR(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#else
+#define LOGINF(...) printf(__VA_ARGS__)
+#define LOGERR(...) printf(__VA_ARGS__)
+#endif
+
+#endif
 
 #define ColorHexToFloat(x) (x / (float)0xff)
 

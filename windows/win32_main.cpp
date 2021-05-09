@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <cstdio>
 #include "tjd_ftp.h"
-#include "gl.h"
+#include "tjd_gl.h"
 #include "sacw_api.h"
 
 // Forward declarations just so I can order these however.
@@ -142,7 +142,7 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
             result = Win32InitOpenGL(hdc);
             if (result == 0)
             {
-                sacw_Init(CmdLineArgs);
+                sacw_Init();
             }
 
             CREATESTRUCT* cs = (CREATESTRUCT*)lParam;

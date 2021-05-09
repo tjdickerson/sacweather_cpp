@@ -38,15 +38,15 @@ set src=%src% ^
 %cd%\sacwlib\sacw_main.cpp ^
 %cd%\sacwlib\tjd_ftp.cpp ^
 %cd%\sacwlib\tjd_shapefile.cpp ^
-%cd%\sacwlib\gl_render.cpp ^
+%cd%\sacwlib\tjd_gl_render.cpp ^
 %cd%\sacwlib\tjd_radar.cpp ^
 %cd%\sacwlib\tjd_conversions.cpp ^
 %cd%\sacwlib\nws_info.cpp
 
 
 @rem Get into the build directory and build the application
-if not exist ..\build mkdir ..\build
-pushd ..\build
+if not exist %prjdir%\build mkdir %prjdir%\build
+pushd %prjdir%\build
 
     @rem delete all contents for rebuild
     del /F /Q *.*

@@ -34,8 +34,12 @@ typedef struct MapViewState_t
 
 extern MapViewState MapViewInfo;
 
+extern bool canRenderRadar;
 
-void sacw_Init(char* args);
+
+void sacw_Init();
+
+void sacw_RadarInit(const char* filename);
 
 void sacw_MainLoop();
 

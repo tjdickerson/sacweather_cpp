@@ -10,9 +10,17 @@ constexpr double PI = 3.1415926535897932384626433832795;
 constexpr double QUARTER_PI = 0.785398163397448309616;
 constexpr double HALF_PI = 1.57079632679;
 
-inline f32 DegToRad(f32 deg);
+inline f32 DegToRad(f32 deg)
+{
+    return (deg * PI) / 180.0f;
+}
 
-inline f32 RadToDeg(f32 rad);
+
+inline f32 RadToDeg(f32 rad)
+{
+    return (rad * 180.0f) / PI;
+}
+
 
 f32 ConvertLonToScreen(f32 lon);
 
