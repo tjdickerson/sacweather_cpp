@@ -72,7 +72,7 @@ void sacw_Init()
 
     InitNexradProducts();
 
-    MapViewInfo.scaleFactor = 100.0f;
+    MapViewInfo.scaleFactor = 45.0f;
     MapViewInfo.xPan = -ConvertLonToScreen(-85.790f);
     MapViewInfo.yPan = -ConvertLatToScreen(32.537f);
 

@@ -143,6 +143,8 @@ bool MapInit()
 
 bool LoadLatestRadarData()
 {
+    // @todo
+    // Reset these or something to free memory
     RenderBufferData radarBufferData = {};
     RadarVertData = {};
     sacw_GetRadarRenderData(&radarBufferData, &RadarVertData);
@@ -263,7 +265,7 @@ void Render()
     bool splitScreen = false;
     if (splitScreen)
     {
-        ModelMatrix[0] = (MapViewInfo.scaleFactor / MapViewInfo.xScale) * -0.5f;
+        ModelMatrix[0] = (MapViewInfo.scaleFactor * 0.5f) / MapViewInfo.xScale;
         ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
 
         // bottom view
@@ -295,11 +297,14 @@ void Render()
     }
 
     else
-    {
-        
+    {       
+        glViewport(
+                0, 
+                0, 
+                MapViewInfo.mapWidthPixels, 
+                MapViewInfo.mapHeightPixels);
 
         RenderMap();
-
         if (canRenderRadar)
         {
             RenderRadar();
@@ -341,7 +346,7 @@ static GLuint CreateShader(GLenum shaderType, const GLchar* source)
     if(retLen > 0) 
     {
         char errorMessage[250];
-        sprintf(errorMessage, "Shader failed to compile: %s", errorBuffer);
+        sprintf(errorMessage, "Shader failed to compile: %s\n", errorBuffer);
         LOGERR("%s", errorMessage);
 
         return -1;
@@ -367,7 +372,7 @@ GLuint GLCreateShaderProgram(const GLchar* vertexSource, const GLchar* fragSourc
     
     glLinkProgram(shaderProgram);
 
-    LOGINF("Shader created..");
+    LOGINF("Shader created..\n");
     return shaderProgram;
 }
 

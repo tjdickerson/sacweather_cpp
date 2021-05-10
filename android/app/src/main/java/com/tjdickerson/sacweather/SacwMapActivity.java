@@ -20,7 +20,7 @@ public class SacwMapActivity extends AppCompatActivity
         mSacwMapView = findViewById(R.id.surfaceView);
 
         String nexradFile =
-                "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.knqa/sn.last";
+                "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
 
         // init radar stuff
         new FileFetcher(

@@ -108,6 +108,13 @@ void CalcRangeBinLocation(
 {
     f32 dx1, dy1, dx2, dy2;
 
+    // @todo
+    // What did I break to make this needed...
+    // Product 94 is half the size it should be and 19 is upside down but has perhaps 
+    // the correct range.
+    // range = range * 2.0f;
+
+
     RangeBin* bin = GetRangeBin(radialIndex, binIndex);
     f32 sweepCenterLeft  = angleStart - (angleDelta * 0.5f);
     f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);
@@ -257,7 +264,6 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProduct* nexradProduct)
 {
     u32 bp = 0;
-    f32 maxRange = 124.0f;
 
     FILE* fp = NULL;
     fp = fopen(filename, "rb");
@@ -339,7 +345,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     // Height of the radar site in feet above sea level.
     memcpy(&pd.height, &buffer[bp], 2);
     bp += 2;
-    pd.height = swapBytes(pd.height);
+    pd.height = swapBytes(pd.height);    
 
 
     // Product Code referencing which NEXRAD product is contained in this file.
@@ -662,6 +668,9 @@ bool RadialImagePacket(
     scaleFactor = swapBytes(scaleFactor);
     radialCount = swapBytes(radialCount);
 
+    LOGINF("Bin Count: %d\n", binCount);
+    LOGINF("Radial Count: %d\n", radialCount);
+
     BinCount = binCount;
     RadialCount = radialCount;   
 
@@ -691,6 +700,7 @@ bool RadialImagePacket(
     if (binCount != 230)
         fScaleFactor = scaleFactor * 0.001f;
 
+    LOGINF("Scale factor: %2.8f\n", fScaleFactor);
 
     u8 run_color;
     s8 run, colorIndex;
