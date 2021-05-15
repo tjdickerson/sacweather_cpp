@@ -39,7 +39,7 @@ extern bool canRenderRadar;
 
 void sacw_Init();
 
-void sacw_RadarInit(const char* filename);
+void sacw_RadarInit(const char* filename, s16 productCode);
 
 void sacw_MainLoop();
 

@@ -2,7 +2,6 @@ package com.tjdickerson.sacweather;
 
 
 import android.os.Bundle;
-import android.view.MotionEvent;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tjdickerson.sacweather.util.FileFetcher;
 import com.tjdickerson.sacweather.view.SacwMapView;
@@ -18,14 +17,18 @@ public class SacwMapActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_sacwmap);
         mSacwMapView = findViewById(R.id.surfaceView);
+        mSacwMapView.init(this);
 
         String nexradFile =
-                "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
+                "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kama/sn.last";
 
         // init radar stuff
-        new FileFetcher(
-                getFilesDir().getPath(),
-                result -> startShowingRadar()).execute(nexradFile);
+        new Thread(
+                new FileFetcher(
+                        getFilesDir().getPath(),
+                        nexradFile,
+                        result -> startShowingRadar()))
+                .start();
 
 
         // get site data
@@ -55,7 +58,7 @@ public class SacwMapActivity extends AppCompatActivity
     protected void startShowingRadar()
     {
         String filepath = getFilesDir().getPath() + "/latest";
-        SacwLib.sacwRadarInit(filepath);
+        SacwLib.sacwRadarInit(filepath, (short)94);
     }
 
     @Override
@@ -74,24 +77,22 @@ public class SacwMapActivity extends AppCompatActivity
 
     // @todo
     // move me
-    float prevX = 0.0f, prevY = 0.0f;
-    float scale = 0.00004f;
 
+    //float scale = 0.00004f;
+/*
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
         float x = event.getX();
         float y = event.getY();
+        long firstTouchTime;
 
         switch(event.getAction())
         {
             case MotionEvent.ACTION_MOVE:
 
-                float w = getWindow().getAttributes().width;
-                float h = getWindow().getAttributes().height;
-
-                float dx = (prevX - x) * -scale;
-                float dy = (prevY - y) * scale;
+                float dx = (prevX - x);
+                float dy = (prevY - y);
 
                 SacwLib.sacwPanMap(dx, dy);
 
@@ -103,7 +104,7 @@ public class SacwMapActivity extends AppCompatActivity
 
 
         return true;
-    }
+    }*/
 
 /*
     private void saveToFile(List<WsrInfo> wsrList)

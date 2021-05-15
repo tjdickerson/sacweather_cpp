@@ -15,12 +15,13 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+
 #include <windows.h>
 #include <Urlmon.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <cstdio>
 #include <cstdlib>
+#include "tjd_share.h"
 
 
 #ifdef _WIN32
@@ -32,7 +33,7 @@
 #define __DEBUG__ 1
 
 #define MAX_RECV_SIZE   2048
-#define RECV_WAIT       250
+#define RECV_WAIT       500
 
 constexpr char* TARGET_HOSTNAME = "tgftp.nws.noaa.gov";
 constexpr char* FTP_PORT = "21";
@@ -53,7 +54,7 @@ typedef struct PasvResult_t
 
 
 int Send(SOCKET sock, const char* message, int messageLength, int flags = 0);
-RecvResult Recv(SOCKET sock, int flags = 0);
+RecvResult Recv(SOCKET sock);
 
 
 void LoginCommand(SOCKET socket)
@@ -356,8 +357,45 @@ int Send(SOCKET sock, const char* message, int messageLength, int flags)
 }
 
 
+/*RecvResult Recv(SOCKET sock) 
+{
+    RecvResult result = {};
+    char temp[15000];
+    int totalRecieved = 0;    
+    int bytesRecieved = 1;
+    int b = 0;
 
-RecvResult Recv(SOCKET sock, int flags) 
+    while (bytesRecieved > 0)
+    {
+        if (b >= 15000) break;
+        bytesRecieved = recv(sock, &temp[b], 1, 0);       
+
+        int err = WSAGetLastError();
+        if (err)
+        {
+            LOGERR("Error: %d", err);
+            break;
+        }
+        
+        totalRecieved += bytesRecieved;
+
+        LOGINF("%c", (char)temp[b]);
+        if (bytesRecieved <= 0) break;
+
+        b += 1;
+    }
+
+    if (totalRecieved > 0)
+    {
+        result.bytesRecieved = totalRecieved;   
+        result.message = (char*)malloc(totalRecieved * sizeof(char));     
+        memcpy(result.message, &temp[0], totalRecieved);        
+    }
+
+    return result;
+}*/
+
+RecvResult Recv(SOCKET sock) 
 {
     RecvResult result = {};
     char temp[15000];
@@ -366,9 +404,10 @@ RecvResult Recv(SOCKET sock, int flags)
     char buffer[MAX_RECV_SIZE];
     int bytesRecieved = 1;
     bool moreToRead = true;
+
     while (bytesRecieved > 0 && moreToRead)
     {
-        bytesRecieved = recv(sock, buffer, MAX_RECV_SIZE, flags);       
+        bytesRecieved = recv(sock, buffer, MAX_RECV_SIZE, 0);       
 
         int err = WSAGetLastError();
         if (err)

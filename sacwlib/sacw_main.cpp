@@ -30,8 +30,8 @@ static NexradProduct* CurrentProduct;
 
 void DownloadRadarFile()
 {
-    int DefaultProduct = 94;
-    char* DefaultWSR = "kmxx";
+    int DefaultProduct = 37;
+    char* DefaultWSR = "kama";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
@@ -60,7 +60,7 @@ void DownloadRadarFile()
     //const char* filename = "C:\\tmp\\test_vel.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";   
 
-    sacw_RadarInit(filename);  
+    sacw_RadarInit(filename, CurrentProduct->productCode);  
 }
 
 #endif
@@ -72,7 +72,7 @@ void sacw_Init()
 
     InitNexradProducts();
 
-    MapViewInfo.scaleFactor = 45.0f;
+    MapViewInfo.scaleFactor = 80.0f;
     MapViewInfo.xPan = -ConvertLonToScreen(-85.790f);
     MapViewInfo.yPan = -ConvertLatToScreen(32.537f);
 
@@ -84,11 +84,11 @@ void sacw_Init()
 }
 
 
-void sacw_RadarInit(const char* filename)
+void sacw_RadarInit(const char* filename, s16 productCode)
 {
     bool success = false;
 
-    NexradProduct* np = GetProductInfo(19);
+    NexradProduct* np = GetProductInfo(productCode);
 
     WSR88DInfo wsrInfo = {};
     success = ParseNexradRadarFile(filename, &wsrInfo, np);
@@ -126,15 +126,26 @@ void sacw_UpdateViewport(f32 width, f32 height)
 
 
 void sacw_ZoomMap(f32 zoom)
-{
-    MapViewInfo.scaleFactor += zoom * (0.1f);
+{      
+    if (zoom == 0) return;
+
+    f32 speed = 5.0f;
+    f32 dir = zoom > 0 ? 1 : -1;
+
+    f32 delta = (speed + (MapViewInfo.scaleFactor * 0.1f)) * dir;
+    f32 targetScale = MapViewInfo.scaleFactor + delta;
+
+    if (targetScale < 25) targetScale = 25 + 1;
+    else if (targetScale > 200) targetScale = 200 - 1;
+
+    MapViewInfo.scaleFactor = targetScale;
 }
 
 
 void sacw_PanMap(f32 x, f32 y)
 {
-    MapViewInfo.xPan += x;
-    MapViewInfo.yPan += y;
+    MapViewInfo.xPan += (x / MapViewInfo.scaleFactor) * -0.002f;
+    MapViewInfo.yPan += (y / MapViewInfo.scaleFactor) * 0.002f;
 }
 
 

@@ -41,9 +41,19 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_tjdickerson_sacweather_SacwLib_sacwRadarInit(
         JNIEnv* env,
         jobject /* this */,
-        jstring filename)
+        jstring filename,
+        jshort productCode)
 {
 
     const char* c_filepath = env->GetStringUTFChars(filename, 0);
-    sacw_RadarInit(c_filepath);
+    sacw_RadarInit(c_filepath, productCode);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_tjdickerson_sacweather_SacwLib_sacwZoomMap(
+        JNIEnv* env,
+        jobject /* this */,
+        jfloat zoom)
+{
+    sacw_ZoomMap(zoom);
 }

@@ -215,7 +215,21 @@ bool RenderInit()
 }
 
 
-void RenderMap()
+void RenderStates()
+{
+    glUseProgram(MapShader);
+    glBindVertexArray(MapVao);
+    glUniformMatrix4fv(MapShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
+
+    // states  #6c6c58
+    glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
+    for (int i = 0; i < StateVertData.numParts; i++)
+    {
+        glDrawArrays(GL_LINE_STRIP, StateVertData.starts[i], StateVertData.counts[i]);
+    }
+}
+
+void RenderCounties()
 {
     glUseProgram(MapShader);
     glBindVertexArray(MapVao);
@@ -227,13 +241,6 @@ void RenderMap()
     for (int i = 0; i < CountyVertData.numParts; i++)
     {
         glDrawArrays(GL_LINE_STRIP, CountyVertData.starts[i], CountyVertData.counts[i]);
-    }
-
-    // states  #6c6c58
-    glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
-    for (int i = 0; i < StateVertData.numParts; i++)
-    {
-        glDrawArrays(GL_LINE_STRIP, StateVertData.starts[i], StateVertData.counts[i]);
     }
 }
 
@@ -250,6 +257,19 @@ void RenderRadar()
 }
 
 
+void DoRender()
+{
+    RenderStates();
+
+    if (canRenderRadar)
+    {
+        RenderRadar();
+    }
+
+    RenderCounties();
+}
+
+
 void Render()
 {
     // 
@@ -262,7 +282,7 @@ void Render()
     ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
     ModelMatrix[13] = MapViewInfo.yPan * ModelMatrix[5];
 
-    bool splitScreen = false;
+    bool splitScreen = true;
     if (splitScreen)
     {
         ModelMatrix[0] = (MapViewInfo.scaleFactor * 0.5f) / MapViewInfo.xScale;
@@ -276,9 +296,7 @@ void Render()
                 MapViewInfo.mapWidthPixels, 
                 MapViewInfo.mapHeightPixels * 0.5f);
             
-            RenderMap();
-            if (canRenderRadar)
-                RenderRadar();
+            DoRender();
         }
 
         // top view
@@ -289,9 +307,7 @@ void Render()
             MapViewInfo.mapWidthPixels, 
             MapViewInfo.mapHeightPixels * 0.5f);
 
-            RenderMap();
-            if (canRenderRadar)
-                RenderRadar();
+            DoRender();
         }       
 
     }
@@ -304,11 +320,7 @@ void Render()
                 MapViewInfo.mapWidthPixels, 
                 MapViewInfo.mapHeightPixels);
 
-        RenderMap();
-        if (canRenderRadar)
-        {
-            RenderRadar();
-        }
+        DoRender();
     }
 
     glUseProgram(0);

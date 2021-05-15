@@ -6,6 +6,9 @@
 #include "tjd_gl.h"
 #include "sacw_api.h"
 
+// move this later
+
+
 // Forward declarations just so I can order these however.
 
 HWND InitWindow(HINSTANCE);
@@ -75,8 +78,8 @@ void PanMap(f32 x, f32 y)
 {
     f32 dx, dy;
 
-    dx = (ClickLast.x - x) * -0.001f;
-    dy = (ClickLast.y - y) *  0.001f;
+    dx = (ClickLast.x - x);
+    dy = (ClickLast.y - y);
 
     sacw_PanMap(dx, dy);
 
@@ -162,7 +165,7 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
 
         case WM_MOUSEWHEEL:
         {
-            f32 delta = GET_WHEEL_DELTA_WPARAM(wParam) * 0.01f; // @todo
+            f32 delta = GET_WHEEL_DELTA_WPARAM(wParam); // @todo
             sacw_ZoomMap(delta);
         }
         break;

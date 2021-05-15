@@ -108,13 +108,6 @@ void CalcRangeBinLocation(
 {
     f32 dx1, dy1, dx2, dy2;
 
-    // @todo
-    // What did I break to make this needed...
-    // Product 94 is half the size it should be and 19 is upside down but has perhaps 
-    // the correct range.
-    // range = range * 2.0f;
-
-
     RangeBin* bin = GetRangeBin(radialIndex, binIndex);
     f32 sweepCenterLeft  = angleStart - (angleDelta * 0.5f);
     f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);

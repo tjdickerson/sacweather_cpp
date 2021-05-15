@@ -6,33 +6,35 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
-public class FileFetcher extends AsyncTask<String ,String, String>
+public class FileFetcher implements Runnable
 {
     private final String mFilesDir;
+    private final String mTargetUrl;
 
     public FetchResponse mDelegate = null;
 
-    public FileFetcher(String filesDir, FetchResponse delegate)
+    public FileFetcher(String filesDir, String targetUrl, FetchResponse delegate)
     {
-        super();
         mFilesDir = filesDir;
+        mTargetUrl = targetUrl;
         mDelegate = delegate;
     }
 
     @Override
-    protected void onPreExecute()
+    public void run()
     {
-        super.onPreExecute();
-        // make some progress ui view show
+        String result = downloadStart();
+        mDelegate.downloadFinished(result);
     }
 
-    @Override
-    protected String doInBackground(String... strings)
+    private String downloadStart()
     {
         try
         {
-            String srcUrl = strings[0];
+            String srcUrl = mTargetUrl;
             URL url = new URL(srcUrl);
             URLConnection connection = url.openConnection();
             connection.connect();
@@ -74,14 +76,7 @@ public class FileFetcher extends AsyncTask<String ,String, String>
             e.printStackTrace();
         }
 
-        return null;
+        return "";
     }
 
-
-    @Override
-    protected void onPostExecute(String result)
-    {
-        mDelegate.downloadFinished(result);
-        super.onPostExecute(result);
-    }
 }

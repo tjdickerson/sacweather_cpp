@@ -367,7 +367,7 @@
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 40.0
 	},
 	"find_in_files":
 	{
@@ -382,6 +382,15 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"CalcRange",
+			"Parse",
+			"@todo",
+			"range = ",
+			"range",
+			"124",
+			"maxRange",
+			"CalcRangeBinLocation",
+			"range",
 			"glViewport",
 			"GLCREATESHA",
 			"sacw_init",
@@ -538,6 +547,30 @@
 		"selected_items":
 		[
 			[
+				"nws",
+				"sacwlib\\nws_info.cpp"
+			],
+			[
+				"sacw_ma",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"tjd_rada",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"rada",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"tjd_gl_",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"nswin",
+				"sacwlib\\nws_info.cpp"
+			],
+			[
 				"sacw_main",
 				"sacwlib\\sacw_main.cpp"
 			],
@@ -562,24 +595,12 @@
 				"src\\bzlib.h"
 			],
 			[
-				"sacw_ma",
-				"src\\sacw_main.cpp"
-			],
-			[
-				"nws",
-				"src\\nws_info.h"
-			],
-			[
 				"nws_info",
 				"src\\nws_info.cpp"
 			],
 			[
 				"tjd_radar.",
 				"src\\tjd_radar.h"
-			],
-			[
-				"tjd_rada",
-				"src\\tjd_radar.cpp"
 			],
 			[
 				"tjd_conv",
@@ -616,10 +637,6 @@
 			[
 				"shape",
 				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"rada",
-				"src\\tjd_radar.cpp"
 			],
 			[
 				"main",

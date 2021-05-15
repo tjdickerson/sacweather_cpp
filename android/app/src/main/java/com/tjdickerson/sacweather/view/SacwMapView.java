@@ -1,8 +1,10 @@
 package com.tjdickerson.sacweather.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import com.tjdickerson.sacweather.listener.SacTouchListener;
 
 public class SacwMapView extends GLSurfaceView
 {
@@ -17,5 +19,10 @@ public class SacwMapView extends GLSurfaceView
 
         mSacwMapRenderer = new SacwMapRenderer(context);
         setRenderer(mSacwMapRenderer);
+    }
+
+    public void init(Activity activity)
+    {
+        setOnTouchListener(new SacTouchListener(activity));
     }
 }
