@@ -34,10 +34,6 @@ typedef struct WSR88DInfo_t
 extern RangeBin* RangeBins;
 
 
-void tjd_RadarInit();
-void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
-bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProduct* nexradProduct);
-
 static color4 ReflectivityMap[] =
 {
     { 0.20f,  0.20f,  0.20f,  0.20f },   // 0 - black transparent
@@ -158,6 +154,16 @@ typedef struct SymbologyHeader_t {
     s16 layerDivider;
     s16 layerLength;
 } SymbologyHeader;
+
+
+
+void tjd_RadarInit();
+void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
+bool ParseNexradRadarFile(
+    const char* filename, 
+    WSR88DInfo* wsrInfo, 
+    NexradProduct* nexradProduct, 
+    ProductDescription* pd);
 
 
 

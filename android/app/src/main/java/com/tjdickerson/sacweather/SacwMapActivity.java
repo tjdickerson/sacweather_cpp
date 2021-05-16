@@ -2,13 +2,35 @@ package com.tjdickerson.sacweather;
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.tjdickerson.sacweather.util.FileFetcher;
+import com.tjdickerson.sacweather.data.NexradProductInfo;
+import com.tjdickerson.sacweather.data.RadarView;
+import com.tjdickerson.sacweather.data.WsrInfo;
+import com.tjdickerson.sacweather.task.FileFetcher;
+import com.tjdickerson.sacweather.task.RadarExecutorService;
 import com.tjdickerson.sacweather.view.SacwMapView;
+
+import java.io.*;
+import java.util.*;
 
 public class SacwMapActivity extends AppCompatActivity
 {
     private SacwMapView mSacwMapView;
+    private RadarView mRadarView;
+
+    private TextView scanTimeTv;
+    private Handler mHandler;
+
+    private List<WsrInfo> mWsrList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -19,20 +41,22 @@ public class SacwMapActivity extends AppCompatActivity
         mSacwMapView = findViewById(R.id.surfaceView);
         mSacwMapView.init(this);
 
-        String nexradFile =
-                "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kama/sn.last";
+        registerForContextMenu(mSacwMapView);
 
-        // init radar stuff
-        new Thread(
-                new FileFetcher(
-                        getFilesDir().getPath(),
-                        nexradFile,
-                        result -> startShowingRadar()))
-                .start();
+        scanTimeTv = findViewById(R.id.scanTime);
 
+        mHandler = new Handler(Looper.myLooper());
 
         // get site data
-        //List<WsrInfo> wsrList = getWsrListFromFile("wsrlist");
+        mWsrList = getWsrListFromFile("data/wsrlist");
+        List<NexradProductInfo> products = createProductList();
+
+        // get thing
+        mRadarView = new RadarView();
+
+        WsrInfo selectedRda = RadarView.findWsrInfoById(mWsrList, "KPAH");
+        NexradProductInfo product = RadarView.findProductByCode(products, (short) 94);
+        SetRadarView(selectedRda, product);
 
         /*new JsonFetcher(result -> {
             try
@@ -49,16 +73,101 @@ public class SacwMapActivity extends AppCompatActivity
         .execute("https://api.weather.gov/radar/stations?stationType=WSR-88D");*/
     }
 
+    protected void SetRadarView(WsrInfo selectedRda, NexradProductInfo product)
+    {
+        if (selectedRda != null && product != null)
+        {
+            mRadarView.setWsrInfo(selectedRda);
+            mRadarView.setProductInfo(product);
+
+            // set info panel stuff?
+            TextView rdaName = findViewById(R.id.rdaName);
+            rdaName.setText(String.format("%s - %s", selectedRda.getId(), selectedRda.getName()));
+
+            TextView productName = findViewById(R.id.productName);
+            productName.setText(product.getDisplayName());
+
+            // init radar stuff
+            RadarExecutorService.getInstance().run(
+                    new FileFetcher(
+                            getFilesDir().getPath(),
+                            mRadarView.getUrl(),
+                            result -> startShowingRadar()));
+
+        }
+        else
+        {
+            // error happened
+            alertDialog("Failed to find data.", "ERROR");
+        }
+    }
+
     @Override
     protected void onStart()
     {
         super.onStart();
     }
 
+
     protected void startShowingRadar()
     {
         String filepath = getFilesDir().getPath() + "/latest";
-        SacwLib.sacwRadarInit(filepath, (short)94);
+        SacwLib.sacwRadarInit(filepath, mRadarView.getProductInfo().getProductCode());
+
+        // number of seconds after midnight GMT
+        long scanTime = SacwLib.sacwScanTime();
+
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        Calendar calendar = Calendar.getInstance(tz);
+        calendar.setTimeInMillis(scanTime);
+
+        long time = calendar.getTimeInMillis();
+        Date d = new Date(time);
+        String what = d.toString();
+
+        mHandler.post(() -> scanTimeTv.setText(what));
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo)
+    {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        float latitude = mSacwMapView.getLastQueriedPoint().y;
+        float longitude = mSacwMapView.getLastQueriedPoint().x;
+        String template = "Info for %2.4f, %2.4f";
+        WsrInfo wsrInfo = RadarView.findClosestRda(mWsrList, longitude, latitude);
+
+        menu.clear();
+        menu.setHeaderTitle(String.format(Locale.getDefault(), template, latitude, longitude));
+        menu.add(0, v.getId(), 0, wsrInfo.getId());
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_location, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item)
+    {
+        String rda = item.getTitle().toString();
+        WsrInfo wsrInfo = RadarView.findWsrInfoById(mWsrList, rda);
+
+        SetRadarView(wsrInfo, mRadarView.getProductInfo());
+        return true;
+    }
+
+    public void showLocationMenu(float lon, float lat)
+    {
+        //
+/*        String template = "%2.4f, %2.4f";
+
+
+        MenuItem rdaItem = findViewById(R.id.closestRda);
+        rdaItem.setTitle(wsrInfo.getId());
+
+        openContextMenu(mSacwMapView);*/
     }
 
     @Override
@@ -106,27 +215,25 @@ public class SacwMapActivity extends AppCompatActivity
         return true;
     }*/
 
-/*
     private void saveToFile(List<WsrInfo> wsrList)
     {
         // move me later
-        String filename = "wsrlist";
+        String filename = "data/wsrlist";
         String filepath = getFilesDir().getPath() + "/" + filename;
 
         StringBuilder output = new StringBuilder();
-        for(WsrInfo wsr : wsrList)
+        for (WsrInfo wsr : wsrList)
         {
             output.append(wsr.toFileLine());
             output.append("\n");
         }
 
         File file = new File(filepath);
-        try(FileOutputStream fos = new FileOutputStream(file);
-            BufferedOutputStream bos = new BufferedOutputStream(fos))
+        try (FileOutputStream fos = new FileOutputStream(file);
+             BufferedOutputStream bos = new BufferedOutputStream(fos))
         {
             bos.write(output.toString().getBytes());
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             e.printStackTrace();
         }
@@ -141,16 +248,15 @@ public class SacwMapActivity extends AppCompatActivity
 
         if (file.exists())
         {
-            try(FileReader fr = new FileReader(file);
-                BufferedReader br = new BufferedReader(fr))
+            try (FileReader fr = new FileReader(file);
+                 BufferedReader br = new BufferedReader(fr))
             {
                 String s;
                 while ((s = br.readLine()) != null)
                 {
-                    content.append(s);
+                    content.append(s).append("\n");
                 }
-            }
-            catch (IOException e)
+            } catch (IOException e)
             {
                 e.printStackTrace();
             }
@@ -170,6 +276,8 @@ public class SacwMapActivity extends AppCompatActivity
             WsrInfo wsr = new WsrInfo();
             String[] s = line.split("\\|");
 
+            if (s.length < 5) break;
+
             wsr.setId(s[WsrInfo.ID_INDEX]);
             wsr.setName(s[WsrInfo.NAME_INDEX]);
             wsr.setLongitude(TryParseDouble(s[WsrInfo.LONGITUDE_INDEX]));
@@ -184,18 +292,39 @@ public class SacwMapActivity extends AppCompatActivity
 
     // @todo
     // need a utils class i guess
-    private double TryParseDouble(String d)
+    private float TryParseDouble(String d)
     {
-        double result;
+        float result;
 
-        try {
-            result = Double.parseDouble(d);
-        }
-        catch (NumberFormatException e)
+        try
+        {
+            result = Float.parseFloat(d);
+        } catch (NumberFormatException e)
         {
             result = -1;
         }
 
         return result;
-    }    */
+    }
+
+
+    private void alertDialog(String message, String title)
+    {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage(message);
+        dialog.setTitle(title);
+
+        AlertDialog alertDialog = dialog.create();
+        alertDialog.show();
+    }
+
+    private List<NexradProductInfo> createProductList()
+    {
+        List<NexradProductInfo> npi = new ArrayList<>();
+
+        npi.add(new NexradProductInfo((short) 94, "Reflectivity"));
+        npi.add(new NexradProductInfo((short) 99, "Velocity"));
+
+        return npi;
+    }
 }

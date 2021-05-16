@@ -282,7 +282,7 @@ void Render()
     ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
     ModelMatrix[13] = MapViewInfo.yPan * ModelMatrix[5];
 
-    bool splitScreen = true;
+    bool splitScreen = false;
     if (splitScreen)
     {
         ModelMatrix[0] = (MapViewInfo.scaleFactor * 0.5f) / MapViewInfo.xScale;

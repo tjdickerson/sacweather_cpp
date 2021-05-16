@@ -35,6 +35,7 @@ if %BUILD_TYPE%==%TARG_WIN32% (
 
 @rem Add the main source files.
 set src=%src% ^
+%cd%\windows\win32_menu.cpp ^
 %cd%\sacwlib\sacw_main.cpp ^
 %cd%\sacwlib\tjd_ftp.cpp ^
 %cd%\sacwlib\tjd_shapefile.cpp ^

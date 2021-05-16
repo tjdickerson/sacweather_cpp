@@ -367,7 +367,7 @@
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 39.0
 	},
 	"find_in_files":
 	{
@@ -382,6 +382,17 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"Size",
+			"19",
+			"94",
+			"range",
+			"ParseNexradRadarFile",
+			"RadialImagePacket",
+			"GetColorFromSpeed",
+			"VelocityMap",
+			"CalcRangeBinLocation",
+			"range",
+			"radius",
 			"CalcRange",
 			"Parse",
 			"@todo",
@@ -497,7 +508,7 @@
 	},
 	"incremental_find":
 	{
-		"height": 33.0
+		"height": 29.0
 	},
 	"input":
 	{
@@ -537,7 +548,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 62.0
+		"height": 54.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -546,6 +557,42 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"tjd_sh",
+				"sacwlib\\tjd_share.h"
+			],
+			[
+				"win32",
+				"windows\\win32_main.cpp"
+			],
+			[
+				"ftp",
+				"sacwlib\\tjd_ftp.cpp"
+			],
+			[
+				"sacw_ap",
+				"sacwlib\\sacw_api.h"
+			],
+			[
+				"tjd_ra",
+				"sacwlib\\tjd_radar.h"
+			],
+			[
+				"nw",
+				"sacwlib\\nws_info.cpp"
+			],
+			[
+				"rada",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"sacw_main",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"gr",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
 			[
 				"nws",
 				"sacwlib\\nws_info.cpp"
@@ -559,24 +606,12 @@
 				"sacwlib\\tjd_radar.cpp"
 			],
 			[
-				"rada",
-				"sacwlib\\tjd_radar.cpp"
-			],
-			[
 				"tjd_gl_",
 				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
 				"nswin",
 				"sacwlib\\nws_info.cpp"
-			],
-			[
-				"sacw_main",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
-				"win32",
-				"windows\\win32_main.cpp"
 			],
 			[
 				"tjd_g",
@@ -643,10 +678,6 @@
 				"src\\sacw_main.cpp"
 			],
 			[
-				"nw",
-				"src\\nws_info.cpp"
-			],
-			[
 				"ren",
 				"src\\gl_render.cpp"
 			],
@@ -697,10 +728,6 @@
 			[
 				"saw_main",
 				"src\\sacw_main.cpp"
-			],
-			[
-				"ftp",
-				"src\\tjd_ftp.cpp"
 			],
 			[
 				"tjd_ftp",
@@ -755,20 +782,12 @@
 				"src\\gl_render.cpp"
 			],
 			[
-				"tjd_ra",
-				"src\\tjd_radar.cpp"
-			],
-			[
 				"tjd_con",
 				"src\\tjd_conversions.h"
 			],
 			[
 				"shapefile",
 				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"sacw_ap",
-				"src\\sacw_api.h"
 			],
 			[
 				"rend",

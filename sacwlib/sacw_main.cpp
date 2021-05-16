@@ -19,6 +19,9 @@ bool canRenderRadar;
 bool radarIsStale;
 
 static NexradProduct* CurrentProduct;
+static ProductDescription gProductDescription;
+
+v2f32 ConvertScreenToCoords(s32 x, s32 y);
 
 // temp?
 
@@ -91,7 +94,8 @@ void sacw_RadarInit(const char* filename, s16 productCode)
     NexradProduct* np = GetProductInfo(productCode);
 
     WSR88DInfo wsrInfo = {};
-    success = ParseNexradRadarFile(filename, &wsrInfo, np);
+    gProductDescription = {};
+    success = ParseNexradRadarFile(filename, &wsrInfo, np, &gProductDescription);
 
     MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
     MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
@@ -154,6 +158,26 @@ void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
     tjd_GetRadarRenderData(rbd, rvd);
 }
 
+s64 sacw_GetScanTime()
+{
+    s64 idunno = 86400000;
+    s32 scanDate = gProductDescription.productDate - 1;
+    s32 scanTime = gProductDescription.productTime;
+
+    s64 whateven = (scanDate * idunno) + (scanTime * 1000);
+
+    LOGINF("Scan Time: %d %d %d\n", scanDate, scanTime, whateven);
+    return whateven;
+}
+
+void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
+{
+    // ?
+    v2f32 convertedPoint = ConvertScreenToCoords(x, y);
+    points[0] = convertedPoint.x;
+    points[1] = convertedPoint.y;
+}
+
 
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties)
 {
@@ -161,8 +185,8 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
     // @todo
     // handle this differently
     #ifdef __ANDROID__
-    const char* stateShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/shapes/st_us";
-    const char* countyShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/shapes/cnt_us";
+    const char* stateShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/data/st_us";
+    const char* countyShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/data/cnt_us";
     #else
     const char* stateShapeFile = "C:\\shapes\\weather\\st_us";
     const char* countyShapeFile = "C:\\shapes\\weather\\cnt_us";
@@ -222,4 +246,75 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
         }
     }    
 
+}
+
+v2f32 ConvertScreenToCoords(s32 x, s32 y) 
+{
+    /* 
+
+    By shifting the longitude value to the "east" by 180 it essentially becomes a 0 - 360
+    screen width. Once the relateive sceen coordinate has been scaled down, then we can just
+    shift the values back "west" by 180. This makes it trivial to convert from a screen 
+    coordinate to a longitute.
+
+    The same can be applied to latitude. The mercator projection can be applied after this
+    translation to map it to real coordinates.
+
+    0 -------------x1-------------  1000 w1 = client screen width
+    0 -------------x2-------------   360 w2 = adjusted lon coord width
+
+    x1 = input = 500
+    x2 = target = 180 ( - 180 = 0)
+
+    ((x1 * w2) / w1) - 180 = x2
+
+    0 -----x1---------------------  1000 w1 = client screen width
+    0 -----x2---------------------   360 w2 = adjusted lon coord width
+
+    x1 = input = 250
+    x2 = target = 90 ( - 180 = -90)
+
+    ((x1 * w2) / w1) - 180 = x2
+
+    */
+    
+    // TODO: This may not work when the screen is smaller than 360x360.
+
+    v2f32 coords = {};
+
+    f32 width = MapViewInfo.mapWidthPixels; 
+    f32 height = MapViewInfo.mapHeightPixels;
+    // width = 984;
+    // height = 961;
+
+    f32 totalWidth = 360.0f;
+    f32 totalHeight = 360.0f;
+    f32 xRadius = 180.0f;
+    f32 yRadius = 180.0f;
+    f32 xPan = MapViewInfo.xPan * (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    f32 yPan = MapViewInfo.yPan * (MapViewInfo.scaleFactor / MapViewInfo.yScale);
+
+    f32 xAdjust = MapViewInfo.scaleFactor / MapViewInfo.xScale;
+    f32 yAdjust = MapViewInfo.scaleFactor / MapViewInfo.yScale;
+
+    totalWidth  /= xAdjust;
+    totalHeight /= yAdjust;
+    xRadius /= xAdjust;
+    yRadius /= yAdjust;
+    xPan /= xAdjust;
+    yPan /= yAdjust;
+   
+    coords.x = ((x * totalWidth) / (width)) - xRadius;
+    coords.x = xPan * 180.0f - coords.x;
+    coords.x *= -1.0f;
+
+    coords.y = ((y * totalHeight) / (height)) - yRadius;         
+    coords.y = yPan * 180.0f + coords.y;
+    coords.y *= -1.0f;
+
+    coords.y = ScreenToY(coords.y);
+
+    LOGINF("Lon Lat: %2.4f %2.4f\n", coords.x, coords.y);
+
+    return coords;
 }

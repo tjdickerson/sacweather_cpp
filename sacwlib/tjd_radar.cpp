@@ -34,9 +34,6 @@ bool RadialImagePacket(
     s16 packetCode);
 
 
-bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo);
-
-
 void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 colorIndex);
 
 bool RasterImagePacket(
@@ -254,7 +251,11 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 }
 
 
-bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProduct* nexradProduct)
+bool ParseNexradRadarFile(
+    const char* filename, 
+    WSR88DInfo* wsrInfo, 
+    NexradProduct* nexradProduct,
+    ProductDescription* pd)
 {
     u32 bp = 0;
 
@@ -308,163 +309,158 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         productLength = swapBytes(productLength);
     }
 
-
-    // The product description block is 102 bytes long. Unfortunately because of my current
-    // uncertainty with the struct padding, I'm going to pluck these out one at a time. The way
-    // the data is laid out in the file isn't aligned very nicely.
-    ProductDescription pd = {}; 
-
+    
     // skipping the divider
     bp += 2;
 
 
     // The latitude and longitude of the radar site is stored as two 4 byte integers. They are 
     // treated as having a scale of three.
-    memcpy(&pd.lat, &buffer[bp], 4);
+    memcpy(&pd->lat, &buffer[bp], 4);
     bp += 4;
-    pd.lat = swapBytes(pd.lat);
+    pd->lat = swapBytes(pd->lat);
 
-    memcpy(&pd.lon, &buffer[bp], 4);
+    memcpy(&pd->lon, &buffer[bp], 4);
     bp += 4;
-    pd.lon = swapBytes(pd.lon);
+    pd->lon = swapBytes(pd->lon);
 
-    f32 siteLat = pd.lat * 0.001f;
-    f32 siteLon = pd.lon * 0.001f;
+    f32 siteLat = pd->lat * 0.001f;
+    f32 siteLon = pd->lon * 0.001f;
 
     wsrInfo->lat = siteLat;
     wsrInfo->lon = siteLon;
 
 
     // Height of the radar site in feet above sea level.
-    memcpy(&pd.height, &buffer[bp], 2);
+    memcpy(&pd->height, &buffer[bp], 2);
     bp += 2;
-    pd.height = swapBytes(pd.height);    
+    pd->height = swapBytes(pd->height);    
 
 
     // Product Code referencing which NEXRAD product is contained in this file.
-    memcpy(&pd.productCode, &buffer[bp], 2);
+    memcpy(&pd->productCode, &buffer[bp], 2);
     bp += 2;
-    pd.productCode = swapBytes(pd.productCode);
+    pd->productCode = swapBytes(pd->productCode);
 
 
     // Operational Mode of the WSR-88D
     // 0 - Maintenance
     // 1 - Clean Air
     // 2 - Precipitation/Severe Weather
-    memcpy(&pd.operationalMode, &buffer[bp], 2);
+    memcpy(&pd->operationalMode, &buffer[bp], 2);
     bp += 2;
-    pd.operationalMode = swapBytes(pd.operationalMode);
+    pd->operationalMode = swapBytes(pd->operationalMode);
 
 
     // RDA Volume Coverage Pattern
     // @todo Document the VCP types and meanings
-    memcpy(&pd.vcp, &buffer[bp], 2);
+    memcpy(&pd->vcp, &buffer[bp], 2);
     bp += 2;
-    pd.vcp = swapBytes(pd.vcp);
+    pd->vcp = swapBytes(pd->vcp);
 
 
     // Sequence Number may not be useful.
     // Refer to Figure 3-4 of 2620001X.pdf
-    memcpy(&pd.sequenceNum, &buffer[bp], 2);
+    memcpy(&pd->sequenceNum, &buffer[bp], 2);
     bp += 2;
-    pd.sequenceNum = swapBytes(pd.sequenceNum);
+    pd->sequenceNum = swapBytes(pd->sequenceNum);
 
 
     // This is a counter of volume scans for the radar site, it rolls back to one every 80 
     // volume scans. Not sure if this can be used in any meaningful way, but might be neat to
     // show if it's populated.
-    memcpy(&pd.volScanNum, &buffer[bp], 2);
+    memcpy(&pd->volScanNum, &buffer[bp], 2);
     bp += 2;
-    pd.volScanNum = swapBytes(pd.volScanNum);
+    pd->volScanNum = swapBytes(pd->volScanNum);
 
 
     // Volume Scan Date is stored as number of days since 1 Jan 1970.
-    memcpy(&pd.volScanDate, &buffer[bp], 2);
+    memcpy(&pd->volScanDate, &buffer[bp], 2);
     bp += 2;
-    pd.volScanDate = swapBytes(pd.volScanDate);
+    pd->volScanDate = swapBytes(pd->volScanDate);
 
 
     // Volume Scan Time is stored as number of seconds since Midnight.
-    memcpy(&pd.volScanTime, &buffer[bp], 4);
+    memcpy(&pd->volScanTime, &buffer[bp], 4);
     bp += 4;
-    pd.volScanTime = swapBytes(pd.volScanTime);
+    pd->volScanTime = swapBytes(pd->volScanTime);
 
 
     // @todo
     // Figure out the diference between volume scan date/time and product date/time
-    memcpy(&pd.productDate, &buffer[bp], 2);
+    memcpy(&pd->productDate, &buffer[bp], 2);
     bp += 2;
-    pd.productDate = swapBytes(pd.productDate);
+    pd->productDate = swapBytes(pd->productDate);
 
-    memcpy(&pd.productTime, &buffer[bp], 4);
+    memcpy(&pd->productTime, &buffer[bp], 4);
     bp += 4;
-    pd.productTime = swapBytes(pd.productTime);
+    pd->productTime = swapBytes(pd->productTime);
 
 
     // Reference TABLE V for Product dependant parameters 1 and 2.
-    memcpy(&pd.h27_28, &buffer[bp], 4);
+    memcpy(&pd->h27_28, &buffer[bp], 4);
     bp += 4;
     
 
     // Elevation number within volume scan has range of 0-20
-    memcpy(&pd.elevationNum, &buffer[bp], 2);        
+    memcpy(&pd->elevationNum, &buffer[bp], 2);        
     bp += 2;
-    pd.elevationNum = swapBytes(pd.elevationNum);
+    pd->elevationNum = swapBytes(pd->elevationNum);
 
 
     // Halfword 30 changes based on product, see TABLE V for parameter 3
-    if (pd.productCode == 19 || pd.productCode == 94) 
+    if (pd->productCode == 19 || pd->productCode == 94) 
     {
-        memcpy(&pd.elevationAngle, &buffer[bp], 2);
+        memcpy(&pd->elevationAngle, &buffer[bp], 2);
         bp += 2;
-        pd.elevationAngle = swapBytes(pd.elevationAngle);
+        pd->elevationAngle = swapBytes(pd->elevationAngle);
     } 
     else 
     {
-        memcpy(&pd.h30, &buffer[bp], 2);
+        memcpy(&pd->h30, &buffer[bp], 2);
         bp += 2;
     }
 
 
     // @todo
-    memcpy(&pd.thresholdData, &buffer[bp], 32);
+    memcpy(&pd->thresholdData, &buffer[bp], 32);
     bp += 32;
 
 
     // TABLE V parameters 4 - 10 @todo
-    memcpy(&pd.h47_53, &buffer[bp], 14);
+    memcpy(&pd->h47_53, &buffer[bp], 14);
     bp += 14;
 
     bool compressed = false;
-    if (pd.productCode == 94 || pd.productCode == 99)
+    if (pd->productCode == 94 || pd->productCode == 99)
     {
-        compressed = !(pd.br.compressionMethod[0] == 0 && pd.br.compressionMethod[1] == 0);
+        compressed = !(pd->br.compressionMethod[0] == 0 && pd->br.compressionMethod[1] == 0);
     }
 
 
     // Product version number, might be interesting to show on screen.
-    memcpy(&pd.version, &buffer[bp], 1);
+    memcpy(&pd->version, &buffer[bp], 1);
     bp += 1;
 
 
     // Spot Blanking?
     // 1 - Spot Blanking ON
     // 0 - Spot Blanking OFF
-    memcpy(&pd.spotBlank, &buffer[bp], 1);
+    memcpy(&pd->spotBlank, &buffer[bp], 1);
     bp += 1;
 
 
 
-    memcpy(&pd.symbologyOffset, &buffer[bp], 4);
-    pd.symbologyOffset = swapBytes(pd.symbologyOffset);
+    memcpy(&pd->symbologyOffset, &buffer[bp], 4);
+    pd->symbologyOffset = swapBytes(pd->symbologyOffset);
     bp += 4;
 
-    memcpy(&pd.graphicOffset, &buffer[bp], 4);
-    pd.graphicOffset = swapBytes(pd.graphicOffset);
+    memcpy(&pd->graphicOffset, &buffer[bp], 4);
+    pd->graphicOffset = swapBytes(pd->graphicOffset);
     bp += 4;
 
-    memcpy(&pd.tabularOffset, &buffer[bp], 4);
-    pd.tabularOffset = swapBytes(pd.tabularOffset);
+    memcpy(&pd->tabularOffset, &buffer[bp], 4);
+    pd->tabularOffset = swapBytes(pd->tabularOffset);
     bp += 4;
 
 
@@ -473,13 +469,13 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         LOGINF("Compressed data...");
 
         // @todo .... why no work
-        //unsigned int srcLen = productLength - (messageHeaderLength + sizeof(pd));
+        //unsigned int srcLen = productLength - (messageHeaderLength + sizeof(pd->);
         unsigned int srcLen = fileLength - bp;
 
         /*u16 hi = 0;
         u16 lo = 0;
-        memcpy(&hi, &pd.br.hiUncompProdSize[0], 2);
-        memcpy(&lo, &pd.br.loUncompProdSize[0], 2);
+        memcpy(&hi, &pd->br.hiUncompProdSize[0], 2);
+        memcpy(&lo, &pd->br.loUncompProdSize[0], 2);
 
         hi = swapBytes(hi);
         lo = swapBytes(lo);       
@@ -487,7 +483,7 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
         u32 len = (hi << 16) | lo;*/
 
         u32 temp = 0;
-        memcpy(&temp, &pd.br.hiUncompProdSize[0], 4);
+        memcpy(&temp, &pd->br.hiUncompProdSize[0], 4);
         u32 len = swapBytes(temp);
 
         char* compBuffer = (char*)malloc(len * sizeof(char));    
@@ -551,11 +547,11 @@ bool ParseNexradRadarFile(const char* filename, WSR88DInfo* wsrInfo, NexradProdu
     if ((packetCode & 0xffff) == 0xaf1f ||
         (packetCode & 0xffff) == 16)
     {
-        result = RadialImagePacket(buffer, bp, nexradProduct, wsrInfo, &pd, packetCode);
+        result = RadialImagePacket(buffer, bp, nexradProduct, wsrInfo, pd, packetCode);
     }    
     else if ((packetCode & 0xffff) == 0xba07) 
     {
-        result = RasterImagePacket(buffer, bp, nexradProduct, wsrInfo, &pd, packetCode);
+        result = RasterImagePacket(buffer, bp, nexradProduct, wsrInfo, pd, packetCode);
     }
     else
     {

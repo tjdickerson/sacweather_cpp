@@ -1,13 +1,9 @@
-package com.tjdickerson.sacweather.util;
-
-import android.os.AsyncTask;
+package com.tjdickerson.sacweather.task;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 public class FileFetcher implements Runnable
 {

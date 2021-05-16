@@ -51,6 +51,10 @@ void sacw_ZoomMap(f32 zoom);
 
 void sacw_PanMap(f32 x, f32 y);
 
+s64 sacw_GetScanTime();
+
+void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points);
+
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties);
 
 void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);

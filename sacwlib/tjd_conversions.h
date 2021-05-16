@@ -26,6 +26,12 @@ f32 ConvertLonToScreen(f32 lon);
 
 f32 ConvertLatToScreen(f32 lat);
 
+f32 ScreenToY (f32 value);
+
+f32 ScreenToX (f32 value);
+
+v2f32 AdjustCoordinatesForMap(f32 x, f32 y);
+
 
 #define _tjd_conversions_h_
 #endif

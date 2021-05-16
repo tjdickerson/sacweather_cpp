@@ -1,4 +1,4 @@
-package com.tjdickerson.sacweather.util;
+package com.tjdickerson.sacweather.task;
 
 public interface FetchResponse
 {

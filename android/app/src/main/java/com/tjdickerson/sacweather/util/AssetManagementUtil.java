@@ -8,7 +8,7 @@ public class AssetManagementUtil
 {
     public static void validateAssets(Context ctx) throws IOException
     {
-        String storageDir = ctx.getFilesDir().getPath() + "/shapes";
+        String storageDir = ctx.getFilesDir().getPath() + "/data";
         File targetFolder = new File(storageDir);
 
         boolean directoryExists = targetFolder.exists();
@@ -17,12 +17,12 @@ public class AssetManagementUtil
 
         if (directoryExists)
         {
-            for(String filename : ctx.getAssets().list("shapes"))
+            for(String filename : ctx.getAssets().list("data"))
             {
                 File out = new File(storageDir + "/" + filename);
                 if (out.exists()) continue;
 
-                InputStream in = ctx.getAssets().open("shapes/" + filename);
+                InputStream in = ctx.getAssets().open("data/" + filename);
                 OutputStream os = new FileOutputStream(out);
 
                 byte[] buf = new byte[1024];

@@ -5,6 +5,7 @@
 #include "tjd_ftp.h"
 #include "tjd_gl.h"
 #include "sacw_api.h"
+#include "win32_menu.h"
 
 // move this later
 
@@ -246,6 +247,7 @@ HWND InitWindow(HINSTANCE instance)
         return 0;
     }    
 
+    HMENU menu = BuildMenu();
     HWND hwnd = CreateWindowEx(
             0,
             wndClass.lpszClassName,
@@ -255,16 +257,19 @@ HWND InitWindow(HINSTANCE instance)
             //1000, 1000,                         // w, h
             CW_USEDEFAULT, CW_USEDEFAULT, 
             0,
-            0,
+            menu,
             instance,
             0
-    );
+    );    
 
     if (!hwnd) 
     {
         LogMessage("Error creating window");
         return 0;
     }
+
+    // maybe this isn't needed here
+    DrawMenuBar(hwnd);
 
     return hwnd;
 }
@@ -367,3 +372,4 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
 
     return 0;
 }
+
