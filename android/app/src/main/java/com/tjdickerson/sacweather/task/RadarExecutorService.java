@@ -8,6 +8,7 @@ public class RadarExecutorService
     private static RadarExecutorService mInstance = null;
 
     private final ScheduledExecutorService mExecutor;
+    ScheduledFuture<?> mScheduledFuture;
 
     private RadarExecutorService()
     {
@@ -26,6 +27,14 @@ public class RadarExecutorService
 
     public void run(Runnable runnable)
     {
-        mExecutor.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
+        if (mScheduledFuture != null) mScheduledFuture.cancel(true);
+
+        // run now, then schedule after a delay
+        mExecutor.execute(runnable);
+
+        // calculate delay here
+        int delay = 1;
+
+        mScheduledFuture = mExecutor.scheduleAtFixedRate(runnable, delay, 5, TimeUnit.MINUTES);
     }
 }

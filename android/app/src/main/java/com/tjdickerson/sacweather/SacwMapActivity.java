@@ -9,6 +9,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,7 +55,7 @@ public class SacwMapActivity extends AppCompatActivity
         // get thing
         mRadarView = new RadarView();
 
-        WsrInfo selectedRda = RadarView.findWsrInfoById(mWsrList, "KPAH");
+        WsrInfo selectedRda = RadarView.findWsrInfoById(mWsrList, "KTLX");
         NexradProductInfo product = RadarView.findProductByCode(products, (short) 94);
         SetRadarView(selectedRda, product);
 
@@ -326,5 +327,12 @@ public class SacwMapActivity extends AppCompatActivity
         npi.add(new NexradProductInfo((short) 99, "Velocity"));
 
         return npi;
+    }
+
+    public void showQuickMenu(View view)
+    {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.inflate(R.menu.menu_quick);
+        popup.show();
     }
 }
