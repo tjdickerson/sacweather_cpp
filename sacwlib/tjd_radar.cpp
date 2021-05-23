@@ -21,7 +21,7 @@ s32* CountsArray;
 
 RangeBin* RangeBins;
 void CalcRangeBinLocations(f32 cx, f32 cy, f32 range);
-void SetRangeBin(s32 radialIndex, s32 binIndex, color4 colorIndex);
+void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex);
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 
 
@@ -47,39 +47,38 @@ bool RasterImagePacket(
 
 void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
 {
-    rbd->vertexCount = BinCount * RadialCount * 4;
-    rbd->vertices = (f32*)malloc(rbd->vertexCount * 6 * sizeof(f32));
+    rbd->vertexCount = BinCount * RadialCount * 6;
+    rbd->vertices = (f32*)malloc(rbd->vertexCount * 3 * sizeof(f32));
 
     int vi = 0;
     for(int i = 0; i < BinCount * RadialCount; i++)
     {
         rbd->vertices[vi++] = RangeBins[i].p1.x;
         rbd->vertices[vi++] = RangeBins[i].p1.y;
-        rbd->vertices[vi++] = RangeBins[i].color.r;
-        rbd->vertices[vi++] = RangeBins[i].color.g;
-        rbd->vertices[vi++] = RangeBins[i].color.b;
-        rbd->vertices[vi++] = RangeBins[i].color.a;
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
 
         rbd->vertices[vi++] = RangeBins[i].p2.x;
         rbd->vertices[vi++] = RangeBins[i].p2.y;
-        rbd->vertices[vi++] = RangeBins[i].color.r;
-        rbd->vertices[vi++] = RangeBins[i].color.g;
-        rbd->vertices[vi++] = RangeBins[i].color.b;
-        rbd->vertices[vi++] = RangeBins[i].color.a;
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
 
         rbd->vertices[vi++] = RangeBins[i].p3.x;
         rbd->vertices[vi++] = RangeBins[i].p3.y;
-        rbd->vertices[vi++] = RangeBins[i].color.r;
-        rbd->vertices[vi++] = RangeBins[i].color.g;
-        rbd->vertices[vi++] = RangeBins[i].color.b;
-        rbd->vertices[vi++] = RangeBins[i].color.a;
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
+
+        //
+
+        rbd->vertices[vi++] = RangeBins[i].p3.x;
+        rbd->vertices[vi++] = RangeBins[i].p3.y;
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
+
+        rbd->vertices[vi++] = RangeBins[i].p2.x;
+        rbd->vertices[vi++] = RangeBins[i].p2.y;
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
+
 
         rbd->vertices[vi++] = RangeBins[i].p4.x;
         rbd->vertices[vi++] = RangeBins[i].p4.y;
-        rbd->vertices[vi++] = RangeBins[i].color.r;
-        rbd->vertices[vi++] = RangeBins[i].color.g;
-        rbd->vertices[vi++] = RangeBins[i].color.b;
-        rbd->vertices[vi++] = RangeBins[i].color.a;        
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;       
     }
 
     rvd->numParts = BinCount * RadialCount;
@@ -88,8 +87,8 @@ void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
 
     for (int i = 0; i < rvd->numParts; i++)
     {
-        rvd->starts[i] = (i * 4);
-        rvd->counts[i] = 4;
+        rvd->starts[i] = (i * 6);
+        rvd->counts[i] = 6;
     }
 }
 
@@ -115,21 +114,24 @@ void CalcRangeBinLocation(
     dx2 = (binIndex + 2) * (range / (float)BinCount) / (cos(cy * PI / 180.0f));
     dy2 = (binIndex + 2) * (range / (float)BinCount);
 
+
     // "bottom" left
     bin->p1.x = dx1 * sin(DegToRad(sweepCenterLeft));
     bin->p1.y = dy1 * cos(DegToRad(sweepCenterLeft));
 
+    // "bottom" right
+    bin->p2.x = dx1 * sin(DegToRad(sweepCenterRight));
+    bin->p2.y = dy1 * cos(DegToRad(sweepCenterRight));   
+
     // "top" left
-    bin->p2.x = dx2 * sin(DegToRad(sweepCenterLeft));
-    bin->p2.y = dy2 * cos(DegToRad(sweepCenterLeft));
+    bin->p3.x = dx2 * sin(DegToRad(sweepCenterLeft));
+    bin->p3.y = dy2 * cos(DegToRad(sweepCenterLeft));
 
     // "top" right
-    bin->p3.x = dx2 * sin(DegToRad(sweepCenterRight));
-    bin->p3.y = dy2 * cos(DegToRad(sweepCenterRight));            
+    bin->p4.x = dx2 * sin(DegToRad(sweepCenterRight));
+    bin->p4.y = dy2 * cos(DegToRad(sweepCenterRight));      
 
-    // "bottom" right
-    bin->p4.x = dx1 * sin(DegToRad(sweepCenterRight));
-    bin->p4.y = dy1 * cos(DegToRad(sweepCenterRight));            
+   
 
     
     // Convert the nautical mile results into lon/lat degree offsets
@@ -168,12 +170,12 @@ RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 }
 
 
-void SetRangeBin(s32 radialIndex, s32 binIndex, color4 color)
+void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex)
 {
     // int ci = (colorIndex * 4);
     // f32* colorMap = VelocityMap;
     RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);        
-    bin->color = color;
+    bin->colorIndex = colorIndex;
     // bin->color.r = colorMap[ci];
     // bin->color.g = colorMap[ci + 1];
     // bin->color.b = colorMap[ci + 2];
@@ -194,17 +196,18 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     cell->p1.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
     cell->p1.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);
 
-    // top left
-    cell->p2.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
-    cell->p2.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
+    // bottom right
+    cell->p2.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
+    cell->p2.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);    
 
-    // top right
-    cell->p3.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
+    // top left
+    cell->p3.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
     cell->p3.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
 
-    // bottom right
+    // top right
     cell->p4.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
-    cell->p4.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);    
+    cell->p4.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
+  
 
 
     // x adsjut
@@ -241,7 +244,8 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     cell->p4.x = ConvertLonToScreen(cell->p4.x);
     cell->p4.y = ConvertLatToScreen(cell->p4.y);
 
-    cell->color = ReflectivityMap[colorIndex];
+    //cell->color = ReflectivityMap[colorIndex];
+    cell->colorIndex = (f32)colorIndex;
     // int ci = (colorIndex * 4);
     // cell->color.r = ReflectivityMap[ci];
     // cell->color.g = ReflectivityMap[ci + 1];
@@ -567,7 +571,7 @@ bool ParseNexradRadarFile(
 }
 
 
-color4 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
+s32 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
 {
     f32 dbz = minDbz + (level * incDbz);
     s8 color = 0;
@@ -588,10 +592,12 @@ color4 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
     else if (dbz < 75) color = 14;
     else if (dbz >= 75) color = 15;
 
-    return ReflectivityMap[color];
+    return color;
 }
 
-color4 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
+// @todo
+// Clean this up
+s32 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
 {
     s8 color = 0;
     if (level == 0)
@@ -624,7 +630,7 @@ color4 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
         else if (vel <= 99) color = 14;        
     }
 
-    return VelocityMap[color];
+    return color;
 }
 
 
@@ -733,8 +739,8 @@ bool RadialImagePacket(
                         i, binIndex, wsrInfo->lon, wsrInfo->lat, 
                         nexradProduct->range, f_angleStart, f_angleDelta);
 
-                    color = ReflectivityMap[colorIndex];
-                    SetRangeBin(i, binIndex, color);
+                    // color = ReflectivityMap[colorIndex];
+                    SetRangeBin(i, binIndex, colorIndex);
                     binIndex += 1;
                 }
             }
@@ -751,7 +757,7 @@ bool RadialImagePacket(
                         i, binIndex, wsrInfo->lon, wsrInfo->lat, 
                         nexradProduct->range, f_angleStart, f_angleDelta);
 
-                color4 color;
+                s32 color;
 
                 if(nexradProduct->productCode == 99)
                     color = GetColorFromSpeed(run_color, minDbz, incDbz);

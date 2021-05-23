@@ -38,7 +38,7 @@ Java_com_tjdickerson_sacweather_SacwLib_sacwPanMap(
     sacw_PanMap(x, y);
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jboolean JNICALL
 Java_com_tjdickerson_sacweather_SacwLib_sacwRadarInit(
         JNIEnv* env,
         jobject /* this */,
@@ -46,7 +46,7 @@ Java_com_tjdickerson_sacweather_SacwLib_sacwRadarInit(
         jshort productCode)
 {
     const char* c_filepath = env->GetStringUTFChars(filename, 0);
-    sacw_RadarInit(c_filepath, productCode);
+    return sacw_RadarInit(c_filepath, productCode);
 }
 
 extern "C" JNIEXPORT void JNICALL

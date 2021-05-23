@@ -122,6 +122,9 @@ typedef void (APIENTRY* PFNGLUNIFORM3FPROC)
 typedef void (APIENTRY* PFNGLUNIFORM4FPROC) 
 (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 
+typedef void (APIENTRY* PFNGLUNIFORM4FVPROC) 
+(GLint location, GLsizei count, const GLfloat *value);
+
 typedef void (APIENTRY* PFNGLACTIVETEXTUREPROC) 
 (GLenum texture);
 

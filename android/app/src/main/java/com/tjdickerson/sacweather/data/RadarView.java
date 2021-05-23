@@ -25,13 +25,26 @@ public class RadarView
 
     public static NexradProductInfo findProductByCode(
             List<NexradProductInfo> productList,
-            short productCode)
+            short productCode,
+            short angle)
     {
         return productList.stream()
-                .filter(p -> p.getProductCode() == productCode)
+                .filter(p ->
+                    p.getProductCode() == productCode && p.getAngle() == angle
+                )
                 .findFirst()
                 .orElse(null);
     }
+
+    public static NexradProductInfo findProductByGuid(
+            List<NexradProductInfo> productList,
+            int guid)
+    {
+        // @todo
+        // probably return a default product instead of null...
+        return productList.stream().filter(p -> p.getGuid() == guid).findFirst().orElse(null);
+    }
+
 
     public static WsrInfo findClosestRda(List<WsrInfo> siteList, float lon, float lat)
     {
@@ -73,7 +86,7 @@ public class RadarView
 
     public String getUrl()
     {
-        String temp = "p94r0";
+        String temp = this.productInfo.getUrlPart();
         return String.format(URL_TEMPLATE, temp, wsrInfo.getId().toLowerCase(Locale.ROOT));
     }
 

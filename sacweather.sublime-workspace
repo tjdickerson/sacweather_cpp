@@ -236,6 +236,12 @@
 	},
 	"file_history":
 	[
+		"/C/code/SWTestApp/app/src/main/java/com/example/swtestapp/WsrInfo.java",
+		"/C/code/sacweather/windows/win32_main.cpp",
+		"/C/code/sacweather/windows/build.bat",
+		"/C/code/sacweather/sacwlib/nws_info.h",
+		"/C/code/sacweather/windows/win32_menu.h",
+		"/C/code/sacweather/windows/win32_menu.cpp",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/theme/tjd-theme1.sublime-color-scheme",
 		"/C/code/SWTestApp/app/src/main/cpp/tjd_share.h",
 		"/C/Users/tjdic/AppData/Roaming/Sublime Text 3/Packages/User/sacweather.sublime-build",
@@ -357,13 +363,7 @@
 		"/C/Users/tjdic/Downloads/igems_compare/igems_current/WEB-INF/classes/log4j.properties",
 		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/classes/log4j.properties",
 		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/web.xml",
-		"/D/WLSDomain/igems",
-		"/D/WLSDomain/igems_current",
-		"/D/Google Drive/work/forge/code/nodejs/branding_js_163/src/js/forge_utils.js",
-		"/D/Google Drive/work/forge/code/nodejs/branding_js_163/src/js/ctf_api.js",
-		"/C/Users/tjdic/Downloads/FT 19-05 NDR Final Report (FOUO).pdf",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict2.0.29_vuln_fixes.md",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/BCR/bes46_bcr154132_notes.md"
+		"/D/WLSDomain/igems"
 	],
 	"find":
 	{
@@ -382,6 +382,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"init",
+			"count",
+			"MapViewState",
+			"MapViewInfo",
+			"Polar",
+			"screen",
+			"scanf",
+			"pd->>",
+			"pd.",
+			"ParseNexradRadarFile",
+			"vcp",
+			"st_us",
 			"Size",
 			"19",
 			"94",
@@ -494,6 +506,7 @@
 		"regex": true,
 		"replace_history":
 		[
+			"pd->",
 			"bin->p",
 			"bp",
 			"ColorHexToFloat",
@@ -548,7 +561,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 54.0
+		"height": 74.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -558,8 +571,60 @@
 		"selected_items":
 		[
 			[
+				"gl_ren",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacw",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"sacw_ma",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"gl_re",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacw_api",
+				"sacwlib\\sacw_api.h"
+			],
+			[
 				"tjd_sh",
 				"sacwlib\\tjd_share.h"
+			],
+			[
+				"tjd_con",
+				"sacwlib\\tjd_conversions.h"
+			],
+			[
+				"tjd",
+				"sacwlib\\tjd_conversions.h"
+			],
+			[
+				"tjd_conv",
+				"sacwlib\\tjd_conversions.cpp"
+			],
+			[
+				"sacw_main",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"rada",
+				"sacwlib\\tjd_radar.h"
+			],
+			[
+				"tjd_rada",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"build",
+				"windows\\build.bat"
+			],
+			[
+				"nw",
+				"sacwlib\\nws_info.h"
 			],
 			[
 				"win32",
@@ -578,32 +643,12 @@
 				"sacwlib\\tjd_radar.h"
 			],
 			[
-				"nw",
-				"sacwlib\\nws_info.cpp"
-			],
-			[
-				"rada",
-				"sacwlib\\tjd_radar.cpp"
-			],
-			[
-				"sacw_main",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"gr",
 				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
 				"nws",
 				"sacwlib\\nws_info.cpp"
-			],
-			[
-				"sacw_ma",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
-				"tjd_rada",
-				"sacwlib\\tjd_radar.cpp"
 			],
 			[
 				"tjd_gl_",
@@ -616,10 +661,6 @@
 			[
 				"tjd_g",
 				"sacwlib\\tjd_gl.h"
-			],
-			[
-				"gl_ren",
-				"sacwlib\\gl_render.cpp"
 			],
 			[
 				"win",
@@ -638,10 +679,6 @@
 				"src\\tjd_radar.h"
 			],
 			[
-				"tjd_conv",
-				"src\\tjd_conversions.cpp"
-			],
-			[
 				"tjd_conver",
 				"src\\tjd_conversions.h"
 			],
@@ -656,10 +693,6 @@
 			[
 				"sacw_exte",
 				"src\\sacw_extern.h"
-			],
-			[
-				"sacw",
-				"src\\sacw_api.h"
 			],
 			[
 				"share",
@@ -718,14 +751,6 @@
 				"src\\sacw_main.cpp"
 			],
 			[
-				"build",
-				"build.bat"
-			],
-			[
-				"sacw_api",
-				"src\\sacw_api.h"
-			],
-			[
 				"saw_main",
 				"src\\sacw_main.cpp"
 			],
@@ -740,10 +765,6 @@
 			[
 				"conv",
 				"src\\tjd_conversions.cpp"
-			],
-			[
-				"tjd",
-				"src\\tjd_radar.cpp"
 			],
 			[
 				"tjd_share",
@@ -776,14 +797,6 @@
 			[
 				"sa",
 				"src\\sacw_api.h"
-			],
-			[
-				"gl_re",
-				"src\\gl_render.cpp"
-			],
-			[
-				"tjd_con",
-				"src\\tjd_conversions.h"
 			],
 			[
 				"shapefile",

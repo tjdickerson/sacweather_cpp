@@ -12,6 +12,8 @@ public class FileFetcher implements Runnable
 
     public FetchResponse mDelegate = null;
 
+    private String lastError;
+
     public FileFetcher(String filesDir, String targetUrl, FetchResponse delegate)
     {
         mFilesDir = filesDir;
@@ -28,6 +30,8 @@ public class FileFetcher implements Runnable
 
     private String downloadStart()
     {
+        //@todo
+        // This needs to handle slow/lack of connection in a better way.
         try
         {
             String srcUrl = mTargetUrl;
@@ -63,16 +67,12 @@ public class FileFetcher implements Runnable
             os.close();
             is.close();
         }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
-        }
         catch (IOException e)
         {
-            e.printStackTrace();
+            return e.getMessage();
         }
 
-        return "";
+        return "Download OK";
     }
 
 }

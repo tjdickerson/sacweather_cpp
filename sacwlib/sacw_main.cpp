@@ -87,7 +87,7 @@ void sacw_Init()
 }
 
 
-void sacw_RadarInit(const char* filename, s16 productCode)
+bool sacw_RadarInit(const char* filename, s16 productCode)
 {
     bool success = false;
 
@@ -101,7 +101,9 @@ void sacw_RadarInit(const char* filename, s16 productCode)
     MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
 
     canRenderRadar = success;
-    radarIsStale = true;    
+    radarIsStale = success;   
+
+    return success; 
 }
 
 
@@ -133,14 +135,14 @@ void sacw_ZoomMap(f32 zoom)
 {      
     if (zoom == 0) return;
 
-    f32 speed = 5.0f;
+    f32 speed = 0.5f;
     f32 dir = zoom > 0 ? 1 : -1;
 
-    f32 delta = (speed + (MapViewInfo.scaleFactor * 0.1f)) * dir;
+    f32 delta = (MapViewInfo.scaleFactor * 0.1f) * dir * speed;
     f32 targetScale = MapViewInfo.scaleFactor + delta;
 
-    if (targetScale < 25) targetScale = 25 + 1;
-    else if (targetScale > 200) targetScale = 200 - 1;
+    if (targetScale < 10) targetScale = 10 + 1;
+    else if (targetScale > 250) targetScale = 250 - 1;
 
     MapViewInfo.scaleFactor = targetScale;
 }

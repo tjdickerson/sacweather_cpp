@@ -12,7 +12,8 @@ typedef struct RangeBin_t
     v2f32 p2;
     v2f32 p3;
     v2f32 p4;
-    color4 color;
+    f32 colorIndex;
+    //color4 color;
 } RangeBin;
 
 

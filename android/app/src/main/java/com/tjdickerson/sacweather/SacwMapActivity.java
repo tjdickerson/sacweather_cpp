@@ -1,17 +1,13 @@
 package com.tjdickerson.sacweather;
 
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
+import android.view.*;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tjdickerson.sacweather.data.NexradProductInfo;
 import com.tjdickerson.sacweather.data.RadarView;
@@ -29,9 +25,13 @@ public class SacwMapActivity extends AppCompatActivity
     private RadarView mRadarView;
 
     private TextView scanTimeTv;
+    private TextView mProductNameTv;
     private Handler mHandler;
 
+    private TextView mErrorLogView;
+
     private List<WsrInfo> mWsrList;
+    private List<NexradProductInfo> mProducts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -45,18 +45,20 @@ public class SacwMapActivity extends AppCompatActivity
         registerForContextMenu(mSacwMapView);
 
         scanTimeTv = findViewById(R.id.scanTime);
+        mProductNameTv = findViewById(R.id.productName);
+        mErrorLogView = findViewById(R.id.errorLogView);
 
         mHandler = new Handler(Looper.myLooper());
 
         // get site data
         mWsrList = getWsrListFromFile("data/wsrlist");
-        List<NexradProductInfo> products = createProductList();
+        mProducts = createProductList();
 
         // get thing
         mRadarView = new RadarView();
 
         WsrInfo selectedRda = RadarView.findWsrInfoById(mWsrList, "KTLX");
-        NexradProductInfo product = RadarView.findProductByCode(products, (short) 94);
+        NexradProductInfo product = RadarView.findProductByCode(mProducts, (short) 94, (short) 0);
         SetRadarView(selectedRda, product);
 
         /*new JsonFetcher(result -> {
@@ -93,13 +95,13 @@ public class SacwMapActivity extends AppCompatActivity
                     new FileFetcher(
                             getFilesDir().getPath(),
                             mRadarView.getUrl(),
-                            result -> startShowingRadar()));
+                            this::startShowingRadar));
 
         }
         else
         {
             // error happened
-            alertDialog("Failed to find data.", "ERROR");
+            alertDialog("Failed to find data.");
         }
     }
 
@@ -110,10 +112,19 @@ public class SacwMapActivity extends AppCompatActivity
     }
 
 
-    protected void startShowingRadar()
+    protected void startShowingRadar(String result)
     {
+        alertDialog(result);
+
         String filepath = getFilesDir().getPath() + "/latest";
-        SacwLib.sacwRadarInit(filepath, mRadarView.getProductInfo().getProductCode());
+        boolean radarStatus =
+                SacwLib.sacwRadarInit(filepath, mRadarView.getProductInfo().getProductCode());
+
+        if (!radarStatus)
+        {
+            alertDialog("Radar failed to initialize. :(");
+            return;
+        }
 
         // number of seconds after midnight GMT
         long scanTime = SacwLib.sacwScanTime();
@@ -126,8 +137,13 @@ public class SacwMapActivity extends AppCompatActivity
         Date d = new Date(time);
         String what = d.toString();
 
-        mHandler.post(() -> scanTimeTv.setText(what));
+        mHandler.post(() ->
+        {
+            scanTimeTv.setText(what);
+            mProductNameTv.setText(mRadarView.getProductInfo().getFullName());
+        });
 
+        alertDialog("All Good!");
     }
 
     @Override
@@ -152,6 +168,8 @@ public class SacwMapActivity extends AppCompatActivity
     @Override
     public boolean onContextItemSelected(MenuItem item)
     {
+        // @todo
+        // Use itemId...
         String rda = item.getTitle().toString();
         WsrInfo wsrInfo = RadarView.findWsrInfoById(mWsrList, rda);
 
@@ -159,7 +177,7 @@ public class SacwMapActivity extends AppCompatActivity
         return true;
     }
 
-    public void showLocationMenu(float lon, float lat)
+        public void showLocationMenu(float lon, float lat)
     {
         //
 /*        String template = "%2.4f, %2.4f";
@@ -309,22 +327,28 @@ public class SacwMapActivity extends AppCompatActivity
     }
 
 
-    private void alertDialog(String message, String title)
+    private void alertDialog(String message)
     {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setMessage(message);
-        dialog.setTitle(title);
-
-        AlertDialog alertDialog = dialog.create();
-        alertDialog.show();
+        String output = mErrorLogView.getText() + "\n" + message;
+        mErrorLogView.setText(output);
     }
 
     private List<NexradProductInfo> createProductList()
     {
         List<NexradProductInfo> npi = new ArrayList<>();
 
-        npi.add(new NexradProductInfo((short) 94, "Reflectivity"));
-        npi.add(new NexradProductInfo((short) 99, "Velocity"));
+        npi.add(new NexradProductInfo((short) 99, (short) 0, "Velocity", "p99v0"));
+        npi.add(new NexradProductInfo((short) 99, (short) 1, "Velocity", "p99v1"));
+        npi.add(new NexradProductInfo((short) 99, (short) 2, "Velocity", "p99v2"));
+        npi.add(new NexradProductInfo((short) 99, (short) 3, "Velocity", "p99v3"));
+
+        npi.add(new NexradProductInfo((short) 94, (short) 0, "Reflectivity", "p94r0"));
+        npi.add(new NexradProductInfo((short) 94, (short) 1, "Reflectivity", "p94r1"));
+        npi.add(new NexradProductInfo((short) 94, (short) 2, "Reflectivity", "p94r2"));
+        npi.add(new NexradProductInfo((short) 94, (short) 3, "Reflectivity", "p94r3"));
+
+        npi.add(new NexradProductInfo((short) 37, (short) 0, "Composite", "p37cr"));
+
 
         return npi;
     }
@@ -333,6 +357,21 @@ public class SacwMapActivity extends AppCompatActivity
     {
         PopupMenu popup = new PopupMenu(this, view);
         popup.inflate(R.menu.menu_quick);
+
+        MenuItem products = popup.getMenu().getItem(0);
+        Menu productList = products.getSubMenu();
+
+        mProducts.forEach(p -> {
+            MenuItem newItem = productList.add(0, p.getGuid(), 0, p.getFullName());
+            newItem.setOnMenuItemClickListener(item -> {
+                SetRadarView(
+                        mRadarView.getWsrInfo(),
+                        RadarView.findProductByGuid(mProducts, p.getGuid()));
+                return true;
+            });
+        });
+
         popup.show();
     }
+
 }

@@ -32,8 +32,30 @@ PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 PFNGLBUFFERSUBDATAPROC glBufferSubData;
 PFNGLUNIFORM3FPROC glUniform3f;
 PFNGLUNIFORM4FPROC glUniform4f;
+PFNGLUNIFORM4FVPROC glUniform4fv;
 PFNGLACTIVETEXTUREPROC glActiveTexture;
 #endif
+
+
+static f32 ReflectivityMap[] =
+{
+    0.20f,  0.20f,  0.20f,  0.20f,   // 0 - black transparent
+    ColorHexToFloat(0x04), ColorHexToFloat(0xe9), ColorHexToFloat(0xe7), 0.20f,   
+    ColorHexToFloat(0x01), ColorHexToFloat(0x9f), ColorHexToFloat(0xf4), 0.90f,   
+    ColorHexToFloat(0x03), ColorHexToFloat(0x00), ColorHexToFloat(0xf4), 0.99f,   
+    ColorHexToFloat(0x02), ColorHexToFloat(0xfd), ColorHexToFloat(0x02), 0.99f,   
+    ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f,   
+    ColorHexToFloat(0x00), ColorHexToFloat(0x8e), ColorHexToFloat(0x00), 0.99f,   
+    ColorHexToFloat(0xfd), ColorHexToFloat(0xf8), ColorHexToFloat(0x02), 0.99f,   
+    ColorHexToFloat(0xe5), ColorHexToFloat(0xbc), ColorHexToFloat(0x00), 0.99f,   
+    ColorHexToFloat(0xfd), ColorHexToFloat(0x95), ColorHexToFloat(0.00), 0.99f,   
+    ColorHexToFloat(0xfd), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
+    ColorHexToFloat(0xd4), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
+    ColorHexToFloat(0xbc), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f,   
+    ColorHexToFloat(0xf8), ColorHexToFloat(0x00), ColorHexToFloat(0xfd), 0.99f,   
+    ColorHexToFloat(0x98), ColorHexToFloat(0x54), ColorHexToFloat(0xc6), 0.99f,   
+    ColorHexToFloat(0xff), ColorHexToFloat(0xff), ColorHexToFloat(0xff), 0.99f,      
+};
 
 
 void InitGLExtensions();
@@ -100,9 +122,10 @@ void logGLString(const char* text, GLenum key)
     LOGINF("GL %s :: %s\n", text, out);
 }
 
+RenderBufferData mapBufferData;
 bool MapInit()
 {
-    RenderBufferData mapBufferData = {};
+    mapBufferData = {};
     StateVertData = {};
     CountyVertData = {};
     sacw_GetMapRenderData(&mapBufferData, &StateVertData, &CountyVertData);
@@ -141,11 +164,12 @@ bool MapInit()
     return true;
 }
 
+RenderBufferData radarBufferData;
 bool LoadLatestRadarData()
 {
     // @todo
     // Reset these or something to free memory
-    RenderBufferData radarBufferData = {};
+    radarBufferData = {};
     RadarVertData = {};
     sacw_GetRadarRenderData(&radarBufferData, &RadarVertData);
 
@@ -163,23 +187,23 @@ bool LoadLatestRadarData()
         2,
         GL_FLOAT,
         GL_FALSE,
-        6 * sizeof(f32),
+        3 * sizeof(f32),
         NULL);
 
     glEnableVertexAttribArray(RadarShaderColorAttribute);
     glVertexAttribPointer(
         RadarShaderColorAttribute,
-        4,
+        1,
         GL_FLOAT,
         GL_FALSE,
-        6 * sizeof(f32),
+        3 * sizeof(f32),
         (void*)(2 * sizeof(f32)));
 
 
     glBindBuffer(GL_ARRAY_BUFFER, RadarVbo);
     glBufferData(
         GL_ARRAY_BUFFER,
-        radarBufferData.vertexCount * 6 * sizeof(f32),
+        radarBufferData.vertexCount * 3 * sizeof(f32),
         radarBufferData.vertices,
         GL_DYNAMIC_DRAW);
 
@@ -208,7 +232,7 @@ bool RenderInit()
 
     RadarShader = GLCreateShaderProgram(RadarVertShaderSource(), RadarFragShaderSource());
     RadarShaderPositionAttribute = glGetAttribLocation(RadarShader, "Position");
-    RadarShaderColorAttribute = glGetAttribLocation(RadarShader, "Color");
+    RadarShaderColorAttribute = glGetUniformLocation(RadarShader, "colorMap");
     RadarShaderModelAttribute = glGetUniformLocation(RadarShader, "Model");
 
     return true;
@@ -223,6 +247,7 @@ void RenderStates()
 
     // states  #6c6c58
     glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
+    //glDrawArrays(GL_LINE_STRIP, 0, mapBufferData.vertexCount);
     for (int i = 0; i < StateVertData.numParts; i++)
     {
         glDrawArrays(GL_LINE_STRIP, StateVertData.starts[i], StateVertData.counts[i]);
@@ -250,10 +275,12 @@ void RenderRadar()
     glBindVertexArray(RadarVao);
     glUniformMatrix4fv(RadarShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
 
-    for(int i = 0; i < RadarVertData.numParts; i++)
-    {
-        glDrawArrays(GL_TRIANGLE_FAN, RadarVertData.starts[i], RadarVertData.counts[i]);
-    }
+    glUniform4fv(RadarShaderColorAttribute, 16, ReflectivityMap);
+    glDrawArrays(GL_TRIANGLES, 0, radarBufferData.vertexCount);
+    // for(int i = 0; i < RadarVertData.numParts; i++)
+    // {
+    //     glDrawArrays(GL_TRIANGLE_FAN, RadarVertData.starts[i], RadarVertData.counts[i]);
+    // }
 }
 
 
@@ -266,7 +293,7 @@ void DoRender()
         RenderRadar();
     }
 
-    RenderCounties();
+    //RenderCounties();
 }
 
 
@@ -436,6 +463,7 @@ void InitGLExtensions()
     glBufferSubData = (PFNGLBUFFERSUBDATAPROC)GLGetProcAddress("glBufferSubData");
     glUniform3f = (PFNGLUNIFORM3FPROC)GLGetProcAddress("glUniform3f");
     glUniform4f = (PFNGLUNIFORM4FPROC)GLGetProcAddress("glUniform4f");
+    glUniform4fv = (PFNGLUNIFORM4FVPROC)GLGetProcAddress("glUniform4fv");
     glActiveTexture = (PFNGLACTIVETEXTUREPROC)GLGetProcAddress("glActiveTexture");    
 
     glEnableVertexAttribArray = 
@@ -511,14 +539,16 @@ static GLchar* RadarVertShaderSource()
     const char* source = R"glsl(#version 300 es
         precision mediump float;
         in vec2 Position;
-        in vec4 Color;
+        in float colorIndex;
 
+        uniform vec4[16] colorMap;
+        
         uniform mat4 Model;
 
         out vec4 FragColor;
 
         void main() {
-            FragColor = Color;
+            FragColor = colorMap[int(colorIndex)];
             gl_Position = Model * vec4(Position, 0.0, 1.0);
         }
     )glsl";
@@ -527,14 +557,16 @@ static GLchar* RadarVertShaderSource()
         #version 150
 
         in vec2 Position;
-        in vec4 Color;
+        in float colorIndex;
+
+        uniform vec4[16] colorMap;
 
         uniform mat4 Model;
 
         out vec4 FragColor;
 
         void main() {
-            FragColor = Color;
+            FragColor = colorMap[int(colorIndex)];
             gl_Position = Model * vec4(Position, 0.0, 1.0);
         }
     )glsl";
