@@ -159,7 +159,7 @@ typedef struct SymbologyHeader_t {
 
 
 void tjd_RadarInit();
-void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
+void tjd_GetRadarRenderData(RenderBufferData* rbd);
 bool ParseNexradRadarFile(
     const char* filename, 
     WSR88DInfo* wsrInfo, 

@@ -114,7 +114,9 @@ static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
 
 static RenderVertData StateVertData;
 static RenderVertData CountyVertData;
-static RenderVertData RadarVertData;
+
+static RenderBufferData RadarBufferData;
+static RenderBufferData MapBufferData;
 
 void logGLString(const char* text, GLenum key)
 {
@@ -122,15 +124,13 @@ void logGLString(const char* text, GLenum key)
     LOGINF("GL %s :: %s\n", text, out);
 }
 
-RenderBufferData mapBufferData;
+
 bool MapInit()
 {
-    mapBufferData = {};
+    MapBufferData = {};
     StateVertData = {};
     CountyVertData = {};
-    sacw_GetMapRenderData(&mapBufferData, &StateVertData, &CountyVertData);
-
-    LOGINF("Got %d shapes for states\n", StateVertData.numParts);
+    sacw_GetMapRenderData(&MapBufferData, &StateVertData, &CountyVertData);
 
     MapShader = GLCreateShaderProgram(MapVertShaderSource(), MapFragShaderSource());
 
@@ -141,8 +141,8 @@ bool MapInit()
     glBindBuffer(GL_ARRAY_BUFFER, MapVbo);
     glBufferData(
         GL_ARRAY_BUFFER,
-        mapBufferData.vertexCount * 2 * sizeof(f32),
-        mapBufferData.vertices,
+        MapBufferData.vertexCount * 2 * sizeof(f32),
+        MapBufferData.vertices,
         GL_STATIC_DRAW);
 
     MapShaderPositionAttribute = glGetAttribLocation(MapShader, "Position");
@@ -159,21 +159,18 @@ bool MapInit()
     MapShaderColorAttribute = glGetUniformLocation(MapShader, "Color");
 
     // cleanup
-    if(mapBufferData.vertices) free(mapBufferData.vertices);
+    if(MapBufferData.vertices) free(MapBufferData.vertices);
 
     return true;
 }
 
-RenderBufferData radarBufferData;
+
 bool LoadLatestRadarData()
 {
     // @todo
     // Reset these or something to free memory
-    radarBufferData = {};
-    RadarVertData = {};
-    sacw_GetRadarRenderData(&radarBufferData, &RadarVertData);
-
-    LOGINF("Got %d shapes for radar data.\n", RadarVertData.numParts);
+    RadarBufferData = {};
+    sacw_GetRadarRenderData(&RadarBufferData);
 
     glGenVertexArrays(1, &RadarVao);
     glBindVertexArray(RadarVao);
@@ -203,11 +200,11 @@ bool LoadLatestRadarData()
     glBindBuffer(GL_ARRAY_BUFFER, RadarVbo);
     glBufferData(
         GL_ARRAY_BUFFER,
-        radarBufferData.vertexCount * 3 * sizeof(f32),
-        radarBufferData.vertices,
-        GL_DYNAMIC_DRAW);
+        RadarBufferData.vertexCount * 3 * sizeof(f32),
+        RadarBufferData.vertices,
+        GL_STATIC_DRAW);
 
-    if(radarBufferData.vertices) free(radarBufferData.vertices);
+    if(RadarBufferData.vertices) free(RadarBufferData.vertices);
 
     return true;
 }
@@ -247,7 +244,6 @@ void RenderStates()
 
     // states  #6c6c58
     glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
-    //glDrawArrays(GL_LINE_STRIP, 0, mapBufferData.vertexCount);
     for (int i = 0; i < StateVertData.numParts; i++)
     {
         glDrawArrays(GL_LINE_STRIP, StateVertData.starts[i], StateVertData.counts[i]);
@@ -262,7 +258,7 @@ void RenderCounties()
 
 
     // counties
-    glUniform4f(MapShaderColorAttribute, 0.5f, 0.5f, 0.5f, 0.5f);
+    glUniform4f(MapShaderColorAttribute, 0.2f, 0.2f, 0.2f, 1.0f);
     for (int i = 0; i < CountyVertData.numParts; i++)
     {
         glDrawArrays(GL_LINE_STRIP, CountyVertData.starts[i], CountyVertData.counts[i]);
@@ -276,24 +272,19 @@ void RenderRadar()
     glUniformMatrix4fv(RadarShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
 
     glUniform4fv(RadarShaderColorAttribute, 16, ReflectivityMap);
-    glDrawArrays(GL_TRIANGLES, 0, radarBufferData.vertexCount);
-    // for(int i = 0; i < RadarVertData.numParts; i++)
-    // {
-    //     glDrawArrays(GL_TRIANGLE_FAN, RadarVertData.starts[i], RadarVertData.counts[i]);
-    // }
+    glDrawArrays(GL_TRIANGLES, 0, RadarBufferData.vertexCount);
 }
 
 
 void DoRender()
 {
-    RenderStates();
-
     if (canRenderRadar)
     {
         RenderRadar();
     }
 
-    //RenderCounties();
+    RenderCounties();
+    RenderStates();
 }
 
 
@@ -542,7 +533,7 @@ static GLchar* RadarVertShaderSource()
         in float colorIndex;
 
         uniform vec4[16] colorMap;
-        
+
         uniform mat4 Model;
 
         out vec4 FragColor;

@@ -1,17 +1,22 @@
 package com.tjdickerson.sacweather;
 
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.*;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tjdickerson.sacweather.data.NexradProductInfo;
 import com.tjdickerson.sacweather.data.RadarView;
 import com.tjdickerson.sacweather.data.WsrInfo;
+import com.tjdickerson.sacweather.task.FileDownloader;
 import com.tjdickerson.sacweather.task.FileFetcher;
 import com.tjdickerson.sacweather.task.RadarExecutorService;
 import com.tjdickerson.sacweather.view.SacwMapView;
@@ -28,8 +33,6 @@ public class SacwMapActivity extends AppCompatActivity
     private TextView mProductNameTv;
     private Handler mHandler;
 
-    private TextView mErrorLogView;
-
     private List<WsrInfo> mWsrList;
     private List<NexradProductInfo> mProducts;
 
@@ -37,6 +40,13 @@ public class SacwMapActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        //
+/*        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+                PackageManager.PERMISSION_GRANTED)
+        {
+            requestPermissions(new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }*/
 
         setContentView(R.layout.activity_sacwmap);
         mSacwMapView = findViewById(R.id.surfaceView);
@@ -46,7 +56,6 @@ public class SacwMapActivity extends AppCompatActivity
 
         scanTimeTv = findViewById(R.id.scanTime);
         mProductNameTv = findViewById(R.id.productName);
-        mErrorLogView = findViewById(R.id.errorLogView);
 
         mHandler = new Handler(Looper.myLooper());
 
@@ -76,10 +85,17 @@ public class SacwMapActivity extends AppCompatActivity
         .execute("https://api.weather.gov/radar/stations?stationType=WSR-88D");*/
     }
 
+    public void setProgressVisible(boolean isVisible)
+    {
+        View view = findViewById(R.id.fetchingScanProgress);
+        view.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+    }
+
     protected void SetRadarView(WsrInfo selectedRda, NexradProductInfo product)
     {
         if (selectedRda != null && product != null)
         {
+            setProgressVisible(true);
             mRadarView.setWsrInfo(selectedRda);
             mRadarView.setProductInfo(product);
 
@@ -91,17 +107,20 @@ public class SacwMapActivity extends AppCompatActivity
             productName.setText(product.getDisplayName());
 
             // init radar stuff
-            RadarExecutorService.getInstance().run(
+            /*RadarExecutorService.getInstance().run(
                     new FileFetcher(
                             getFilesDir().getPath(),
                             mRadarView.getUrl(),
-                            this::startShowingRadar));
+                            this::startShowingRadar));*/
 
+           /* FileDownloader fd = new FileDownloader(this);
+            fd.requestDownload(mRadarView.getUrl(), "latest", this::startShowingRadar);*/
+
+            RadarExecutorService.getInstance().start(this, mRadarView, this::startShowingRadar);
         }
         else
         {
             // error happened
-            alertDialog("Failed to find data.");
         }
     }
 
@@ -114,36 +133,40 @@ public class SacwMapActivity extends AppCompatActivity
 
     protected void startShowingRadar(String result)
     {
-        alertDialog(result);
+        String dir = getFilesDir().getPath();
+        String filepath = dir + "/latest";
 
-        String filepath = getFilesDir().getPath() + "/latest";
+        String dateString = "";
+
         boolean radarStatus =
                 SacwLib.sacwRadarInit(filepath, mRadarView.getProductInfo().getProductCode());
 
         if (!radarStatus)
         {
-            alertDialog("Radar failed to initialize. :(");
-            return;
+            Toast.makeText(this, "Error rendering radar data.", Toast.LENGTH_LONG).show();
         }
 
-        // number of seconds after midnight GMT
-        long scanTime = SacwLib.sacwScanTime();
+        else
+        {
+            // number of seconds after midnight GMT
+            long scanTime = SacwLib.sacwScanTime();
 
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        Calendar calendar = Calendar.getInstance(tz);
-        calendar.setTimeInMillis(scanTime);
+            TimeZone tz = TimeZone.getTimeZone("UTC");
+            Calendar calendar = Calendar.getInstance(tz);
+            calendar.setTimeInMillis(scanTime);
 
-        long time = calendar.getTimeInMillis();
-        Date d = new Date(time);
-        String what = d.toString();
+            long time = calendar.getTimeInMillis();
+            Date d = new Date(time);
+            dateString = d.toString();
+        }
 
+        String finalDateString = dateString;
         mHandler.post(() ->
         {
-            scanTimeTv.setText(what);
+            scanTimeTv.setText(finalDateString);
             mProductNameTv.setText(mRadarView.getProductInfo().getFullName());
+            setProgressVisible(false);
         });
-
-        alertDialog("All Good!");
     }
 
     @Override
@@ -177,7 +200,7 @@ public class SacwMapActivity extends AppCompatActivity
         return true;
     }
 
-        public void showLocationMenu(float lon, float lat)
+    public void showLocationMenu(float lon, float lat)
     {
         //
 /*        String template = "%2.4f, %2.4f";
@@ -324,13 +347,6 @@ public class SacwMapActivity extends AppCompatActivity
         }
 
         return result;
-    }
-
-
-    private void alertDialog(String message)
-    {
-        String output = mErrorLogView.getText() + "\n" + message;
-        mErrorLogView.setText(output);
     }
 
     private List<NexradProductInfo> createProductList()

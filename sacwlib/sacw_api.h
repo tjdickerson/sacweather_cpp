@@ -57,7 +57,7 @@ void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points);
 
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties);
 
-void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd);
+void sacw_GetRadarRenderData(RenderBufferData* rbd);
 
 #define _SACW_API_H_
 #endif

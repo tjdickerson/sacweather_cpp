@@ -1,6 +1,8 @@
 package com.tjdickerson.sacweather.task;
 
-import java.util.Timer;
+import android.app.Activity;
+import com.tjdickerson.sacweather.data.RadarView;
+
 import java.util.concurrent.*;
 
 public class RadarExecutorService
@@ -8,7 +10,9 @@ public class RadarExecutorService
     private static RadarExecutorService mInstance = null;
 
     private final ScheduledExecutorService mExecutor;
-    ScheduledFuture<?> mScheduledFuture;
+    ScheduledFuture<?> mNewScanFuture;
+
+    private RadarView mRadarView;
 
     private RadarExecutorService()
     {
@@ -25,16 +29,19 @@ public class RadarExecutorService
         return mInstance;
     }
 
-    public void run(Runnable runnable)
+    public void start(Activity activity, RadarView radarView, FetchResponse onComplete)
     {
-        if (mScheduledFuture != null) mScheduledFuture.cancel(true);
+        if (mNewScanFuture != null) mNewScanFuture.cancel(true);
 
-        // run now, then schedule after a delay
-        mExecutor.execute(runnable);
+        String filename = "latest";
+        mExecutor.execute(new FileFetcher(activity, filename, radarView.getUrl(), onComplete));
 
-        // calculate delay here
+         // calculate delay here
         int delay = 1;
 
-        mScheduledFuture = mExecutor.scheduleAtFixedRate(runnable, delay, 5, TimeUnit.MINUTES);
+        mNewScanFuture = mExecutor.scheduleAtFixedRate(
+                new FileFetcher(activity, filename, radarView.getUrl(), onComplete),
+                delay, 5, TimeUnit.MINUTES);
+
     }
 }

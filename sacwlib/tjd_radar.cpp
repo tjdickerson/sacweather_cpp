@@ -45,7 +45,7 @@ bool RasterImagePacket(
     s16 packetCode);
 
 
-void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
+void tjd_GetRadarRenderData(RenderBufferData* rbd)
 {
     rbd->vertexCount = BinCount * RadialCount * 6;
     rbd->vertices = (f32*)malloc(rbd->vertexCount * 3 * sizeof(f32));
@@ -79,16 +79,6 @@ void tjd_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
         rbd->vertices[vi++] = RangeBins[i].p4.x;
         rbd->vertices[vi++] = RangeBins[i].p4.y;
         rbd->vertices[vi++] = RangeBins[i].colorIndex;       
-    }
-
-    rvd->numParts = BinCount * RadialCount;
-    rvd->starts = (s32*)malloc(rvd->numParts * sizeof(s32));
-    rvd->counts = (s32*)malloc(rvd->numParts * sizeof(s32));
-
-    for (int i = 0; i < rvd->numParts; i++)
-    {
-        rvd->starts[i] = (i * 6);
-        rvd->counts[i] = 6;
     }
 }
 

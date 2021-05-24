@@ -93,15 +93,21 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
 
     NexradProduct* np = GetProductInfo(productCode);
 
+    canRenderRadar = false;
+    radarIsStale = false;   
+
     WSR88DInfo wsrInfo = {};
     gProductDescription = {};
     success = ParseNexradRadarFile(filename, &wsrInfo, np, &gProductDescription);
 
-    MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
-    MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
+    if (success)
+    {
+        MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
+        MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
 
-    canRenderRadar = success;
-    radarIsStale = success;   
+        canRenderRadar = success;
+        radarIsStale = success;   
+    }
 
     return success; 
 }
@@ -155,9 +161,9 @@ void sacw_PanMap(f32 x, f32 y)
 }
 
 
-void sacw_GetRadarRenderData(RenderBufferData* rbd, RenderVertData* rvd)
+void sacw_GetRadarRenderData(RenderBufferData* rbd)
 {
-    tjd_GetRadarRenderData(rbd, rvd);
+    tjd_GetRadarRenderData(rbd);
 }
 
 s64 sacw_GetScanTime()
