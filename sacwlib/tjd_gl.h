@@ -16,9 +16,18 @@
 
 #else
 
-#include <windows.h>
-#include "gl/gl.h"
+#include "windows.h"
+#include "glad/glad.h"
 
+#if defined(_WIN32)
+#define GLGetProcAddress wglGetProcAddress
+#else
+#define GLGetProcAddress AndroidGLESLayer_GetProcAddress
+#endif
+
+//
+// @todo
+// Using a premade loader for dearImGui, but if I stop using that I can uncomment the code below.
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB     0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB     0x2092
@@ -33,6 +42,20 @@
 #define GL_FRAGMENT_SHADER                0x8B30
 #define GL_VERTEX_SHADER                  0x8B31
 
+typedef HGLRC (WINAPI* PFNWGLCREATECONTEXTATTRIBSARBPROC) 
+(HDC hDC, HGLRC hShareContext, const int* attribList);
+HGLRC WINAPI wglCreateContextAttribsARB (HDC hDC, HGLRC hShareContext, const int* attribList);
+
+
+
+
+
+//
+// @todo
+// Using a premade loader for dearImGui, but if I stop using that I can uncomment the code below.
+//
+
+/*
 // OpenGL Types
 typedef char GLchar;
 
@@ -42,16 +65,13 @@ typedef signed long long int GLintptr;
 
 // extensions
 // verify this type of thing works @todo
-#if defined(_WIN32)
-#define GLGetProcAddress wglGetProcAddress
-#else
-#define GLGetProcAddress AndroidGLESLayer_GetProcAddress
-#endif
+
+
+
+
 
 // proc declarations
-typedef HGLRC (WINAPI* PFNWGLCREATECONTEXTATTRIBSARBPROC) 
-(HDC hDC, HGLRC hShareContext, const int* attribList);
-HGLRC WINAPI wglCreateContextAttribsARB (HDC hDC, HGLRC hShareContext, const int* attribList);
+
 
 typedef void (APIENTRY* PFNGLGENVERTEXARRAYSPROC) 
 (GLsizei n, GLuint* arrays);
@@ -126,7 +146,7 @@ typedef void (APIENTRY* PFNGLUNIFORM4FVPROC)
 (GLint location, GLsizei count, const GLfloat *value);
 
 typedef void (APIENTRY* PFNGLACTIVETEXTUREPROC) 
-(GLenum texture);
+(GLenum texture);*/
 
 #endif
 

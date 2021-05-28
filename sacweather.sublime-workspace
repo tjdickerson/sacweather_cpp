@@ -53,6 +53,10 @@
 		"selected_items":
 		[
 			[
+				"split",
+				"HTML: Encode Special Characters"
+			],
+			[
 				"sche",
 				"Color Scheme Editor: Edit current color scheme"
 			],
@@ -236,9 +240,24 @@
 	},
 	"file_history":
 	[
-		"/C/code/SWTestApp/app/src/main/java/com/example/swtestapp/WsrInfo.java",
+		"/C/code/sacweather/sacwlib/tjd_ui.h",
+		"/C/code/sacweather/sacwlib/tjd_font.h",
+		"/C/code/sacweather/sacwlib/stb_truetype.h",
+		"/C/code/sacweather/sacwlib/tjd_shapefile.h",
+		"/C/code/sacweather/sacwlib/tjd_ui.cpp",
+		"/C/code/sacweather/sacwlib/imgui/imgui_impl_win32.h",
+		"/C/code/sacweather/sacwlib/tjd_gl.h",
+		"/C/code/sacweather/sacwlib/sacw_main.cpp",
+		"/C/code/sacweather/sacwlib/imgui/imgui_impl_opengl3.h",
+		"/C/code/sacweather/sacwlib/imgui/imconfig.h",
+		"/C/code/sacweather/sacwlib/tjd_gl_render.cpp",
+		"/C/code/sacweather/sacwlib/render_extern.h",
+		"/C/Users/tjdic/Downloads/wgl.h",
+		"/C/Users/tjdic/Downloads/gl.h",
 		"/C/code/sacweather/windows/win32_main.cpp",
+		"/C/code/sacweather/sacwlib/sacw_api.h",
 		"/C/code/sacweather/windows/build.bat",
+		"/C/code/SWTestApp/app/src/main/java/com/example/swtestapp/WsrInfo.java",
 		"/C/code/sacweather/sacwlib/nws_info.h",
 		"/C/code/sacweather/windows/win32_menu.h",
 		"/C/code/sacweather/windows/win32_menu.cpp",
@@ -348,26 +367,11 @@
 		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/condensed_vb_to_cs.md",
 		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/dr154281/reports.txt",
 		"/C/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/Tools/VsDevCmd.bat",
-		"/C/Users/tjdic/work/repos/mict/MICTAppBB/My Project/Resources.resx",
-		"/C/Users/tjdic/work/repos/mict/MICTAppBB/MICTAppBB.vbproj",
-		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems2_05122020.log",
-		"/C/Users/tjdic/Downloads/OneDrive_2020-05-12/IGEMS log files/igems2_05122020.out",
-		"/C/Users/tjdic/Downloads/igems1_05082020.out",
-		"/D/app/oracle/igemsprofile/igemsp-wpafb/application.properties",
-		"/D/app/oracle/igemsprofile/igemst-wpafb/application.properties",
-		"/C/Users/tjdic/AppData/Local/Temp/Temp1_IGEMS_v1.2.2.25_DB.zip/IGEMS_v1.2.2.25_Updates.sql",
-		"/C/Users/tjdic/OneDrive/work/IGEMS/MICT/mict_db.ddl.txt",
-		"/C/Users/tjdic/Downloads/igems_compare/igems_current/Plan.xml",
-		"/C/Users/tjdic/Downloads/igems_compare/Plan.xml",
-		"/C/Users/tjdic/Downloads/igems1.out",
-		"/C/Users/tjdic/Downloads/igems_compare/igems_current/WEB-INF/classes/log4j.properties",
-		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/classes/log4j.properties",
-		"/C/Users/tjdic/Downloads/igems_compare/igems_old/WEB-INF/web.xml",
-		"/D/WLSDomain/igems"
+		"/C/Users/tjdic/work/repos/mict/MICTAppBB/My Project/Resources.resx"
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 39.0
 	},
 	"find_in_files":
 	{
@@ -382,6 +386,13 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"3",
+			"fread",
+			"GLADloadfunc",
+			"gladLoadGL",
+			"GLADloadfunc",
+			"gladLoadGL",
+			"glad_gl_load_GL_VERSION_3_1",
 			"VertData",
 			"Color",
 			"ReflectivityMap",
@@ -517,14 +528,16 @@
 			"LogMessage"
 		],
 		"reverse": false,
+		"scrollbar_highlights": true,
 		"show_context": true,
 		"use_buffer2": true,
+		"use_gitignore": true,
 		"whole_word": false,
 		"wrap": true
 	},
 	"incremental_find":
 	{
-		"height": 30.0
+		"height": 29.0
 	},
 	"input":
 	{
@@ -539,18 +552,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.5,
 			1.0
 		],
 		"rows":
@@ -571,7 +577,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 56.0
+		"height": 54.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -581,6 +587,86 @@
 		"selected_items":
 		[
 			[
+				"win",
+				"windows\\win32_main.cpp"
+			],
+			[
+				"sacw_main",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"tjd_font.",
+				"sacwlib\\tjd_font.h"
+			],
+			[
+				"tjd_ren",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"font",
+				"sacwlib\\tjd_font.cpp"
+			],
+			[
+				"build",
+				"windows\\build.bat"
+			],
+			[
+				"tjd_gl.h",
+				"sacwlib\\tjd_gl.h"
+			],
+			[
+				"shape",
+				"sacwlib\\tjd_shapefile.h"
+			],
+			[
+				"sacw",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"rend",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacwm",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"win32",
+				"windows\\win32_main.cpp"
+			],
+			[
+				"gl.",
+				"sacwlib\\tjd_gl.h"
+			],
+			[
+				"imconf",
+				"sacwlib\\imgui\\imconfig.h"
+			],
+			[
+				"imgui_impl_opengl3.h",
+				"sacwlib\\imgui\\imgui_impl_opengl3.h"
+			],
+			[
+				"tjd_re",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"tjd_ui",
+				"sacwlib\\tjd_ui.h"
+			],
+			[
+				"gl",
+				"sacwlib\\tjd_gl.h"
+			],
+			[
+				"rada",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"sacw_",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
 				"sacw_m",
 				"sacwlib\\sacw_main.cpp"
 			],
@@ -589,24 +675,12 @@
 				"sacwlib\\sacw_api.h"
 			],
 			[
-				"gl",
-				"sacwlib\\tjd_gl.h"
-			],
-			[
 				"",
 				"sacwlib\\tjd_radar.h"
 			],
 			[
-				"gl.",
-				"sacwlib\\tjd_gl.h"
-			],
-			[
 				"radar.h",
 				"sacwlib\\tjd_radar.h"
-			],
-			[
-				"rada",
-				"sacwlib\\tjd_radar.cpp"
 			],
 			[
 				"gl_re",
@@ -615,10 +689,6 @@
 			[
 				"gl_ren",
 				"sacwlib\\tjd_gl_render.cpp"
-			],
-			[
-				"sacw",
-				"sacwlib\\sacw_main.cpp"
 			],
 			[
 				"sacw_ma",
@@ -641,24 +711,12 @@
 				"sacwlib\\tjd_conversions.cpp"
 			],
 			[
-				"sacw_main",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"tjd_rada",
 				"sacwlib\\tjd_radar.cpp"
 			],
 			[
-				"build",
-				"windows\\build.bat"
-			],
-			[
 				"nw",
 				"sacwlib\\nws_info.h"
-			],
-			[
-				"win32",
-				"windows\\win32_main.cpp"
 			],
 			[
 				"ftp",
@@ -691,10 +749,6 @@
 			[
 				"tjd_g",
 				"sacwlib\\tjd_gl.h"
-			],
-			[
-				"win",
-				"windows\\win32_main.cpp"
 			],
 			[
 				"bzlib",
@@ -731,10 +785,6 @@
 			[
 				"sha",
 				"src\\tjd_shapefile.h"
-			],
-			[
-				"shape",
-				"src\\tjd_shapefile.cpp"
 			],
 			[
 				"main",
@@ -797,10 +847,6 @@
 				"src\\tjd_share.h"
 			],
 			[
-				"sacw_",
-				"src\\sacw_main.cpp"
-			],
-			[
 				"tjd_radar",
 				"src\\tjd_radar.h"
 			],
@@ -823,10 +869,6 @@
 			[
 				"shapefile",
 				"src\\tjd_shapefile.cpp"
-			],
-			[
-				"rend",
-				"src\\render_extern.h"
 			],
 			[
 				"sacw_e",

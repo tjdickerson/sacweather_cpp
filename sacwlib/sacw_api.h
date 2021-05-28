@@ -37,7 +37,7 @@ extern MapViewState MapViewInfo;
 extern bool canRenderRadar;
 
 
-void sacw_Init();
+void sacw_Init(void* window);
 
 bool sacw_RadarInit(const char* filename, s16 productCode);
 

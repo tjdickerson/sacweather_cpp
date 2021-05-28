@@ -6,7 +6,7 @@
 
 bool LoadLatestRadarData();
 
-bool RenderInit();
+bool RenderInit(void* window);
 
 void Render();
 

@@ -1,6 +1,9 @@
 //
 
 #include "tjd_gl.h"
+#include "tjd_ui.h"
+#include "tjd_font.h"
+#include "tjd_conversions.h"
 #include "render_extern.h"
 #include "sacw_api.h"
 #include "sacw_extern.h"
@@ -9,7 +12,7 @@
 
 
 #ifndef __ANDROID__
-PFNGLCREATESHADERPROC glCreateShader;
+/*PFNGLCREATESHADERPROC glCreateShader;
 PFNGLSHADERSOURCEPROC glShaderSource;
 PFNGLCOMPILESHADERPROC glCompileShader;
 PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
@@ -33,7 +36,7 @@ PFNGLBUFFERSUBDATAPROC glBufferSubData;
 PFNGLUNIFORM3FPROC glUniform3f;
 PFNGLUNIFORM4FPROC glUniform4f;
 PFNGLUNIFORM4FVPROC glUniform4fv;
-PFNGLACTIVETEXTUREPROC glActiveTexture;
+PFNGLACTIVETEXTUREPROC glActiveTexture;*/
 #endif
 
 
@@ -209,12 +212,19 @@ bool LoadLatestRadarData()
     return true;
 }
 
-bool RenderInit()
+bool RenderInit(void* window)
 {
     LOGINF("GL Init\n");
 
     #ifndef __ANDRDOID__
-    InitGLExtensions();
+    
+    int err = gladLoadGL();
+    LOGINF("Loaded GL error code %d", err);
+
+    InitGui(window);
+
+    InitFont();
+
     #endif
 
     logGLString("Version", GL_VERSION);
@@ -275,9 +285,11 @@ void RenderRadar()
     glDrawArrays(GL_TRIANGLES, 0, RadarBufferData.vertexCount);
 }
 
+bool show_demo = true;
 
 void DoRender()
-{
+{    
+
     if (canRenderRadar)
     {
         RenderRadar();
@@ -285,6 +297,10 @@ void DoRender()
 
     RenderCounties();
     RenderStates();
+
+    //TestIMGUI(show_demo);
+
+    RenderTextImmediate(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), "Test Test");
 }
 
 
@@ -433,7 +449,8 @@ void RenderViewportUpdate(f32 width, f32 height)
 void InitGLExtensions() 
 {
 #ifndef __ANDROID__    
-    glCreateShader = (PFNGLCREATESHADERPROC)GLGetProcAddress("glCreateShader");
+
+/*    glCreateShader = (PFNGLCREATESHADERPROC)GLGetProcAddress("glCreateShader");
     glShaderSource = (PFNGLSHADERSOURCEPROC)GLGetProcAddress("glShaderSource");
     glCompileShader = (PFNGLCOMPILESHADERPROC)GLGetProcAddress("glCompileShader");
     glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)GLGetProcAddress("glGetShaderInfoLog");
@@ -460,7 +477,7 @@ void InitGLExtensions()
     glEnableVertexAttribArray = 
         (PFNGLENABLEVERTEXATTRIBARRAYPROC)GLGetProcAddress("glEnableVertexAttribArray");
     glBindFragDataLocation = 
-        (PFNGLBINDFRAGDATALOCATIONPROC)GLGetProcAddress("glBindFragDataLocation");
+        (PFNGLBINDFRAGDATALOCATIONPROC)GLGetProcAddress("glBindFragDataLocation");*/
 #endif        
 }
 

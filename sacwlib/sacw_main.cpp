@@ -59,7 +59,7 @@ void DownloadRadarFile()
 
     DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
 
-    //const char* filename = "C:\\tmp\\nor.last";
+    //const char* filename = "C:\\shapes\\KIND_20210526_1423";
     //const char* filename = "C:\\tmp\\test_vel.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";   
 
@@ -68,7 +68,7 @@ void DownloadRadarFile()
 
 #endif
 
-void sacw_Init()
+void sacw_Init(void* window)
 {    
     radarIsStale = false;
     MapViewInfo = {};    
@@ -79,7 +79,7 @@ void sacw_Init()
     MapViewInfo.xPan = -ConvertLonToScreen(-85.790f);
     MapViewInfo.yPan = -ConvertLatToScreen(32.537f);
 
-    RenderInit();
+    RenderInit(window);
 
     #ifndef __ANDROID__
     DownloadRadarFile();
@@ -174,7 +174,7 @@ s64 sacw_GetScanTime()
 
     s64 whateven = (scanDate * idunno) + (scanTime * 1000);
 
-    LOGINF("Scan Time: %d %d %d\n", scanDate, scanTime, whateven);
+    LOGINF("Scan Time: %d %d %lld\n", scanDate, scanTime, whateven);
     return whateven;
 }
 

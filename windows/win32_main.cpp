@@ -2,12 +2,11 @@
 
 #include <windows.h>
 #include <cstdio>
-#include "tjd_ftp.h"
 #include "tjd_gl.h"
+#include "tjd_ftp.h"
+#include "tjd_ui.h"
 #include "sacw_api.h"
 #include "win32_menu.h"
-
-// move this later
 
 
 // Forward declarations just so I can order these however.
@@ -127,6 +126,7 @@ void HandleKeyUp(unsigned int keyCode)
     if (keyCode == KEY_PANNING) Panning = false;
 }
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK WinMessageCallback(HWND hwnd, 
                                     UINT message, 
@@ -134,6 +134,9 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
                                     LPARAM lParam)
 {
     LRESULT result = 0;
+
+    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
+        return true;
 
     switch (message)
     {
@@ -146,7 +149,7 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
             result = Win32InitOpenGL(hdc);
             if (result == 0)
             {
-                sacw_Init();
+                sacw_Init(hwnd);
             }
 
             CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
@@ -346,7 +349,7 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
     GLint reqAttributes[] = 
     {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 2,
             WGL_CONTEXT_PROFILE_MASK_ARB,
             WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0

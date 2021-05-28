@@ -42,7 +42,17 @@ set src=%src% ^
 %cd%\sacwlib\tjd_gl_render.cpp ^
 %cd%\sacwlib\tjd_radar.cpp ^
 %cd%\sacwlib\tjd_conversions.cpp ^
-%cd%\sacwlib\nws_info.cpp
+%cd%\sacwlib\nws_info.cpp ^
+%cd%\sacwlib\tjd_ui.cpp ^
+%cd%\sacwlib\tjd_font.cpp ^
+%cd%\sacwlib\glad.c ^
+%cd%\sacwlib\imgui\imgui.cpp ^
+%cd%\sacwlib\imgui\imgui_draw.cpp ^
+%cd%\sacwlib\imgui\imgui_tables.cpp ^
+%cd%\sacwlib\imgui\imgui_widgets.cpp ^
+%cd%\sacwlib\imgui\imgui_demo.cpp ^
+%cd%\sacwlib\imgui\imgui_impl_win32.cpp ^
+%cd%\sacwlib\imgui\imgui_impl_opengl3.cpp 
 
 
 @rem Get into the build directory and build the application
