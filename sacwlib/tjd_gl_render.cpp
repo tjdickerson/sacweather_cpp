@@ -70,24 +70,42 @@ static GLchar* MapFragShaderSource();
 static GLchar* MapVertShaderSource();
 static GLchar* RadarFragShaderSource();
 static GLchar* RadarVertShaderSource();
+static GLchar* TextVertShaderSource();
+static GLchar* TextFragShaderSource();
 
 
 static GLuint MapVao;
 static GLuint MapVbo;
 static GLuint MapShader;
 static GLint  MapShaderPositionAttribute;
-static GLint  MapShaderModelAttribute;
+static GLint  g_mapTransPos;
+static GLint  g_mapScalePos;
+static GLint  g_mapRotPos;
 static GLint  MapShaderColorAttribute;
+
 
 static GLuint RadarVao;
 static GLuint RadarVbo;
 static GLuint RadarShader;
-static GLint  RadarShaderPositionAttribute;
-static GLint  RadarShaderModelAttribute;
-static GLint  RadarShaderColorAttribute;
+static GLint  g_radarVertexAttr;
+static GLint  g_radarColorIdxAttr;
+static GLint  g_radarColorMap;
+static GLint  g_radarTransPos;
+static GLint  g_radarScalePos;
+static GLint  g_radarRotPos;
+
+static GLuint TextVao;
+static GLuint TextVbo;
+static GLuint TextShader;
+static GLint  TextShaderVertexAttribute;
+static GLint  g_textTransPos;
+static GLint  g_textRotPos;
+static GLint  g_textScalePos;
+
+static GLuint FontAtlasTexture;
 
 
-static GLfloat ModelMatrix[] = 
+static GLfloat g_transMatrix[] = 
 {
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
@@ -95,7 +113,7 @@ static GLfloat ModelMatrix[] =
         0.0f, 0.0f, 0.0f, 1.0f
 };
 
-static GLfloat UiScaleMatrix[] = 
+static GLfloat g_scaleMatrix[] = 
 {
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
@@ -103,7 +121,15 @@ static GLfloat UiScaleMatrix[] =
         0.0f, 0.0f, 0.0f, 1.0f
 };
 
-static GLfloat IdentityMatrix[] = 
+static GLfloat g_rotMatrix[] = 
+{
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+};
+
+static GLfloat g_identMatrix[] = 
 {
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
@@ -112,7 +138,7 @@ static GLfloat IdentityMatrix[] =
 };
 
 
-static v4f32 ClearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
+static v4f32 g_clearColor = {20.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f};
 
 
 static RenderVertData StateVertData;
@@ -120,6 +146,7 @@ static RenderVertData CountyVertData;
 
 static RenderBufferData RadarBufferData;
 static RenderBufferData MapBufferData;
+static RenderBufferData TextBufferData;
 
 void logGLString(const char* text, GLenum key)
 {
@@ -127,6 +154,18 @@ void logGLString(const char* text, GLenum key)
     LOGINF("GL %s :: %s\n", text, out);
 }
 
+
+void adjScaleMatrix(f32 x, f32 y)
+{
+    g_scaleMatrix[0] = x;
+    g_scaleMatrix[5] = y;
+}
+
+void adjTranslationMatrix(f32 x, f32 y)
+{
+    g_transMatrix[12] = x;
+    g_transMatrix[13] = y;
+}
 
 bool MapInit()
 {
@@ -160,7 +199,10 @@ bool MapInit()
         2 * (sizeof(f32)),
         NULL);
 
-    MapShaderModelAttribute = glGetUniformLocation(MapShader, "Model");
+    g_mapTransPos = glGetUniformLocation(MapShader, "translation");
+    g_mapRotPos = glGetUniformLocation(MapShader, "rotation");
+    g_mapScalePos = glGetUniformLocation(MapShader, "scale");
+
     MapShaderColorAttribute = glGetUniformLocation(MapShader, "Color");
 
     // cleanup
@@ -180,18 +222,18 @@ bool LoadLatestRadarData()
     glBindVertexArray(RadarVao);
     glBindBuffer(GL_ARRAY_BUFFER, RadarVbo);
 
-    glEnableVertexAttribArray(RadarShaderPositionAttribute);
+    glEnableVertexAttribArray(g_radarVertexAttr);
     glVertexAttribPointer(
-        RadarShaderPositionAttribute,
+        g_radarVertexAttr,
         2,
         GL_FLOAT,
         GL_FALSE,
         3 * sizeof(f32),
         NULL);
 
-    glEnableVertexAttribArray(RadarShaderColorAttribute);
+    glEnableVertexAttribArray(g_radarColorIdxAttr);
     glVertexAttribPointer(
-        RadarShaderColorAttribute,
+        g_radarColorIdxAttr,
         1,
         GL_FLOAT,
         GL_FALSE,
@@ -208,8 +250,6 @@ bool LoadLatestRadarData()
 
     if(RadarBufferData.vertices) free(RadarBufferData.vertices);
 
-    LoadTextBuffer(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), 9, "123456789");
-
     return true;
 }
 
@@ -224,8 +264,6 @@ bool RenderInit(void* window)
 
     InitGui(window);
 
-    InitFont();
-
     #endif
 
     logGLString("Version", GL_VERSION);
@@ -239,12 +277,57 @@ bool RenderInit(void* window)
     MapInit();
 
     RadarShader = GLCreateShaderProgram(RadarVertShaderSource(), RadarFragShaderSource());
-    RadarShaderPositionAttribute = glGetAttribLocation(RadarShader, "Position");
-    RadarShaderColorAttribute = glGetUniformLocation(RadarShader, "colorMap");
-    RadarShaderModelAttribute = glGetUniformLocation(RadarShader, "Model");
+    g_radarVertexAttr = glGetAttribLocation(RadarShader, "position");
+    g_radarColorIdxAttr = glGetAttribLocation(RadarShader, "colorIndex");
+    g_radarColorMap = glGetUniformLocation(RadarShader, "colorMap");
+    g_radarTransPos = glGetUniformLocation(RadarShader, "translation");
+    g_radarRotPos = glGetUniformLocation(RadarShader, "rotation");
+    g_radarScalePos = glGetUniformLocation(RadarShader, "scale");
 
     glGenVertexArrays(1, &RadarVao);
     glGenBuffers(1, &RadarVbo);
+
+    // text init
+    TextShader = GLCreateShaderProgram(TextVertShaderSource(), TextFragShaderSource());
+    TextShaderVertexAttribute = glGetAttribLocation(TextShader, "vertex");    
+    g_textTransPos = glGetUniformLocation(TextShader, "translation");
+    g_textRotPos = glGetUniformLocation(TextShader, "rotation");
+    g_textScalePos = glGetUniformLocation(TextShader, "scale");
+
+    glGenVertexArrays(1, &TextVao);
+    glGenBuffers(1, &TextVbo);
+
+    glGenTextures(1, &FontAtlasTexture);
+    InitFont(FontAtlasTexture);
+
+    // 
+    {
+        TextBufferData = {};
+        LoadTextBuffer(&TextBufferData, -85.790f, 32.537f, 9, "123456789");
+        //LoadTextBuffer(&TextBufferData, 0, 0, 9, "123456789");
+        
+        glBindVertexArray(TextVao);
+        glBindBuffer(GL_ARRAY_BUFFER, TextVbo);
+
+        glEnableVertexAttribArray(TextShaderVertexAttribute);
+        glVertexAttribPointer(
+            TextShaderVertexAttribute,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            4 * sizeof(f32),
+            NULL);
+
+
+        glBindBuffer(GL_ARRAY_BUFFER, TextVbo);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            TextBufferData.vertexCount * 4 * sizeof(f32),
+            TextBufferData.vertices,
+            GL_STATIC_DRAW);    
+
+        if(TextBufferData.vertices) free(TextBufferData.vertices);
+    }
 
     return true;
 }
@@ -254,7 +337,10 @@ void RenderStates()
 {
     glUseProgram(MapShader);
     glBindVertexArray(MapVao);
-    glUniformMatrix4fv(MapShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
+
+    glUniformMatrix4fv(g_mapTransPos, 1, GL_FALSE, g_transMatrix);
+    glUniformMatrix4fv(g_mapRotPos, 1, GL_FALSE, g_rotMatrix);
+    glUniformMatrix4fv(g_mapScalePos, 1, GL_FALSE, g_scaleMatrix);
 
     // states  #6c6c58
     glUniform4f(MapShaderColorAttribute, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -268,8 +354,10 @@ void RenderCounties()
 {
     glUseProgram(MapShader);
     glBindVertexArray(MapVao);
-    glUniformMatrix4fv(MapShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
 
+    glUniformMatrix4fv(g_mapTransPos, 1, GL_FALSE, g_transMatrix);
+    glUniformMatrix4fv(g_mapRotPos, 1, GL_FALSE, g_rotMatrix);
+    glUniformMatrix4fv(g_mapScalePos, 1, GL_FALSE, g_scaleMatrix);
 
     // counties
     glUniform4f(MapShaderColorAttribute, 0.2f, 0.2f, 0.2f, 1.0f);
@@ -283,17 +371,37 @@ void RenderRadar()
 {
     glUseProgram(RadarShader);
     glBindVertexArray(RadarVao);
-    glUniformMatrix4fv(RadarShaderModelAttribute, 1, GL_FALSE, ModelMatrix);
 
-    glUniform4fv(RadarShaderColorAttribute, 16, ReflectivityMap);
+    glUniformMatrix4fv(g_radarTransPos, 1, GL_FALSE, g_transMatrix);
+    glUniformMatrix4fv(g_radarRotPos, 1, GL_FALSE, g_rotMatrix);
+    glUniformMatrix4fv(g_radarScalePos, 1, GL_FALSE, g_scaleMatrix);
+
+    glUniform4fv(g_radarColorMap, 16, ReflectivityMap);
     glDrawArrays(GL_TRIANGLES, 0, RadarBufferData.vertexCount);
+}
+
+void RenderText()
+{
+    glUseProgram(TextShader);
+    glBindVertexArray(TextVao);
+
+    glUniformMatrix4fv(g_textTransPos, 1, GL_FALSE, g_transMatrix);
+    glUniformMatrix4fv(g_textRotPos, 1, GL_FALSE, g_rotMatrix);
+    glUniformMatrix4fv(g_textScalePos, 1, GL_FALSE, g_scaleMatrix);
+    glDrawArrays(GL_TRIANGLES, 0, TextBufferData.vertexCount);
 }
 
 bool show_demo = true;
 
-void DoRender()
-{    
+void renderLayers()
+{   
+    f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale);    
 
+    adjScaleMatrix(x_scale, y_scale);
+    //adjTranslationMatrix(MapViewInfo.xPan, MapViewInfo.yPan);
+    adjTranslationMatrix(MapViewInfo.xPan * x_scale, MapViewInfo.yPan * y_scale);   
+    
     if (canRenderRadar)
     {
         RenderRadar();
@@ -304,8 +412,8 @@ void DoRender()
 
     //TestIMGUI(show_demo);
 
-    //RenderTextImmediate(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), "Test Test");
-
+    // Don't let the text scale with the map/radar.
+    adjScaleMatrix(1.0f, 1.0f);
     RenderText();
 }
 
@@ -313,16 +421,19 @@ void DoRender()
 void Render()
 {
     // 
-    glClearColor(ClearColor.x, ClearColor.y, ClearColor.z, ClearColor.w);
+    glClearColor(g_clearColor.x, g_clearColor.y, g_clearColor.z, g_clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    ModelMatrix[0] = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
-    ModelMatrix[5] = (MapViewInfo.scaleFactor / MapViewInfo.yScale);
+    
 
-    ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
-    ModelMatrix[13] = MapViewInfo.yPan * ModelMatrix[5];
+    glViewport(0, 0, MapViewInfo.mapWidthPixels, MapViewInfo.mapHeightPixels);
 
-    bool splitScreen = false;
+    renderLayers();
+
+    glUseProgram(0);
+    glFlush();
+
+    /*bool splitScreen = false;
     if (splitScreen)
     {
         ModelMatrix[0] = (MapViewInfo.scaleFactor * 0.5f) / MapViewInfo.xScale;
@@ -336,7 +447,7 @@ void Render()
                 MapViewInfo.mapWidthPixels, 
                 MapViewInfo.mapHeightPixels * 0.5f);
             
-            DoRender();
+            renderLayers();
         }
 
         // top view
@@ -347,7 +458,7 @@ void Render()
             MapViewInfo.mapWidthPixels, 
             MapViewInfo.mapHeightPixels * 0.5f);
 
-            DoRender();
+            renderLayers();
         }       
 
     }
@@ -360,11 +471,10 @@ void Render()
                 MapViewInfo.mapWidthPixels, 
                 MapViewInfo.mapHeightPixels);
 
-        DoRender();
-    }
+        renderLayers();
+    }*/
 
-    glUseProgram(0);
-    glFlush();
+
 }
 
 
@@ -506,10 +616,12 @@ static GLchar* MapVertShaderSource()
 
         in vec2 Position;
 
-        uniform mat4 Model;
+        uniform mat4 translation;
+        uniform mat4 rotation;
+        uniform mat4 scale;
 
         void main() {
-            gl_Position = Model * vec4(Position, 0.0, 1.0);
+            gl_Position = translation * rotation * scale * vec4(Position, 0.0, 1.0);
         }
     )glsl";
 #endif
@@ -570,18 +682,20 @@ static GLchar* RadarVertShaderSource()
     const char* source = R"glsl(
         #version 150
 
-        in vec2 Position;
+        in vec2 position;
         in float colorIndex;
 
         uniform vec4[16] colorMap;
 
-        uniform mat4 Model;
+        uniform mat4 translation;
+        uniform mat4 rotation;
+        uniform mat4 scale;
 
         out vec4 FragColor;
 
         void main() {
             FragColor = colorMap[int(colorIndex)];
-            gl_Position = Model * vec4(Position, 0.0, 1.0);
+            gl_Position = translation * rotation * scale * vec4(position, 0.0, 1.0);
         }
     )glsl";
 #endif    
@@ -617,3 +731,78 @@ static GLchar* RadarFragShaderSource()
     return (GLchar*)source;
 }
 
+
+static GLchar* TextVertShaderSource() 
+{
+#ifdef __ANDROID__
+    const char* source = R"glsl(#version 300 es
+        precision mediump float;
+        in vec2 Position;
+        in float colorIndex;
+
+        uniform vec4[16] colorMap;
+
+        uniform mat4 Model;
+
+        out vec4 FragColor;
+
+        void main() {
+            FragColor = colorMap[int(colorIndex)];
+            gl_Position = Model * vec4(Position, 0.0, 1.0);
+        }
+    )glsl";
+#else    
+    const char* source = R"glsl(
+        #version 150
+        // layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
+
+        in vec4 vertex;
+        out vec2 TexCoords;
+
+        uniform mat4 translation;
+        uniform mat4 rotation;
+        uniform mat4 scale;
+
+        void main()
+        {
+            gl_Position = translation * rotation * scale * vec4(vertex.xy, 0.0, 1.0);
+            TexCoords = vertex.zw;
+        }  
+    )glsl";
+#endif    
+
+    return (GLchar*)source;
+}
+
+static GLchar* TextFragShaderSource() 
+{
+#ifdef __ANDROID__
+    const char* source = R"glsl(#version 300 es
+        precision mediump float;
+        in vec4 FragColor;
+        out vec4 outColor;
+
+        void main() {
+            outColor = FragColor;
+        }
+    )glsl";
+#else    
+    const char* source = R"glsl(
+        #version 150
+        in vec2 TexCoords;
+        out vec4 color;
+
+        uniform sampler2D text;
+        uniform vec3 textColor;
+
+        void main()
+        {    
+            vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
+            // color = vec4(textColor, 1.0) * sampled;
+            color = vec4(1.0, 1.0, 1.0, 1.0) * sampled;
+        }  
+    )glsl";
+#endif    
+
+    return (GLchar*)source;
+}

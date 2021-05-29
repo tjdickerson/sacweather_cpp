@@ -34,7 +34,7 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y);
 void DownloadRadarFile()
 {
     int DefaultProduct = 94;
-    char* DefaultWSR = "kmxx";
+    char* DefaultWSR = "kabr";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
@@ -75,9 +75,9 @@ void sacw_Init(void* window)
 
     InitNexradProducts();
 
-    MapViewInfo.scaleFactor = 80.0f;
-    MapViewInfo.xPan = -ConvertLonToScreen(-85.790f);
-    MapViewInfo.yPan = -ConvertLatToScreen(32.537f);
+    MapViewInfo.scaleFactor = 50.0f; //80.0f;
+    MapViewInfo.xPan = 1.0f; // -ConvertLonToScreen(-85.790f);
+    MapViewInfo.yPan = 1.0f; // -ConvertLatToScreen(32.537f);
 
     RenderInit(window);
 
@@ -136,21 +136,28 @@ void sacw_UpdateViewport(f32 width, f32 height)
     RenderViewportUpdate(width, height);    
 }
 
+void LogMapInfo()
+{
+    LOGINF("MapInfo:    xPan %2.4f  yPan %2.4f  scaleFactor %2.4f   xScale %2.4f    yScale %2.4f\n",
+        MapViewInfo.xPan, MapViewInfo.yPan, MapViewInfo.scaleFactor, MapViewInfo.xScale, MapViewInfo.yScale);
+}
 
 void sacw_ZoomMap(f32 zoom)
 {      
     if (zoom == 0) return;
 
-    f32 speed = 0.5f;
+    f32 speed = 1.0f;
     f32 dir = zoom > 0 ? 1 : -1;
 
     f32 delta = (MapViewInfo.scaleFactor * 0.1f) * dir * speed;
     f32 targetScale = MapViewInfo.scaleFactor + delta;
 
-    if (targetScale < 10) targetScale = 10 + 1;
-    else if (targetScale > 250) targetScale = 250 - 1;
+    // if (targetScale < 10) targetScale = 10 + 1;
+    // else if (targetScale > 250) targetScale = 250 - 1;
 
-    MapViewInfo.scaleFactor = targetScale;
+    MapViewInfo.scaleFactor = targetScale;    
+
+    LogMapInfo();
 }
 
 
