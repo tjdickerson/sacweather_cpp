@@ -146,14 +146,15 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
             LogMessage("Window created.");
 
             // initialize opengl for windows
-            result = Win32InitOpenGL(hdc);
+            result = Win32InitOpenGL(hdc);            
+
             if (result == 0)
             {
                 sacw_Init(hwnd);
-            }
 
-            CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
-            sacw_UpdateViewport(cs->cx, cs->cy);
+                CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+                sacw_UpdateViewport(cs->cx, cs->cy);
+            }            
 
             gIsRunning = true;
         }

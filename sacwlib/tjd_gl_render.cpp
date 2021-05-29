@@ -303,7 +303,7 @@ bool RenderInit(void* window)
     // 
     {
         TextBufferData = {};
-        LoadTextBuffer(&TextBufferData, -85.790f, 32.537f, 9, "123456789");
+        LoadTextBuffer(&TextBufferData, -85.790f, 32.537f, 0.5f, 9, "123456789");
         //LoadTextBuffer(&TextBufferData, 0, 0, 9, "123456789");
         
         glBindVertexArray(TextVao);
@@ -398,9 +398,11 @@ void renderLayers()
     f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
     f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale);    
 
-    adjScaleMatrix(x_scale, y_scale);
-    //adjTranslationMatrix(MapViewInfo.xPan, MapViewInfo.yPan);
-    adjTranslationMatrix(MapViewInfo.xPan * x_scale, MapViewInfo.yPan * y_scale);   
+    f32 trans_x = MapViewInfo.xPan;
+    f32 trans_y = MapViewInfo.yPan;
+
+    adjScaleMatrix(x_scale, y_scale);    
+    adjTranslationMatrix(trans_x * x_scale, trans_y * y_scale);       
     
     if (canRenderRadar)
     {
@@ -413,7 +415,8 @@ void renderLayers()
     //TestIMGUI(show_demo);
 
     // Don't let the text scale with the map/radar.
-    adjScaleMatrix(1.0f, 1.0f);
+    adjScaleMatrix(1.0f / MapViewInfo.xScale, 1.0f / MapViewInfo.yScale);    
+    adjTranslationMatrix(trans_x, trans_y); 
     RenderText();
 }
 

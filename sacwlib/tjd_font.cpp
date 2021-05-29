@@ -51,14 +51,14 @@ void InitFont(GLuint textureId)
     stbtt_BakeFontBitmap(font_buffer, 0, 32.0, tmp_work_bitmap, TMP_BMP_WIDTH, TMP_BMP_HEIGHT, 32, 96, cdata);
 
 
-    for (int row = TMP_BMP_HEIGHT; row > 0; row--)
+/*    for (int row = TMP_BMP_HEIGHT; row > 0; row--)
     {
         for (int col = 0; col < TMP_BMP_WIDTH; col++)
         {
             tmp_flipped_bitmap[col + (TMP_BMP_WIDTH * (TMP_BMP_HEIGHT - row))] = 
                 tmp_work_bitmap[col + (TMP_BMP_WIDTH * row)];
         }
-    }
+    }*/
 
     // free font_buffer here?
     
@@ -72,7 +72,7 @@ void InitFont(GLuint textureId)
         0, 
         GL_RED, 
         GL_UNSIGNED_BYTE, 
-        tmp_flipped_bitmap);
+        tmp_work_bitmap);
 
     // free tmp_work_bitmap?
 
@@ -81,15 +81,22 @@ void InitFont(GLuint textureId)
 }
 
 
-void LoadTextBuffer(RenderBufferData* textBuffer, f32 x, f32 y, int count, const char* text)
+void LoadTextBuffer(RenderBufferData* textBuffer, f32 lon, f32 lat, f32 scale, s32 count, const char* text)
 {
     textBuffer->vertexCount = count * 1 * 6;
     textBuffer->vertices = (f32*)malloc(textBuffer->vertexCount * 4 * sizeof(f32));
    
-    f32 xoff = 0.0f;
-    f32 glw = 1.0f / 512.0f;
-    f32 tempx = 0.0f, tempy = 0.0f;
-    f32 charHeight = 32.0f;
+    f32 bmp_h_factor = 1.0f / TMP_BMP_HEIGHT;
+    f32 bmp_w_factor = 1.0f / TMP_BMP_WIDTH;        
+
+    f32 screen_x = ConvertLonToScreen(lon);
+    f32 screen_y = ConvertLatToScreen(lat);
+
+    f32 temp_x = 0.0f;
+    
+    f32 botlx, botly, toplx, toply, botrx, botry, toprx, topry;
+    f32 c_h_half, c_w_half, fy0, fy1;
+
     int vi = 0;
     for (int i = 0; i < count; i++)
     {
@@ -97,91 +104,66 @@ void LoadTextBuffer(RenderBufferData* textBuffer, f32 x, f32 y, int count, const
         if (*c >= 32 && *c < 128)
         {              
             const stbtt_bakedchar *b = cdata + *c - 32;
-
             
-            f32 botlx, botly, toplx, toply, botrx, botry, toprx, topry;
-            f32 cw = b->x1 - b->x0;
-            f32 ch = b->y1 - b->y0;
-            f32 fy0 = TMP_BMP_HEIGHT - b->y0;
-            f32 fy1 = TMP_BMP_HEIGHT - b->y1;
+            c_w_half = (b->x1 - b->x0) * 0.5f;
+            c_h_half = (b->y1 - b->y0) * 0.5f;
 
-            botlx = tempx - (cw * 0.5f);
-            botly = tempy - (ch * 0.5f);
+            c_w_half *= bmp_w_factor;
+            c_h_half *= bmp_h_factor;
 
-            toplx = tempx - (cw * 0.5f);
-            toply = tempy + (ch * 0.5f);
+            fy0 = b->y0;
+            fy1 = b->y1;
 
-            botrx = tempx + (cw * 0.5f);
-            botry = tempy - (ch * 0.5f);
+            botlx = temp_x + (screen_x - c_w_half);
+            botly = screen_y - c_h_half;
 
-            toprx = tempx + (cw * 0.5f);
-            topry = tempy + (ch * 0.5f);
+            toplx = temp_x + (screen_x - c_w_half);
+            toply = screen_y + c_h_half;
 
-            tempx += b->xadvance;
+            botrx = temp_x + (screen_x + c_w_half);
+            botry = screen_y - c_h_half;
 
-            botlx *= glw;
-            botly *= glw;
-            toplx *= glw;
-            toply *= glw;
-            botrx *= glw;
-            botry *= glw;
-            toprx *= glw;
-            topry *= glw;
+            toprx = temp_x + (screen_x + c_w_half);
+            topry = screen_y + c_h_half;
 
-            // botlx = ScreenToX(botlx);
-            // botly = ScreenToY(botly);
-            // toplx = ScreenToX(toplx);
-            // toply = ScreenToY(toply);
-            // botrx = ScreenToX(botrx);
-            // botry = ScreenToY(botry);
-            // toprx = ScreenToX(toprx);
-            // topry = ScreenToY(topry);
-
-            botlx = ConvertLonToScreen(x) + botlx;
-            botly = -ConvertLatToScreen(y) + botly;
-            toplx = ConvertLonToScreen(x) + toplx;
-            toply = -ConvertLatToScreen(y) + toply;
-            botrx = ConvertLonToScreen(x) + botrx;
-            botry = -ConvertLatToScreen(y) + botry;
-            toprx = ConvertLonToScreen(x) + toprx;
-            topry = -ConvertLatToScreen(y) + topry;
+            temp_x += (b->xadvance * bmp_w_factor);
 
 
             // bottom left
             textBuffer->vertices[vi++] = botlx;
             textBuffer->vertices[vi++] = botly;
-            textBuffer->vertices[vi++] = b->x0 * glw;
-            textBuffer->vertices[vi++] = fy1 * glw;
+            textBuffer->vertices[vi++] = b->x0 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy1 * bmp_h_factor;
 
             // top left
             textBuffer->vertices[vi++] = toplx;
             textBuffer->vertices[vi++] = toply;
-            textBuffer->vertices[vi++] = b->x0 * glw;
-            textBuffer->vertices[vi++] = fy0 * glw;
+            textBuffer->vertices[vi++] = b->x0 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy0 * bmp_h_factor;
 
             // bottom right
             textBuffer->vertices[vi++] = botrx;
             textBuffer->vertices[vi++] = botry;
-            textBuffer->vertices[vi++] = b->x1 * glw;
-            textBuffer->vertices[vi++] = fy1 * glw;
+            textBuffer->vertices[vi++] = b->x1 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy1 * bmp_h_factor;
 
             // top left
             textBuffer->vertices[vi++] = toplx;
             textBuffer->vertices[vi++] = toply;
-            textBuffer->vertices[vi++] = b->x0 * glw;
-            textBuffer->vertices[vi++] = fy0 * glw;
+            textBuffer->vertices[vi++] = b->x0 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy0 * bmp_h_factor;
 
             // top right
             textBuffer->vertices[vi++] = toprx;
             textBuffer->vertices[vi++] = topry;
-            textBuffer->vertices[vi++] = b->x1 * glw;
-            textBuffer->vertices[vi++] = fy0 * glw;
+            textBuffer->vertices[vi++] = b->x1 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy0 * bmp_h_factor;
 
             // bottom right
             textBuffer->vertices[vi++] = botrx;
             textBuffer->vertices[vi++] = botry;
-            textBuffer->vertices[vi++] = b->x1 * glw;
-            textBuffer->vertices[vi++] = fy1 * glw;           
+            textBuffer->vertices[vi++] = b->x1 * bmp_w_factor;
+            textBuffer->vertices[vi++] = fy1 * bmp_h_factor;           
 
         }
     }

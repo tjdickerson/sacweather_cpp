@@ -34,7 +34,7 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y);
 void DownloadRadarFile()
 {
     int DefaultProduct = 94;
-    char* DefaultWSR = "kabr";
+    char* DefaultWSR = "kmxx";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
@@ -68,6 +68,19 @@ void DownloadRadarFile()
 
 #endif
 
+void centerMapAt(f32 lon, f32 lat)
+{
+    f32 screen_x = ConvertLonToScreen(lon);
+    f32 screen_y = ConvertLatToScreen(lat);
+
+    f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale); 
+
+    MapViewInfo.scaleFactor = 52.0f; //80.0f;
+    MapViewInfo.xPan = -screen_x;
+    MapViewInfo.yPan = -screen_y;
+}
+
 void sacw_Init(void* window)
 {    
     radarIsStale = false;
@@ -75,9 +88,11 @@ void sacw_Init(void* window)
 
     InitNexradProducts();
 
-    MapViewInfo.scaleFactor = 50.0f; //80.0f;
-    MapViewInfo.xPan = 1.0f; // -ConvertLonToScreen(-85.790f);
-    MapViewInfo.yPan = 1.0f; // -ConvertLatToScreen(32.537f);
+    MapViewInfo.scaleFactor = 1.0f; //80.0f;
+    MapViewInfo.xScale = 1.0f;
+    MapViewInfo.yScale = 1.0f;
+    MapViewInfo.xPan = 0.0f; // -ConvertLonToScreen(-85.790f);
+    MapViewInfo.yPan = 0.0f; // -ConvertLatToScreen(32.537f);
 
     RenderInit(window);
 
@@ -102,8 +117,10 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
 
     if (success)
     {
-        MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
-        MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
+        // MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
+        // MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
+
+        centerMapAt(wsrInfo.lon, wsrInfo.lat);
 
         canRenderRadar = success;
         radarIsStale = success;   
