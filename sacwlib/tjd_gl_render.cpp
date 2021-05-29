@@ -148,6 +148,8 @@ bool MapInit()
         MapBufferData.vertices,
         GL_STATIC_DRAW);
 
+    LOGINF ("Map  Vao %d, Vbo %d\n", MapVao, MapVao);
+
     MapShaderPositionAttribute = glGetAttribLocation(MapShader, "Position");
     glEnableVertexAttribArray(MapShaderPositionAttribute);
     glVertexAttribPointer(
@@ -175,10 +177,7 @@ bool LoadLatestRadarData()
     RadarBufferData = {};
     sacw_GetRadarRenderData(&RadarBufferData);
 
-    glGenVertexArrays(1, &RadarVao);
     glBindVertexArray(RadarVao);
-
-    glGenBuffers(1, &RadarVbo);
     glBindBuffer(GL_ARRAY_BUFFER, RadarVbo);
 
     glEnableVertexAttribArray(RadarShaderPositionAttribute);
@@ -209,6 +208,8 @@ bool LoadLatestRadarData()
 
     if(RadarBufferData.vertices) free(RadarBufferData.vertices);
 
+    LoadTextBuffer(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), 9, "123456789");
+
     return true;
 }
 
@@ -219,7 +220,7 @@ bool RenderInit(void* window)
     #ifndef __ANDRDOID__
     
     int err = gladLoadGL();
-    LOGINF("Loaded GL error code %d", err);
+    LOGINF("Loaded GL error code %d\n", err);
 
     InitGui(window);
 
@@ -241,6 +242,9 @@ bool RenderInit(void* window)
     RadarShaderPositionAttribute = glGetAttribLocation(RadarShader, "Position");
     RadarShaderColorAttribute = glGetUniformLocation(RadarShader, "colorMap");
     RadarShaderModelAttribute = glGetUniformLocation(RadarShader, "Model");
+
+    glGenVertexArrays(1, &RadarVao);
+    glGenBuffers(1, &RadarVbo);
 
     return true;
 }
@@ -300,7 +304,9 @@ void DoRender()
 
     //TestIMGUI(show_demo);
 
-    RenderTextImmediate(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), "Test Test");
+    //RenderTextImmediate(ConvertLonToScreen(-85.790f), ConvertLatToScreen(32.537f), "Test Test");
+
+    RenderText();
 }
 
 

@@ -33,8 +33,8 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y);
 
 void DownloadRadarFile()
 {
-    int DefaultProduct = 37;
-    char* DefaultWSR = "kama";
+    int DefaultProduct = 94;
+    char* DefaultWSR = "kmxx";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
