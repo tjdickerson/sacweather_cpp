@@ -76,9 +76,9 @@ void centerMapAt(f32 lon, f32 lat)
     f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
     f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale); 
 
-    MapViewInfo.scaleFactor = 52.0f; //80.0f;
-    MapViewInfo.xPan = -screen_x;
-    MapViewInfo.yPan = -screen_y;
+    MapViewInfo.scaleFactor = 1.0f; //80.0f;
+    MapViewInfo.xPan = 0.0f; //-screen_x;
+    MapViewInfo.yPan = 0.0f; //-screen_y;
 }
 
 void sacw_Init(void* window)

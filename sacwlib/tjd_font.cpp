@@ -89,8 +89,8 @@ void LoadTextBuffer(RenderBufferData* textBuffer, f32 lon, f32 lat, f32 scale, s
     f32 bmp_h_factor = 1.0f / TMP_BMP_HEIGHT;
     f32 bmp_w_factor = 1.0f / TMP_BMP_WIDTH;        
 
-    f32 screen_x = ConvertLonToScreen(lon);
-    f32 screen_y = ConvertLatToScreen(lat);
+    f32 screen_x = 0.0f; // ConvertLonToScreen(lon);
+    f32 screen_y = 0.0f; //ConvertLatToScreen(lat);
 
     f32 temp_x = 0.0f;
     

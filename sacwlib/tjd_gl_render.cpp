@@ -101,6 +101,7 @@ static GLint  TextShaderVertexAttribute;
 static GLint  g_textTransPos;
 static GLint  g_textRotPos;
 static GLint  g_textScalePos;
+static GLint  g_textOffset;
 
 static GLuint FontAtlasTexture;
 
@@ -293,6 +294,7 @@ bool RenderInit(void* window)
     g_textTransPos = glGetUniformLocation(TextShader, "translation");
     g_textRotPos = glGetUniformLocation(TextShader, "rotation");
     g_textScalePos = glGetUniformLocation(TextShader, "scale");
+    g_textOffset = glGetUniformLocation(TextShader, "offset");
 
     glGenVertexArrays(1, &TextVao);
     glGenBuffers(1, &TextVbo);
@@ -380,19 +382,50 @@ void RenderRadar()
     glDrawArrays(GL_TRIANGLES, 0, RadarBufferData.vertexCount);
 }
 
-void RenderText()
+void renderText(f32 x_off, f32 y_off)
 {
+    f32 offset[2];
+    offset[0] = x_off;
+    offset[1] = y_off;
+
     glUseProgram(TextShader);
     glBindVertexArray(TextVao);
 
     glUniformMatrix4fv(g_textTransPos, 1, GL_FALSE, g_transMatrix);
     glUniformMatrix4fv(g_textRotPos, 1, GL_FALSE, g_rotMatrix);
     glUniformMatrix4fv(g_textScalePos, 1, GL_FALSE, g_scaleMatrix);
+    glUniform2fv(g_textOffset, 1, offset);
     glDrawArrays(GL_TRIANGLES, 0, TextBufferData.vertexCount);
 }
 
-bool show_demo = true;
+v2f32 MultiplyVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v1.x * v2.x;
+    r.y = v1.y * v2.y;
 
+    return r;
+}
+
+v2f32 SubtractVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v2.x - v1.x;
+    r.y = v2.y - v1.y;
+
+    return r;
+}
+
+v2f32 AddVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v2.x + v1.x;
+    r.y = v2.y + v1.y;
+
+    return r;
+}
+
+bool show_demo = true;
 void renderLayers()
 {   
     f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
@@ -402,7 +435,8 @@ void renderLayers()
     f32 trans_y = MapViewInfo.yPan;
 
     adjScaleMatrix(x_scale, y_scale);    
-    adjTranslationMatrix(trans_x * x_scale, trans_y * y_scale);       
+    //adjTranslationMatrix(trans_x * x_scale, trans_y * y_scale);      
+    adjTranslationMatrix(trans_x, trans_y);     
     
     if (canRenderRadar)
     {
@@ -414,10 +448,39 @@ void renderLayers()
 
     //TestIMGUI(show_demo);
 
-    // Don't let the text scale with the map/radar.
-    adjScaleMatrix(1.0f / MapViewInfo.xScale, 1.0f / MapViewInfo.yScale);    
-    adjTranslationMatrix(trans_x, trans_y); 
-    RenderText();
+
+    {
+        f32 x = ConvertLonToScreen(-85.790f);
+        f32 y = ConvertLatToScreen(32.537f);
+
+        v2f32 point = {};
+        point.x = x;
+        point.y = y;
+
+        v2f32 direction = {};
+        direction.x = point.x > 0 ? -1.0f : 1.0f;
+        direction.y = point.y > 0 ? 1.0f : -1.0f;
+
+        v2f32 v_scale = {};
+        v_scale.x = x_scale / MapViewInfo.xScale;
+        v_scale.y = y_scale;
+
+        v2f32 v_trans = {};
+        v_trans.x = trans_x;
+        v_trans.y = trans_y;
+
+        v2f32 result1 = AddVectorV2f(point, v_trans);
+        v2f32 result2 = MultiplyVectorV2f(result1, MultiplyVectorV2f(v_scale, direction));        
+
+        f32 off_x = result2.x;
+        f32 off_y = result2.y;
+
+        adjScaleMatrix(1.0f / MapViewInfo.xScale, 1.0f / MapViewInfo.yScale);  
+        // adjTranslationMatrix(trans_x / MapViewInfo.xScale, trans_y / MapViewInfo.yScale); 
+        // adjTranslationMatrix(trans_x, trans_y); 
+        adjTranslationMatrix(0.0f, 0.0f); 
+        renderText(off_x, off_y);
+    }
 }
 
 
@@ -426,7 +489,6 @@ void Render()
     // 
     glClearColor(g_clearColor.x, g_clearColor.y, g_clearColor.z, g_clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT);
-
     
 
     glViewport(0, 0, MapViewInfo.mapWidthPixels, MapViewInfo.mapHeightPixels);
@@ -624,7 +686,7 @@ static GLchar* MapVertShaderSource()
         uniform mat4 scale;
 
         void main() {
-            gl_Position = translation * rotation * scale * vec4(Position, 0.0, 1.0);
+            gl_Position = rotation * scale * translation * vec4(Position, 0.0, 1.0);
         }
     )glsl";
 #endif
@@ -698,7 +760,7 @@ static GLchar* RadarVertShaderSource()
 
         void main() {
             FragColor = colorMap[int(colorIndex)];
-            gl_Position = translation * rotation * scale * vec4(position, 0.0, 1.0);
+            gl_Position = rotation * scale * translation * vec4(position, 0.0, 1.0);
         }
     )glsl";
 #endif    
@@ -762,13 +824,20 @@ static GLchar* TextVertShaderSource()
         in vec4 vertex;
         out vec2 TexCoords;
 
+        uniform vec2 offset;
+
         uniform mat4 translation;
         uniform mat4 rotation;
-        uniform mat4 scale;
+        uniform mat4 scale;      
 
+        vec2 temp;
         void main()
         {
-            gl_Position = translation * rotation * scale * vec4(vertex.xy, 0.0, 1.0);
+            temp = vertex.xy + offset;
+            
+            gl_Position = rotation * scale * translation * vec4(temp, 0.0, 1.0);
+            // gl_Position = vec4(vertex.xy + offset, 0.0, 1.0);
+            //gl_Position = temp;
             TexCoords = vertex.zw;
         }  
     )glsl";
