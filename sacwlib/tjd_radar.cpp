@@ -13,7 +13,6 @@
 s16 RadialCount = 1;
 s16 BinCount = 1;
 
-
 static NexradProduct* CurrentProduct;
 
 s32* StartsArray;
@@ -32,43 +31,48 @@ struct BufferInfo
     s32 position;
 };
 
-void readFromBuffer(void* dest, struct BufferInfo *bi, s32 length)
+void readFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
 {
     memcpy(dest, &bi->buffer[bi->position], length);
     bi->position += length;
 }
 
-void seekBuffer(struct BufferInfo *bi, s32 pos)
+void seekBuffer(struct BufferInfo* bi, s32 jmp)
 {
-    bi->position += pos;
+    bi->position += jmp;
 }
 
-void setBufferPos(struct BufferInfo *bi, s32 pos)
+void setBufferPos(struct BufferInfo* bi, s32 pos)
 {
-    bi->position = pos;   
+    bi->position = pos;
+}
+
+unsigned char peekBuffer(struct BufferInfo* bi, s32 jmp)
+{
+    return bi->buffer[bi->position];
 }
 
 //
 
 bool RadialImagePacket(
-    unsigned char* buffer, 
-    u32 bp, 
-    NexradProduct* nexradProduct, 
+    unsigned char* buffer,
+    u32 bp,
+    NexradProduct* nexradProduct,
     WSR88DInfo* wsrInfo,
     ProductDescription* pd,
-    s16 packetCode);
-
+    s16 packetCode
+);
 
 void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 colorIndex);
 
 bool RasterImagePacket(
-    unsigned char* buffer, 
-    u32 bp, 
-    NexradProduct* nexradProduct, 
+    unsigned char* buffer,
+    u32 bp,
+    NexradProduct* nexradProduct,
     WSR88DInfo* wsrInfo,
     ProductDescription* pd,
-    s16 packetCode);
-
+    s16 packetCode
+);
 
 void tjd_GetRadarRenderData(RenderBufferData* rbd)
 {
@@ -76,7 +80,7 @@ void tjd_GetRadarRenderData(RenderBufferData* rbd)
     rbd->vertices = (f32*)malloc(rbd->vertexCount * 3 * sizeof(f32));
 
     int vi = 0;
-    for(int i = 0; i < BinCount * RadialCount; i++)
+    for (int i = 0; i < BinCount * RadialCount; i++)
     {
         rbd->vertices[vi++] = RangeBins[i].p1.x;
         rbd->vertices[vi++] = RangeBins[i].p1.y;
@@ -100,27 +104,26 @@ void tjd_GetRadarRenderData(RenderBufferData* rbd)
         rbd->vertices[vi++] = RangeBins[i].p2.y;
         rbd->vertices[vi++] = RangeBins[i].colorIndex;
 
-
         rbd->vertices[vi++] = RangeBins[i].p4.x;
         rbd->vertices[vi++] = RangeBins[i].p4.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;       
+        rbd->vertices[vi++] = RangeBins[i].colorIndex;
     }
 }
 
-
 void CalcRangeBinLocation(
-        s32 radialIndex,
-        s32 binIndex,
-        f32 cx, 
-        f32 cy, 
-        f32 range,
-        f32 angleStart,
-        f32 angleDelta)
+    s32 radialIndex,
+    s32 binIndex,
+    f32 cx,
+    f32 cy,
+    f32 range,
+    f32 angleStart,
+    f32 angleDelta
+)
 {
     f32 dx1, dy1, dx2, dy2;
 
     RangeBin* bin = GetRangeBin(radialIndex, binIndex);
-    f32 sweepCenterLeft  = angleStart - (angleDelta * 0.5f);
+    f32 sweepCenterLeft = angleStart - (angleDelta * 0.5f);
     f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);
 
     dx1 = (binIndex + 1) * (range / (float)BinCount) / (cos(cy * PI / 180.0f));
@@ -136,7 +139,7 @@ void CalcRangeBinLocation(
 
     // "bottom" right
     bin->p2.x = dx1 * sin(DegToRad(sweepCenterRight));
-    bin->p2.y = dy1 * cos(DegToRad(sweepCenterRight));   
+    bin->p2.y = dy1 * cos(DegToRad(sweepCenterRight));
 
     // "top" left
     bin->p3.x = dx2 * sin(DegToRad(sweepCenterLeft));
@@ -144,11 +147,11 @@ void CalcRangeBinLocation(
 
     // "top" right
     bin->p4.x = dx2 * sin(DegToRad(sweepCenterRight));
-    bin->p4.y = dy2 * cos(DegToRad(sweepCenterRight));      
+    bin->p4.y = dy2 * cos(DegToRad(sweepCenterRight));
 
-   
 
-    
+
+
     // Convert the nautical mile results into lon/lat degree offsets
     bin->p1.x = (cx + (bin->p1.x / 60.0f));
     bin->p1.y = (cy + (bin->p1.y / 60.0f));
@@ -177,26 +180,23 @@ void CalcRangeBinLocation(
     bin->p4.y = ConvertLatToScreen(bin->p4.y);
 }
 
-
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 {
     RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);
     return bin;
 }
 
-
 void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex)
 {
     // int ci = (colorIndex * 4);
     // f32* colorMap = VelocityMap;
-    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);        
+    RangeBin* bin = &(RangeBins[radialIndex + (binIndex * RadialCount)]);
     bin->colorIndex = colorIndex;
     // bin->color.r = colorMap[ci];
     // bin->color.g = colorMap[ci + 1];
     // bin->color.b = colorMap[ci + 2];
     // bin->color.a = colorMap[ci + 3];
 }
-
 
 void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 colorIndex)
 {
@@ -213,7 +213,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 
     // bottom right
     cell->p2.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
-    cell->p2.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);    
+    cell->p2.y = ((iy * res) - halfRes) - ((RadialCount * res) / 2.0f);
 
     // top left
     cell->p3.x = ((ix * res) - halfRes) - ((RadialCount * res) / 2.0f);
@@ -222,7 +222,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     // top right
     cell->p4.x = ((ix * res) + halfRes) - ((RadialCount * res) / 2.0f);
     cell->p4.y = ((iy * res) + halfRes) - ((RadialCount * res) / 2.0f);
-  
+
 
 
     // x adsjut
@@ -310,22 +310,19 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     
 }*/
 
-unsigned char readMessageHeader(struct BufferInfo* bi)
+struct MessageHeaderInfo
 {
-    /*    
-        From the 2620010H document:
+    unsigned char type;
+    s32 size;
+};
 
-        The Archive II raw data format contains a 28-byte header.
-        The first 12 bytes are empty, which means the "Message Size" does not begin until byte 13 (halfword
-        7 or full word 4). This 12 byte offset is due to legacy compliance (previously known as the "CTM
-        header").
-    */        
-    seekBuffer(bi, 12);
-    
+MessageHeaderInfo readMessageHeader(struct BufferInfo* bi)
+{
+    u16 msg_size_hw;
+    unsigned char c_msg_size_hw[2];
+    readFromBuffer(c_msg_size_hw, bi, 2);
 
-    s16 msg_size;
-    readFromBuffer(&msg_size, bi, 2);
-    msg_size = swapBytes(msg_size);
+    msg_size_hw = c_msg_size_hw[0] << 8 | c_msg_size_hw[1];
 
     unsigned char rda_channel;
     readFromBuffer(&rda_channel, bi, 1);
@@ -357,16 +354,30 @@ unsigned char readMessageHeader(struct BufferInfo* bi)
     seg_count = swapBytes(seg_count);
 
     s16 seg_num;
-    readFromBuffer(&seg_num, bi, 2); 
-    seg_num = swapBytes(seg_num);   
+    readFromBuffer(&seg_num, bi, 2);
+    seg_num = swapBytes(seg_num);
 
-    return msg_type;
+    s32 msg_size = 0;
+
+    if (msg_size_hw == 65535)
+    {
+        msg_size = seg_count << 16 | seg_num;
+    }
+    else if (msg_size_hw == 0)
+    {
+        msg_size = -1;
+    }
+    else
+    {
+        msg_size = msg_size_hw * 2;
+    }
+
+    return { msg_type, msg_size };
 }
 
-
-void parseMessage15(struct BufferInfo* buffer)
+void readMessage15(struct BufferInfo* buffer)
 {
-    
+
     s16 nexrad_date;
     readFromBuffer(&nexrad_date, buffer, 2);
     nexrad_date = swapBytes(nexrad_date);
@@ -396,9 +407,9 @@ void parseMessage15(struct BufferInfo* buffer)
 
     // may can allocation smaller amount of these based on elevation_segments.
     // need to figure out how to do this for real.
-    
+
     for (int i = 0; i < elevation_segments; i++)
-    {        
+    {
         for (int j = 0; j < 360; j++)
         {
             s16 range_zones;
@@ -415,15 +426,207 @@ void parseMessage15(struct BufferInfo* buffer)
             }
         }
     }
+}
+
+void readMessage18(struct BufferInfo* buffer)
+{
+    // Some (most?) of the data in this message doesn't seem important. Might can skip some of it.
+    // seekBuffer(buffer, 9467);
+}
+
+void readMessage3(struct BufferInfo* buffer)
+{
+    // seekBuffer(buffer, 480 * 2);
+}
+
+void readMessage5(struct BufferInfo* buffer)
+{
+    // Number of halfwords in message.
+    s16 msg_size;
+    readFromBuffer(&msg_size, buffer, 2);
+    msg_size = swapBytes(msg_size);
+
+    // @todo
+    // seekBuffer(buffer, msg_size);
 
 }
 
+void readMessage2(struct BufferInfo* buffer)
+{
+    seekBuffer(buffer, 60 * 2);
+}
+
+void readMessage31(struct BufferInfo* buffer)
+{
+    // 2620002T
+    // Table XVII Digital Radar Data Generic Format Blocks (Message Type 31)
+
+    char radar_id[4];
+    readFromBuffer(radar_id, buffer, 4);
+
+    // Radial data collection time in milliseconds past midnight GMT
+    u32 collection_time;
+    readFromBuffer(&collection_time, buffer, 4);
+    collection_time = swapBytes(collection_time);
+
+    u16 nexrad_date;
+    readFromBuffer(&nexrad_date, buffer, 2);
+    nexrad_date = swapBytes(nexrad_date);
+
+    s16 azimuth_num;
+    readFromBuffer(&azimuth_num, buffer, 2);
+    azimuth_num = swapBytes(azimuth_num);
+
+    // @todo
+    // This isn't how this works. It doesn't work to read into a 4 byte integer then swap it.
+    // Range should be 0 .. 359.956055
+    s32 b_azimuth_angle;
+    readFromBuffer(&b_azimuth_angle, buffer, 4);
+    b_azimuth_angle = swapBytes(b_azimuth_angle);
+
+    f64 azimuth_angle = b_azimuth_angle * 0.01;
+    LOGINF("Azimuth angle: %2.4f\n", azimuth_angle);
+
+    // 0 = uncompressed
+    // 1 = compressed using BZIP2
+    // 2 = compressed using zlib
+    // 3 = future use
+    unsigned char compression_indicator;
+    readFromBuffer(&compression_indicator, buffer, 1);
+
+    unsigned char spare;
+    readFromBuffer(&spare, buffer, 1);
+
+    u16 radial_byte_length;
+    readFromBuffer(&radial_byte_length, buffer, 2);
+    radial_byte_length = swapBytes(radial_byte_length);
+
+    unsigned char azimuth_res_scaling;
+    readFromBuffer(&azimuth_res_scaling, buffer, 1);
+
+    unsigned char radial_status;
+    readFromBuffer(&radial_status, buffer, 1);
+
+    unsigned char elevation_num;
+    readFromBuffer(&elevation_num, buffer, 1);
+
+    unsigned char cut_sector_num;
+    readFromBuffer(&cut_sector_num, buffer, 1);
+
+    u32 i_elevation_angle;
+    readFromBuffer(&i_elevation_angle, buffer, 4);
+    i_elevation_angle = swapBytes(i_elevation_angle);
+
+    f64 elevation_angle = i_elevation_angle * 0.01;
+
+    unsigned char spot_blanking;
+    readFromBuffer(&spot_blanking, buffer, 1);
+
+    // 0 = no indexing
+    // 1 to 100 means indexing angle of 0.01 to 1.00
+    unsigned char azimuth_indexing_mode;
+    readFromBuffer(&azimuth_indexing_mode, buffer, 1);
+
+    u16 data_block_count;
+    readFromBuffer(&data_block_count, buffer, 2);
+    data_block_count = swapBytes(data_block_count);
+
+    const s32 VOLUME_DATA_PTR = 0;
+    const s32 ELEVATION_DATA_PTR = 1;
+    const s32 RADIAL_DATA_PTR = 2;
+    const s32 DM_REF_PTR = 3;
+    const s32 DM_VEL_PTR = 4;
+    const s32 DM_SW_PTR = 5;
+    const s32 DM_ZDR_PTR = 6;
+    const s32 DM_PHI_PTR = 7;
+    const s32 DM_RHO_PTR = 8;
+    const s32 DM_CFP_PTR = 9;
+
+    // My interpretation of the reference document is that there is at least 4 and at most 10.
+    // I'm not sure if you always read all 10 pointers, or if there are only "data_block_count"
+    // number of pointers in the data.
+    u32 data_block_ptrs[10];
+    for (unsigned int & data_block_ptr : data_block_ptrs)
+    {
+        readFromBuffer(&data_block_ptr, buffer, 4);
+        data_block_ptr = swapBytes(data_block_ptr);
+    }
+
+
+    // @todo
+    // This point down is a generic data moment block.
+    // This needs to be refactored out into it's own function and called once the buffer
+    // position has been offset by the correct amount from the data_block_ptrs.
+    unsigned char data_block_type;
+    readFromBuffer(&data_block_type, buffer, 1);
+
+    unsigned char data_moment_name;
+    readFromBuffer(&data_moment_name, buffer, 3);
+
+    u32 reserved;
+    readFromBuffer(&reserved, buffer, 4);
+
+    u16 data_moment_gates;
+    readFromBuffer(&data_moment_gates, buffer, 2);
+    data_moment_gates = swapBytes(data_moment_gates);
+
+    // Range to center of first range gate
+    // Scaled Int, range from 0 to 32768 (0.0 .. 32.768 after scaling back)
+    u16 data_moment_range;
+    readFromBuffer(&data_moment_range, buffer, 2);
+    data_moment_range = swapBytes(data_moment_range);
+
+    // Size of data moment sample interval
+    // 0.25 .. 4.0 after scaling back
+    u16 dmr_sample_interval;
+    readFromBuffer(&dmr_sample_interval, buffer, 2);
+    dmr_sample_interval = swapBytes(dmr_sample_interval);
+
+    // Threshold parameter which specifies the minimum difference in echo power between two
+    // resolution gates for them not to be labeled "overlayed"
+    // 0.0 .. 20.0
+    u16 t_over;
+    readFromBuffer(&t_over, buffer, 2);
+    t_over = swapBytes(t_over);
+
+    // SNR threshold for valid data
+    // -12.0 .. 20.0
+    s16 snr_threshold;
+    readFromBuffer(&snr_threshold, buffer, 2);
+    snr_threshold = swapBytes(snr_threshold);
+
+    // 0 = none
+    // 1 = recombined azimuthal radials
+    // 2 = recombined range gates
+    // 3 = recombined radials and range gates to legacy resolution
+    unsigned char control_flags;
+    readFromBuffer(&control_flags, buffer, 1);
+
+    // 8 or 16
+    unsigned char dm_gate_bit_count;
+    readFromBuffer(&dm_gate_bit_count, buffer, 1);
+
+    // Scale value used to convert Data Moments from integer to floating point data
+    // > 0 .. 65535
+    u32 scale;
+    readFromBuffer(&scale, buffer, 4);
+    scale = swapBytes(scale);
+
+    // Offset value used to convert Data Moments from integer to floating point data
+    // 2.0 .. 65535
+    u32 offset;
+    readFromBuffer(&offset, buffer, 4);
+    offset = swapBytes(offset);
+
+    // Data Moments start here...
+}
 
 bool ParseNexradRadarFile(
-    const char* filename, 
-    WSR88DInfo* wsrInfo, 
+    const char* filename,
+    WSR88DInfo* wsrInfo,
     NexradProduct* nexradProduct,
-    ProductDescription* pd)
+    ProductDescription* pd
+)
 {
     u32 bp = 0;
 
@@ -436,13 +639,12 @@ bool ParseNexradRadarFile(
         return false;
     }
 
-   
     fseek(fp, 0, SEEK_END);
     u32 fileLength = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
     // Reading the whole file into a buffer and then parsing out the contents
-    unsigned char* buffer = (unsigned char*)malloc(fileLength * sizeof(unsigned char));    
+    unsigned char* buffer = (unsigned char*)malloc(fileLength * sizeof(unsigned char));
     int bytesRead = fread(buffer, 1, fileLength, fp);
     fclose(fp);
 
@@ -478,14 +680,14 @@ bool ParseNexradRadarFile(
             memcpy(&nexrad_date, &file_header[12], 4);
 
             s32 nexrad_time;
-            memcpy(&nexrad_time, &file_header[16], 4);   
-            
+            memcpy(&nexrad_time, &file_header[16], 4);
+
             unsigned char icao[5];
             memcpy(icao, &file_header[20], 4);
             icao[4] = '\0';
         }
 
-        
+
 
         // skip CTM Header
         /*char test1[3];
@@ -512,17 +714,22 @@ bool ParseNexradRadarFile(
 
         s32 compressed_size;
         memcpy(&compressed_size, &buffer[bp], 4);
-        bp += 4;       
+        bp += 4;
 
         compressed_size = swapBytes(compressed_size);
         compressed_size = abs(compressed_size);
 
-
-        unsigned char* uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));    
+        unsigned char* uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
         u32* p_len = &uncompressed_size;
-        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0], p_len, (char*)&buffer[bp], compressed_size, 0, 4);
+        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0],
+            p_len,
+            (char*)&buffer[bp],
+            compressed_size,
+            0,
+            4
+        );
 
-        bp += uncompressed_size;
+        bp += compressed_size;
 
         if (ret != BZ_OK)
         {
@@ -531,39 +738,145 @@ bool ParseNexradRadarFile(
 
         else
         {
-            struct BufferInfo msg_buffer = {};
+            const s32 TOTAL_SEG_SIZE = 2432;
+
+            // From the 2620010H document:
+            // The Archive II raw data format contains a 28-byte header.
+            // The first 12 bytes are empty, which means the "Message Size" does not begin until byte 13 (halfword
+            // 7 or full word 4). This 12 byte offset is due to legacy compliance (previously known as the "CTM
+            // header").
+            const s32 CTM_HEADER_SIZE = 12;
+
+            // From what I can gather each message is supposed to be 2432 bytes. If we take the 12 CTM bytes,
+            // and add what usually comes back from the Message Size Halfwords, there are 4 bytes left over.
+            // I can't seem to find this in any of the reference documentation. This implies each message has
+            // some padding between the message and the next message header.
+            const s32 PADDING_BYTES = 4;
+
+            //
+            // 2620002T for message data definitions
+            //
+
+            BufferInfo msg_buffer = {};
             msg_buffer.buffer = uncompressed_data;
             msg_buffer.position = 0;
 
-            // msg_buffer.position = (77 * 2432) + (49 * 2432);
+            MessageHeaderInfo msg_info = {};
+            s32 pre_msg_buf_pos = 0, post_msg_buf_pos = 0;
 
-                        
-            // 2620002T for message data definitions
-            
-            unsigned char msg_type = readMessageHeader(&msg_buffer);
-            while (msg_type != 15)
-            {                               
-                LOGINF("Step one for Level-II...\n");
-                parseMessage15(&msg_buffer);
-                
-                msg_type = readMessageHeader(&msg_buffer);
-            }
-
-            if (msg_buffer.position < (77 * 2432))
+            while (msg_buffer.position < uncompressed_size)
             {
-                setBufferPos(&msg_buffer, (77 * 2432));
+                pre_msg_buf_pos = msg_buffer.position;
+                seekBuffer(&msg_buffer, CTM_HEADER_SIZE);
+
+                msg_info = readMessageHeader(&msg_buffer);
+
+                if (msg_info.type == 15)
+                {
+                    readMessage15(&msg_buffer);
+                }
+
+                else if (msg_info.type == 18)
+                {
+                    readMessage18(&msg_buffer);
+                }
+
+                else if (msg_info.type == 3)
+                {
+                    readMessage3(&msg_buffer);
+                }
+
+                else if (msg_info.type == 5)
+                {
+                    readMessage5(&msg_buffer);
+                }
+
+                else if (msg_info.type == 2)
+                {
+                    readMessage2(&msg_buffer);
+                }
+                /**
+                 * From 2620010H:
+                 *  The message size defined in the message header is expressed using an alternate
+                 *  method for specifying size for messages larger than 65534 halfwords (see
+                 *  Interface Control Document for RDA/RPG, 2620002)
+                 *
+                 * From 2620002T:
+                 *  Starting in Build 19, messages exchanged between the RDA and RPG are no longer segmented.
+                 *  For messages smaller than 65534 halfwords, the number of message segments and message segment
+                 *  numbers are set to 1.  For messages larger than 65534 halfwords, an alternate form
+                 *  of message size definition is specified.
+                 *
+                 *  Number of Message Segments If the message size is less than 65534 halfwords, the number of
+                 *  message segments is set to 1.  Otherwise, halfwords 12-15 specify the size of the
+                 *  message, in bytes.
+                 *
+                 *  Message Segment Number. If the [message] size is less than 65534 halfwords, the message segment
+                 *  number is set to 1.  Otherwise, halfwords 12-15 specify the size of the message, in bytes.
+                 */
+
+                s32 forward_size = TOTAL_SEG_SIZE;
+
+                // @todo
+                // Need to test/handle this...
+
+                //if (msg_info.size < 0)
+                //    forward_size = TOTAL_SEG_SIZE;
+
+                //else
+                //    forward_size = msg_info.size + PADDING_BYTES;
+
+
+                setBufferPos(&msg_buffer, pre_msg_buf_pos + forward_size);
             }
 
-            // skip reserved space for message 13
-            seekBuffer(&msg_buffer, (49 * 2432));
+            // might can free uncompressed_data here. @todo
+            if (uncompressed_data) free(uncompressed_data);
 
-
-            msg_type = readMessageHeader(&msg_buffer);
-            while (msg_type == 18)
+            // is this now message 31?
             {
-                // parseMessage18
-                int break_here = 1;
+                // assume the result cant be larger than 45mB?
+                uncompressed_size = 47185920;
+
+                compressed_size = 0;
+                memcpy(&compressed_size, &buffer[bp], 4);
+                bp += 4;
+
+                compressed_size = swapBytes(compressed_size);
+                compressed_size = abs(compressed_size);
+
+                uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
+
+                p_len = &uncompressed_size;
+                ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0],
+                    p_len,
+                    (char*)&buffer[bp],
+                    compressed_size,
+                    0,
+                    4
+                );
+
+                if (ret != BZ_OK)
+                {
+                    LOGERR("Failed to decompress the Level-II radar data.\n");
+                }
+
+                bp += compressed_size;
+
+
+                BufferInfo radial_buffer = {};
+                radial_buffer.buffer = uncompressed_data;
+                radial_buffer.position = 0;
+
+                // ??
+                seekBuffer(&radial_buffer, CTM_HEADER_SIZE);
+                msg_info = readMessageHeader(&radial_buffer);
+                if (msg_info.type == 31)
+                {
+                    readMessage31(&radial_buffer);
+                }
             }
+
 
         }
     }
@@ -581,7 +894,7 @@ bool ParseNexradRadarFile(
     memcpy(messageHeaderBuffer, &buffer[bp], 18);
     bp += 18;
 
-    int messageHeaderLength = 18;    
+    int messageHeaderLength = 18;
     u32 productLength = 0;
 
     {
@@ -590,7 +903,7 @@ bool ParseNexradRadarFile(
         productLength = swapBytes(productLength);
     }
 
-    
+
     // skipping the divider
     bp += 2;
 
@@ -615,7 +928,7 @@ bool ParseNexradRadarFile(
     // Height of the radar site in feet above sea level.
     memcpy(&pd->height, &buffer[bp], 2);
     bp += 2;
-    pd->height = swapBytes(pd->height);    
+    pd->height = swapBytes(pd->height);
 
 
     // Product Code referencing which NEXRAD product is contained in this file.
@@ -681,22 +994,22 @@ bool ParseNexradRadarFile(
     // Reference TABLE V for Product dependant parameters 1 and 2.
     memcpy(&pd->h27_28, &buffer[bp], 4);
     bp += 4;
-    
+
 
     // Elevation number within volume scan has range of 0-20
-    memcpy(&pd->elevationNum, &buffer[bp], 2);        
+    memcpy(&pd->elevationNum, &buffer[bp], 2);
     bp += 2;
     pd->elevationNum = swapBytes(pd->elevationNum);
 
 
     // Halfword 30 changes based on product, see TABLE V for parameter 3
-    if (pd->productCode == 19 || pd->productCode == 94) 
+    if (pd->productCode == 19 || pd->productCode == 94)
     {
         memcpy(&pd->elevationAngle, &buffer[bp], 2);
         bp += 2;
         pd->elevationAngle = swapBytes(pd->elevationAngle);
-    } 
-    else 
+    }
+    else
     {
         memcpy(&pd->h30, &buffer[bp], 2);
         bp += 2;
@@ -730,8 +1043,6 @@ bool ParseNexradRadarFile(
     memcpy(&pd->spotBlank, &buffer[bp], 1);
     bp += 1;
 
-
-
     memcpy(&pd->symbologyOffset, &buffer[bp], 4);
     pd->symbologyOffset = swapBytes(pd->symbologyOffset);
     bp += 4;
@@ -743,7 +1054,6 @@ bool ParseNexradRadarFile(
     memcpy(&pd->tabularOffset, &buffer[bp], 4);
     pd->tabularOffset = swapBytes(pd->tabularOffset);
     bp += 4;
-
 
     if (compressed)
     {
@@ -767,7 +1077,7 @@ bool ParseNexradRadarFile(
         memcpy(&temp, &pd->br.hiUncompProdSize[0], 4);
         u32 len = swapBytes(temp);
 
-        char* compBuffer = (char*)malloc(len * sizeof(char));    
+        char* compBuffer = (char*)malloc(len * sizeof(char));
         unsigned int* plen = &len;
         int ret = BZ2_bzBuffToBuffDecompress(&compBuffer[0], plen, (char*)&buffer[bp], srcLen, 0, 4);
 
@@ -778,12 +1088,12 @@ bool ParseNexradRadarFile(
             // potential big boi leak here if application doesn't exit...
 
             bp = 0;
-            if(buffer)
+            if (buffer)
             {
                 free(buffer);
                 buffer = NULL;
             }
-            
+
             return false;
         }
 
@@ -791,9 +1101,9 @@ bool ParseNexradRadarFile(
         free(buffer);
         buffer = NULL;
 
-        unsigned char* tempBuffer = NULL;
-        tempBuffer = (unsigned char*)realloc(buffer, len * sizeof(char));    
-        if (tempBuffer != NULL)
+        unsigned char* tempBuffer = nullptr;
+        tempBuffer = (unsigned char*)realloc(buffer, len * sizeof(char));
+        if (tempBuffer != nullptr)
         {
             buffer = tempBuffer;
         }
@@ -803,7 +1113,7 @@ bool ParseNexradRadarFile(
             return false;
         }
 
-        memcpy(buffer, compBuffer, len); 
+        memcpy(buffer, compBuffer, len);
 
         if (compBuffer) free(compBuffer);
     }
@@ -829,8 +1139,8 @@ bool ParseNexradRadarFile(
         (packetCode & 0xffff) == 16)
     {
         result = RadialImagePacket(buffer, bp, nexradProduct, wsrInfo, pd, packetCode);
-    }    
-    else if ((packetCode & 0xffff) == 0xba07) 
+    }
+    else if ((packetCode & 0xffff) == 0xba07)
     {
         result = RasterImagePacket(buffer, bp, nexradProduct, wsrInfo, pd, packetCode);
     }
@@ -846,7 +1156,6 @@ bool ParseNexradRadarFile(
 
     return result;
 }
-
 
 s32 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
 {
@@ -897,27 +1206,27 @@ s32 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
         else if (vel <= -45) color = 4;
         else if (vel <= -20) color = 5;
         else if (vel <= -5) color = 6;
-        //else if (vel <= -5) color = 7;???
+            //else if (vel <= -5) color = 7;???
         else if (vel <= 0) color = 8;
         else if (vel <= 5) color = 9;
         else if (vel <= 20) color = 10;
         else if (vel <= 45) color = 11;
         else if (vel <= 60) color = 12;
         else if (vel <= 80) color = 13;
-        else if (vel <= 99) color = 14;        
+        else if (vel <= 99) color = 14;
     }
 
     return color;
 }
 
-
 bool RadialImagePacket(
-    unsigned char* buffer, 
-    u32 bp, 
-    NexradProduct* nexradProduct, 
+    unsigned char* buffer,
+    u32 bp,
+    NexradProduct* nexradProduct,
     WSR88DInfo* wsrInfo,
     ProductDescription* pd,
-    s16 packetCode)
+    s16 packetCode
+)
 {
     s16 firstBin;
     s16 iCenterSweep;
@@ -926,12 +1235,18 @@ bool RadialImagePacket(
     s16 scaleFactor;
     s16 radialCount;
 
-    memcpy(&firstBin, &buffer[bp], 2);       bp += 2;
-    memcpy(&binCount, &buffer[bp], 2);       bp += 2;
-    memcpy(&iCenterSweep, &buffer[bp], 2);   bp += 2;
-    memcpy(&jCenterSweep, &buffer[bp], 2);   bp += 2;
-    memcpy(&scaleFactor, &buffer[bp], 2);    bp += 2;
-    memcpy(&radialCount, &buffer[bp], 2);    bp += 2;
+    memcpy(&firstBin, &buffer[bp], 2);
+    bp += 2;
+    memcpy(&binCount, &buffer[bp], 2);
+    bp += 2;
+    memcpy(&iCenterSweep, &buffer[bp], 2);
+    bp += 2;
+    memcpy(&jCenterSweep, &buffer[bp], 2);
+    bp += 2;
+    memcpy(&scaleFactor, &buffer[bp], 2);
+    bp += 2;
+    memcpy(&radialCount, &buffer[bp], 2);
+    bp += 2;
 
     firstBin = swapBytes(firstBin);
     iCenterSweep = swapBytes(iCenterSweep);
@@ -944,7 +1259,7 @@ bool RadialImagePacket(
     LOGINF("Radial Count: %d\n", radialCount);
 
     BinCount = binCount;
-    RadialCount = radialCount;   
+    RadialCount = radialCount;
 
     // @todo
     f32 minDbz = swapBytes(pd->reflectivityThreshold.minimumDbz) * 0.1f;
@@ -958,12 +1273,12 @@ bool RadialImagePacket(
     StartsArray = (s32*)malloc(totalBinCount * sizeof(*StartsArray));
     CountsArray = (s32*)malloc(totalBinCount * sizeof(*CountsArray));
 
-    for(int i = 0; i < totalBinCount; i++)
+    for (int i = 0; i < totalBinCount; i++)
     {
         RangeBins[i] = {};
         StartsArray[i] = i * 4;
         CountsArray[i] = 4;
-    }     
+    }
 
     // page 3-109 IC Doc
     // scale factor is 230 / binCount, avoid fp errors by just making it 1 unless it needs to 
@@ -982,7 +1297,6 @@ bool RadialImagePacket(
     f32 f_angleStart, f_angleDelta;
     f32 f_elevationAngle = pd->elevationAngle * 0.1f;
 
-    
     int binIndex;
     for (int i = 0; i < radialCount; i++)
     {
@@ -997,24 +1311,25 @@ bool RadialImagePacket(
         f_angleStart = swapBytes(i_angleStart) * 0.1f;
 
         memcpy(&i_angleDelta, &buffer[bp], sizeof(i_angleDelta));
-        bp += sizeof(i_angleDelta);        
+        bp += sizeof(i_angleDelta);
         f_angleDelta = swapBytes(i_angleDelta) * 0.1f;
 
         if ((packetCode & 0xffff) == 0xaf1f)
         {
-            for (int j = 0; j < rleCount * 2; j++) 
-            {            
+            for (int j = 0; j < rleCount * 2; j++)
+            {
                 run_color = (u8)(buffer[bp]);
                 bp += 1;
 
                 run = (run_color & 0xf0) >> 4;
                 colorIndex = (run_color & 0x0f);
 
-                for (s8 k = 0; k < run; k++) 
-                {               
+                for (s8 k = 0; k < run; k++)
+                {
                     CalcRangeBinLocation(
-                        i, binIndex, wsrInfo->lon, wsrInfo->lat, 
-                        nexradProduct->range, f_angleStart, f_angleDelta);
+                        i, binIndex, wsrInfo->lon, wsrInfo->lat,
+                        nexradProduct->range, f_angleStart, f_angleDelta
+                    );
 
                     // color = ReflectivityMap[colorIndex];
                     SetRangeBin(i, binIndex, colorIndex);
@@ -1031,18 +1346,16 @@ bool RadialImagePacket(
                 bp += 1;
 
                 CalcRangeBinLocation(
-                        i, binIndex, wsrInfo->lon, wsrInfo->lat, 
-                        nexradProduct->range, f_angleStart, f_angleDelta);
+                    i, binIndex, wsrInfo->lon, wsrInfo->lat,
+                    nexradProduct->range, f_angleStart, f_angleDelta
+                );
 
                 s32 color;
 
-                if(nexradProduct->productCode == 99)
+                if (nexradProduct->productCode == 99)
                     color = GetColorFromSpeed(run_color, minDbz, incDbz);
                 else
                     color = GetColorFromDbz(run_color, minDbz, incDbz);
-                
-
-                
 
                 SetRangeBin(i, binIndex, color);
                 binIndex += 1;
@@ -1054,60 +1367,56 @@ bool RadialImagePacket(
     return true;
 }
 
-
 bool RasterImagePacket(
-    unsigned char* buffer, 
-    u32 bp, 
-    NexradProduct* nexradProduct, 
+    unsigned char* buffer,
+    u32 bp,
+    NexradProduct* nexradProduct,
     WSR88DInfo* wsrInfo,
     ProductDescription* pd,
-    s16 packetCode)
+    s16 packetCode
+)
 {
     s16 packetCode1, packetCode2;
 
-    memcpy(&packetCode1, &buffer[bp], 2); 
+    memcpy(&packetCode1, &buffer[bp], 2);
     bp += 2;
-    packetCode1 = swapBytes(packetCode1);    
+    packetCode1 = swapBytes(packetCode1);
 
-    memcpy(&packetCode2, &buffer[bp], 2); 
+    memcpy(&packetCode2, &buffer[bp], 2);
     bp += 2;
-    packetCode2 = swapBytes(packetCode2);    
+    packetCode2 = swapBytes(packetCode2);
 
     assert((packetCode1 & 0xffff) == 0x8000);
     assert((packetCode2 & 0xffff) == 0x00c0);
 
-
     s16 iStart, jStart;
-    memcpy(&iStart, &buffer[bp], 2); 
+    memcpy(&iStart, &buffer[bp], 2);
     bp += 2;
     iStart = swapBytes(iStart);
 
-    memcpy(&jStart, &buffer[bp], 2); 
+    memcpy(&jStart, &buffer[bp], 2);
     bp += 2;
     jStart = swapBytes(jStart);
 
-
     s16 xScale, yScale;
-    memcpy(&xScale, &buffer[bp], 2); 
+    memcpy(&xScale, &buffer[bp], 2);
     bp += 2;
     xScale = swapBytes(xScale);
 
     // skip xScale fractional
     bp += 2;
-    
-    memcpy(&yScale, &buffer[bp], 2); 
+
+    memcpy(&yScale, &buffer[bp], 2);
     bp += 2;
     yScale = swapBytes(yScale);
 
     // skip xScale fractional
     bp += 2;
 
-
     s16 numberOfRows;
     memcpy(&numberOfRows, &buffer[bp], 2);
     bp += 2;
     numberOfRows = swapBytes(numberOfRows);
-
 
     s16 packingDescriptor;
     memcpy(&packingDescriptor, &buffer[bp], 2);
@@ -1131,21 +1440,19 @@ bool RasterImagePacket(
     StartsArray = (s32*)malloc(gridCellCount * sizeof(*StartsArray));
     CountsArray = (s32*)malloc(gridCellCount * sizeof(*CountsArray));
 
-    for(int i = 0; i < gridCellCount; i++)
+    for (int i = 0; i < gridCellCount; i++)
     {
         RangeBins[i] = {};
         StartsArray[i] = i * 4;
         CountsArray[i] = 4;
     }
 
-
-
     u8 run_color;
     s8 run, color;
 
     s32 colIndex;
     s16 rowBytes;
-    for(int i = 0; i < numberOfRows; i++)
+    for (int i = 0; i < numberOfRows; i++)
     {
         colIndex = 0;
 
@@ -1153,7 +1460,7 @@ bool RasterImagePacket(
         bp += 2;
         rowBytes = swapBytes(rowBytes);
 
-        for(int j = 0; j < rowBytes; j++)
+        for (int j = 0; j < rowBytes; j++)
         {
             run_color = (u8)buffer[bp];
             bp += 1;
@@ -1163,15 +1470,16 @@ bool RasterImagePacket(
 
             for (int k = 0; k < run; k++)
             {
-                SetRasterCell(wsrInfo->lon, wsrInfo->lat, 
-                    numberOfRows, colIndex, i, nexradProduct->resolution, color);          
+                SetRasterCell(
+                    wsrInfo->lon, wsrInfo->lat,
+                    numberOfRows, colIndex, i, nexradProduct->resolution, color
+                );
 
                 colIndex += 1;
             }
 
         }
     }
-
 
     return true;
 }
