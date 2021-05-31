@@ -34,7 +34,7 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y);
 void DownloadRadarFile()
 {
     int DefaultProduct = 94;
-    char* DefaultWSR = "kmxx";
+    char* DefaultWSR = "KDDC";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
@@ -57,11 +57,11 @@ void DownloadRadarFile()
 
     printf("Download file: %s\n", remoteFile);
 
-    DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
+    // DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
 
-    //const char* filename = "C:\\shapes\\KIND_20210526_1423";
+    const char* filename = "C:\\shapes\\KIND_20210526_1423";
     //const char* filename = "C:\\tmp\\test_vel.last";
-    const char* filename = "C:\\tmp\\testing_radar.nx3";   
+    //const char* filename = "C:\\tmp\\testing_radar.nx3";   
 
     sacw_RadarInit(filename, CurrentProduct->productCode);  
 }

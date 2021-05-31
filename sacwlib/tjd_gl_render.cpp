@@ -475,11 +475,14 @@ void renderLayers()
         f32 off_x = result2.x;
         f32 off_y = result2.y;
 
+        // In order to let the text stay in a "geo-locked" position and not scale with the map,
+        // the translation matrix needs to be zeroed out and the offset between the vertex coordinates
+        // and the and the resulting product of the matrix multiplications needs to be passed to the shader.
+        // A scale can still be applied to prevent the font from stretching after window resize, but the
+        // square of the scale needs to be multiplied into the offset.
         adjScaleMatrix(1.0f / MapViewInfo.xScale, 1.0f / MapViewInfo.yScale);  
-        // adjTranslationMatrix(trans_x / MapViewInfo.xScale, trans_y / MapViewInfo.yScale); 
-        // adjTranslationMatrix(trans_x, trans_y); 
         adjTranslationMatrix(0.0f, 0.0f); 
-        renderText(off_x, off_y);
+        renderText(off_x * (MapViewInfo.xScale * MapViewInfo.xScale), off_y);
     }
 }
 
@@ -686,6 +689,12 @@ static GLchar* MapVertShaderSource()
         uniform mat4 scale;
 
         void main() {
+
+            // This calculation is backwards from what is typical, in which scale is applied first.
+            // This is because the entire "map" is using this shader so the whole thing gets scaled and
+            // we want the scale to happen from the translated position instead of the origin, so the 
+            // translation needs to be applied before the scale.
+            
             gl_Position = rotation * scale * translation * vec4(Position, 0.0, 1.0);
         }
     )glsl";
@@ -836,8 +845,6 @@ static GLchar* TextVertShaderSource()
             temp = vertex.xy + offset;
             
             gl_Position = rotation * scale * translation * vec4(temp, 0.0, 1.0);
-            // gl_Position = vec4(vertex.xy + offset, 0.0, 1.0);
-            //gl_Position = temp;
             TexCoords = vertex.zw;
         }  
     )glsl";

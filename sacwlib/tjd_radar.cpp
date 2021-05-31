@@ -24,6 +24,31 @@ void CalcRangeBinLocations(f32 cx, f32 cy, f32 range);
 void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex);
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 
+// 
+
+struct BufferInfo
+{
+    unsigned char* buffer;
+    s32 position;
+};
+
+void readFromBuffer(void* dest, struct BufferInfo *bi, s32 length)
+{
+    memcpy(dest, &bi->buffer[bi->position], length);
+    bi->position += length;
+}
+
+void seekBuffer(struct BufferInfo *bi, s32 pos)
+{
+    bi->position += pos;
+}
+
+void setBufferPos(struct BufferInfo *bi, s32 pos)
+{
+    bi->position = pos;   
+}
+
+//
 
 bool RadialImagePacket(
     unsigned char* buffer, 
@@ -245,6 +270,155 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 }
 
 
+/*void readFromBuffer(void* dest, unsigned char* src, s32* bufptr, s32 length)
+{
+    memcpy(dest, &src[*bufptr], length);
+    *bufptr += length;    
+}*/
+
+
+/*void this_might_be_Product_Request_Message(unsigned char* buffer, s32* bufptr)
+{
+    // Reference 2620001Y.pdf
+    // Figure 3-4. Product Request Message (Sheet 1)
+
+    // skip divider
+    *bufptr += 2;
+
+    // Number of bytes in block, including block divider, in the Product Description Block 
+    s16 msg_size;
+    readFromBuffer(&msg_size, buffer, bufptr, 2);
+
+    // Internal NEXRAD product code correspondi ng to a weather product in Table I 
+    s16 product_code;
+    readFromBuffer(&product_code, buffer, bufptr, 2);
+
+    // Bit # Value Meaning 0 1 High Priority 0 0 Low Priority 1 1 Map Requested (Bit 0=MSB)
+    s16 flags;
+    readFromBuffer(&flags, buffer, bufptr, 2);
+
+    // Monotonically increase for tracking of request
+    s16 seq_num;
+    readFromBuffer(&seq_num, buffer, bufptr, 2);        
+
+    // -1 for continuous (RPS) product transmissio n. 1 to 9 for one-time requests, when 
+    // Volume Scan Start Time of Product (halfwords 18, 19) is = - 1 (equivalent to PUP Repeat Count). 
+    // NOTE: For RPS requests, the number of products requested is determined from the Number of Blocks 
+    // fields of the Message Header.
+    s16 prod_count;
+    readFromBuffer(&prod_count, buffer, bufptr, 2);   
+    
+}*/
+
+unsigned char readMessageHeader(struct BufferInfo* bi)
+{
+    /*    
+        From the 2620010H document:
+
+        The Archive II raw data format contains a 28-byte header.
+        The first 12 bytes are empty, which means the "Message Size" does not begin until byte 13 (halfword
+        7 or full word 4). This 12 byte offset is due to legacy compliance (previously known as the "CTM
+        header").
+    */        
+    seekBuffer(bi, 12);
+    
+
+    s16 msg_size;
+    readFromBuffer(&msg_size, bi, 2);
+    msg_size = swapBytes(msg_size);
+
+    unsigned char rda_channel;
+    readFromBuffer(&rda_channel, bi, 1);
+
+    unsigned char msg_type;
+    readFromBuffer(&msg_type, bi, 1);
+
+    s16 seq_num;
+    readFromBuffer(&seq_num, bi, 2);
+
+    s16 nexrad_date;
+    readFromBuffer(&nexrad_date, bi, 2);
+    nexrad_date = swapBytes(nexrad_date);
+
+    s32 nexrad_time;
+    readFromBuffer(&nexrad_time, bi, 4);
+    nexrad_time = swapBytes(nexrad_time);
+
+    /** 2620002T.pdf
+     * 6. A size value 65535 indicates that byte locations 12-15 are used to specify the message size, in bytes.  
+     * This accommodates messages larger than 65534 halfwords.   This method of specifying size assumes the message is one segment.  
+     * See note 7 . 7.   When the size field (byte location 0 and 1) value is 65535, bytes 12 and 13 denote the Most Significant 
+     * Halfword of the message size while bytes 14 and 15 denote the Least Significant Halfword of the message size.   
+     * The message is assumed one (1) segment with size expressed in bytes .  
+     * */
+
+    s16 seg_count;
+    readFromBuffer(&seg_count, bi, 2);
+    seg_count = swapBytes(seg_count);
+
+    s16 seg_num;
+    readFromBuffer(&seg_num, bi, 2); 
+    seg_num = swapBytes(seg_num);   
+
+    return msg_type;
+}
+
+
+void parseMessage15(struct BufferInfo* buffer)
+{
+    
+    s16 nexrad_date;
+    readFromBuffer(&nexrad_date, buffer, 2);
+    nexrad_date = swapBytes(nexrad_date);
+
+    s16 nexrad_time;
+    readFromBuffer(&nexrad_time, buffer, 2);
+    nexrad_time = swapBytes(nexrad_time);
+
+    s16 elevation_segments;
+    readFromBuffer(&elevation_segments, buffer, 2);
+    elevation_segments = swapBytes(elevation_segments);
+
+    /**
+     * 
+     * Number of Elevation Segments
+     *  Repeat for each Elevation Segment
+     *      Repeat for each Azimuth Segment
+     *          Number of Range Zones 
+     *              Range Zone
+     *               -Op Code
+     *               -End Range
+     *                  Same as R1 & R2 for Range Zone 1 
+     *                      ...
+     *                  Same as R1 & R2 for # of Range Zones specified 
+     * 
+     */
+
+    // may can allocation smaller amount of these based on elevation_segments.
+    // need to figure out how to do this for real.
+    
+    for (int i = 0; i < elevation_segments; i++)
+    {        
+        for (int j = 0; j < 360; j++)
+        {
+            s16 range_zones;
+            readFromBuffer(&range_zones, buffer, 2);
+            range_zones = swapBytes(range_zones);
+
+            for (int k = 0; k < range_zones; k++)
+            {
+                s16 op_code;
+                readFromBuffer(&op_code, buffer, 2);
+
+                s16 end_range;
+                readFromBuffer(&end_range, buffer, 2);
+            }
+        }
+    }
+
+}
+
+
 bool ParseNexradRadarFile(
     const char* filename, 
     WSR88DInfo* wsrInfo, 
@@ -280,6 +454,119 @@ bool ParseNexradRadarFile(
         return false;
     }
 
+    // Reference 2620010H.pdf 
+    if (buffer[0] == 'A' && buffer[1] == 'R' && buffer[2] == '2')
+    {
+        // This is a level 2 radar file...
+
+        // colume header
+        char file_header[25];
+        memcpy(file_header, &buffer[bp], 24);
+        bp += 24;
+        file_header[24] = '\0';
+
+        { // Parse out the volume header info. Might be useful.
+            unsigned char version[10];
+            memcpy(version, &file_header[0], 9);
+            version[9] = '\0';
+
+            unsigned char ext_num[4];
+            memcpy(ext_num, &file_header[9], 3);
+            ext_num[3] = '\0';
+
+            s32 nexrad_date;
+            memcpy(&nexrad_date, &file_header[12], 4);
+
+            s32 nexrad_time;
+            memcpy(&nexrad_time, &file_header[16], 4);   
+            
+            unsigned char icao[5];
+            memcpy(icao, &file_header[20], 4);
+            icao[4] = '\0';
+        }
+
+        
+
+        // skip CTM Header
+        /*char test1[3];
+        memcpy(test1, &buffer[bp], 2); 
+        test1[2] = '/0';
+
+
+        bp += 12;
+        char test2[3];
+        memcpy(test2, &buffer[bp], 2); 
+        test2[2] = '/0';*/
+
+        // bp += 12;
+
+        // 7.35 260010h.pdf  
+        // 2432
+
+        // is this just the metadata?
+        u32 metadata_size = 325888;
+
+
+        // assume the result cant be larger than 45mB?
+        u32 uncompressed_size = 47185920;
+
+        s32 compressed_size;
+        memcpy(&compressed_size, &buffer[bp], 4);
+        bp += 4;       
+
+        compressed_size = swapBytes(compressed_size);
+        compressed_size = abs(compressed_size);
+
+
+        unsigned char* uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));    
+        u32* p_len = &uncompressed_size;
+        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0], p_len, (char*)&buffer[bp], compressed_size, 0, 4);
+
+        bp += uncompressed_size;
+
+        if (ret != BZ_OK)
+        {
+            LOGERR("Failed to decompress the Level-II radar data.\n");
+        }
+
+        else
+        {
+            struct BufferInfo msg_buffer = {};
+            msg_buffer.buffer = uncompressed_data;
+            msg_buffer.position = 0;
+
+            // msg_buffer.position = (77 * 2432) + (49 * 2432);
+
+                        
+            // 2620002T for message data definitions
+            
+            unsigned char msg_type = readMessageHeader(&msg_buffer);
+            while (msg_type != 15)
+            {                               
+                LOGINF("Step one for Level-II...\n");
+                parseMessage15(&msg_buffer);
+                
+                msg_type = readMessageHeader(&msg_buffer);
+            }
+
+            if (msg_buffer.position < (77 * 2432))
+            {
+                setBufferPos(&msg_buffer, (77 * 2432));
+            }
+
+            // skip reserved space for message 13
+            seekBuffer(&msg_buffer, (49 * 2432));
+
+
+            msg_type = readMessageHeader(&msg_buffer);
+            while (msg_type == 18)
+            {
+                // parseMessage18
+                int break_here = 1;
+            }
+
+        }
+    }
 
     // The file data for radar files starts off with a 30 bytes text header
     // @todo, can use this to verify it is a valid file?
