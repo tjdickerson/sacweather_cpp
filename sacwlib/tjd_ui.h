@@ -9,5 +9,5 @@
 void InitGui(void* window);
 void TestIMGUI(bool show_window);
 
-#define __tjd_gl_h__
+#define __tjd_ui_h__
 #endif

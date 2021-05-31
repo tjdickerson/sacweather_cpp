@@ -3,6 +3,7 @@
 #include "tjd_shapefile.h"
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <assert.h>
 
 static unsigned char* INDEX_BUFFER;

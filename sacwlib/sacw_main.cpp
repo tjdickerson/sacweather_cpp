@@ -13,6 +13,7 @@
 #endif
 
 #include "nws_info.h"
+#include <cstring>
 
 MapViewState MapViewInfo;
 bool canRenderRadar;

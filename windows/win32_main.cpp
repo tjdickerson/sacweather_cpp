@@ -8,6 +8,7 @@
 #include "sacw_api.h"
 #include "win32_menu.h"
 
+#include "imgui/imgui_impl_win32.h"
 
 // Forward declarations just so I can order these however.
 
@@ -126,7 +127,7 @@ void HandleKeyUp(unsigned int keyCode)
     if (keyCode == KEY_PANNING) Panning = false;
 }
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+// extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK WinMessageCallback(HWND hwnd, 
                                     UINT message, 
@@ -135,8 +136,8 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
 {
     LRESULT result = 0;
 
-    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
-        return true;
+/*    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
+        return true;*/
 
     switch (message)
     {
