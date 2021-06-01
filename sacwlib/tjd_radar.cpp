@@ -456,10 +456,253 @@ void readMessage2(struct BufferInfo* buffer)
     seekBuffer(buffer, 60 * 2);
 }
 
-void readMessage31(struct BufferInfo* buffer)
+const s32 VOLUME_DATA_PTR = 0;
+const s32 ELEVATION_DATA_PTR = 1;
+const s32 RADIAL_DATA_PTR = 2;
+const s32 DM_REF_PTR = 3;
+const s32 DM_VEL_PTR = 4;
+const s32 DM_SW_PTR = 5;
+const s32 DM_ZDR_PTR = 6;
+const s32 DM_PHI_PTR = 7;
+const s32 DM_RHO_PTR = 8;
+const s32 DM_CFP_PTR = 9;
+
+void readDataMoment(struct BufferInfo* buffer)
+{
+    unsigned char data_block_type;
+    readFromBuffer(&data_block_type, buffer, 1);
+
+    unsigned char data_moment_name[3];
+    readFromBuffer(&data_moment_name, buffer, 3);
+
+    u32 reserved;
+    readFromBuffer(&reserved, buffer, 4);
+
+    u16 data_moment_gates;
+    readFromBuffer(&data_moment_gates, buffer, 2);
+    data_moment_gates = swapBytes(data_moment_gates);
+
+    // Range to center of first range gate
+    // Scaled Int, range from 0 to 32768 (0.0 .. 32.768 after scaling back)
+    u16 data_moment_range;
+    readFromBuffer(&data_moment_range, buffer, 2);
+    data_moment_range = swapBytes(data_moment_range);
+
+    // Size of data moment sample interval
+    // 0.25 .. 4.0 after scaling back
+    u16 dmr_sample_interval;
+    readFromBuffer(&dmr_sample_interval, buffer, 2);
+    dmr_sample_interval = swapBytes(dmr_sample_interval);
+
+    // Threshold parameter which specifies the minimum difference in echo power between two
+    // resolution gates for them not to be labeled "overlayed"
+    // 0.0 .. 20.0
+    u16 t_over;
+    readFromBuffer(&t_over, buffer, 2);
+    t_over = swapBytes(t_over);
+
+    // SNR threshold for valid data
+    // -12.0 .. 20.0
+    s16 snr_threshold;
+    readFromBuffer(&snr_threshold, buffer, 2);
+    snr_threshold = swapBytes(snr_threshold);
+
+    // 0 = none
+    // 1 = recombined azimuthal radials
+    // 2 = recombined range gates
+    // 3 = recombined radials and range gates to legacy resolution
+    unsigned char control_flags;
+    readFromBuffer(&control_flags, buffer, 1);
+
+    // 8 or 16
+    unsigned char dm_gate_bit_count;
+    readFromBuffer(&dm_gate_bit_count, buffer, 1);
+
+    // Scale value used to convert Data Moments from integer to floating point data
+    // > 0 .. 65535
+    u32 scale;
+    readFromBuffer(&scale, buffer, 4);
+    scale = swapBytes(scale);
+
+    // Offset value used to convert Data Moments from integer to floating point data
+    // 2.0 .. 65535
+    u32 offset;
+    readFromBuffer(&offset, buffer, 4);
+    offset = swapBytes(offset);
+
+    // ??
+    unsigned char* moments = nullptr;
+
+    if (strncmp((const char*)data_moment_name, "REF", 3) == 0)
+    {
+        moments = (unsigned char*)malloc(data_moment_gates * sizeof(unsigned char));
+        for (int i = 0; i < data_moment_gates; i++)
+        {
+            readFromBuffer(&moments[i], buffer, 1);
+        }
+    }
+
+    int break_here = 1;
+}
+
+void processVolumeDataType(BufferInfo* buffer)
+{
+    unsigned char data_type;
+    readFromBuffer(&data_type, buffer, 1);
+
+    assert(data_type == 'R');
+
+    unsigned char data_name[3];
+    readFromBuffer(&data_name, buffer, 3);
+
+    u16 size_of_block;
+    readFromBuffer(&size_of_block, buffer, 2);
+    size_of_block = swapBytes(size_of_block);
+
+    unsigned char version_maj;
+    readFromBuffer(&version_maj, buffer, 1);
+
+    unsigned char version_min;
+    readFromBuffer(&version_min, buffer, 1);
+
+    s32 lat;
+    readFromBuffer(&lat, buffer, 4);
+
+    s32 lon;
+    readFromBuffer(&lon, buffer, 4);
+
+    s16 site_height;
+    readFromBuffer(&site_height, buffer, 2);
+    site_height = swapBytes(site_height);
+
+    u16 feedhorn_height;
+    readFromBuffer(&feedhorn_height, buffer, 2);
+    feedhorn_height = swapBytes(feedhorn_height);
+
+    s32 calibration_constant;
+    readFromBuffer(&calibration_constant, buffer, 4);
+
+    s32 horiz_shv_tx_power;
+    readFromBuffer(&horiz_shv_tx_power, buffer, 4);
+    horiz_shv_tx_power = swapBytes(horiz_shv_tx_power);
+
+    s32 vert_shv_tx_power;
+    readFromBuffer(&vert_shv_tx_power, buffer, 4);
+    vert_shv_tx_power = swapBytes(vert_shv_tx_power);
+
+    s32 system_diff_ref;
+    readFromBuffer(&system_diff_ref, buffer, 4);
+    system_diff_ref = swapBytes(system_diff_ref);
+
+    u16 vcp_num;
+    readFromBuffer(&vcp_num, buffer, 2);
+    vcp_num = swapBytes(vcp_num);
+
+    u16 processing_status;
+    readFromBuffer(&processing_status, buffer, 2);
+    processing_status = swapBytes(processing_status);
+
+}
+
+void processElevationDataType(BufferInfo* buffer)
+{
+    unsigned char data_type;
+    readFromBuffer(&data_type, buffer, 1);
+
+    unsigned char data_name[3];
+    readFromBuffer(&data_name, buffer, 3);
+
+    u16 block_size;
+    readFromBuffer(&block_size, buffer, 2);
+    block_size = swapBytes(block_size);
+
+    // -0.02 .. 0.002;
+    s16 atmos;
+    readFromBuffer(&atmos, buffer, 2);
+    atmos = swapBytes(atmos);
+
+    // Scaling constant used by the Signal Processor for this elevation to calculate reflectivity
+    s32 calibration_constant;
+    readFromBuffer(&calibration_constant, buffer, 4);
+}
+
+void processRadialDataType(BufferInfo* buffer)
+{
+    unsigned char data_type;
+    readFromBuffer(&data_type, buffer, 1);
+
+    unsigned char data_name[3];
+    readFromBuffer(&data_name, buffer, 3);
+
+    u16 block_size;
+    readFromBuffer(&block_size, buffer, 2);
+    block_size = swapBytes(block_size);
+
+    // 115 .. 511 km
+    u16 unamb_range;
+    readFromBuffer(&unamb_range, buffer, 2);
+    unamb_range = swapBytes(unamb_range);
+
+    s32 horiz_noise_level;
+    readFromBuffer(&horiz_noise_level, buffer, 4);
+
+    s32 vert_noise_level;
+    readFromBuffer(&vert_noise_level, buffer, 4);
+
+    // 8 .. 35.61
+    u16 nyquist_vel;
+    readFromBuffer(&nyquist_vel, buffer, 2);
+    nyquist_vel = swapBytes(nyquist_vel);
+
+    u16 radial_flags;
+    readFromBuffer(&radial_flags, buffer, 2);
+    radial_flags = swapBytes(radial_flags);
+
+    // -99.0 .. 99.0
+    s32 horiz_calibration;
+    readFromBuffer(&horiz_calibration, buffer, 4);
+
+    // -99.0 .. 99.0
+    s32 vert_calibration;
+    readFromBuffer(&vert_calibration, buffer, 4);
+}
+
+void processDataBlocks(BufferInfo* buffer, const s32* offsetPointers, s32 pointerCount, s32 blockStartPos)
+{
+    for (int i = 0; i < pointerCount; i++)
+    {
+        s32 off_pos = blockStartPos + offsetPointers[i];
+        setBufferPos(buffer, off_pos);
+
+        unsigned char data_type = peekBuffer(buffer, 1);
+        unsigned char data_name = peekBuffer(buffer, 2);
+
+        if (data_type == 'R')
+        {
+            if (data_name == 'V')
+                processVolumeDataType(buffer);
+
+            if (data_name == 'E')
+                processElevationDataType(buffer);
+
+            if (data_name == 'R')
+                processRadialDataType(buffer);
+        }
+
+        else if (data_type == 'D')
+        {
+            readDataMoment(buffer);
+        }
+    }
+
+}
+
+void readMessage31(BufferInfo* buffer)
 {
     // 2620002T
     // Table XVII Digital Radar Data Generic Format Blocks (Message Type 31)
+
+    s32 header_block_start = buffer->position;
 
     char radar_id[4];
     readFromBuffer(radar_id, buffer, 4);
@@ -531,94 +774,19 @@ void readMessage31(struct BufferInfo* buffer)
     readFromBuffer(&data_block_count, buffer, 2);
     data_block_count = swapBytes(data_block_count);
 
-    const s32 VOLUME_DATA_PTR = 0;
-    const s32 ELEVATION_DATA_PTR = 1;
-    const s32 RADIAL_DATA_PTR = 2;
-    const s32 DM_REF_PTR = 3;
-    const s32 DM_VEL_PTR = 4;
-    const s32 DM_SW_PTR = 5;
-    const s32 DM_ZDR_PTR = 6;
-    const s32 DM_PHI_PTR = 7;
-    const s32 DM_RHO_PTR = 8;
-    const s32 DM_CFP_PTR = 9;
-
     // My interpretation of the reference document is that there is at least 4 and at most 10.
     // I'm not sure if you always read all 10 pointers, or if there are only "data_block_count"
     // number of pointers in the data.
-    u32 data_block_ptrs[10];
-    for (unsigned int & data_block_ptr : data_block_ptrs)
+    s32 data_block_ptrs[10];
+    for (s32 & data_block_ptr : data_block_ptrs)
     {
         readFromBuffer(&data_block_ptr, buffer, 4);
         data_block_ptr = swapBytes(data_block_ptr);
     }
 
 
-    // @todo
-    // This point down is a generic data moment block.
-    // This needs to be refactored out into it's own function and called once the buffer
-    // position has been offset by the correct amount from the data_block_ptrs.
-    unsigned char data_block_type;
-    readFromBuffer(&data_block_type, buffer, 1);
+    processDataBlocks(buffer, data_block_ptrs, data_block_count, header_block_start);
 
-    unsigned char data_moment_name;
-    readFromBuffer(&data_moment_name, buffer, 3);
-
-    u32 reserved;
-    readFromBuffer(&reserved, buffer, 4);
-
-    u16 data_moment_gates;
-    readFromBuffer(&data_moment_gates, buffer, 2);
-    data_moment_gates = swapBytes(data_moment_gates);
-
-    // Range to center of first range gate
-    // Scaled Int, range from 0 to 32768 (0.0 .. 32.768 after scaling back)
-    u16 data_moment_range;
-    readFromBuffer(&data_moment_range, buffer, 2);
-    data_moment_range = swapBytes(data_moment_range);
-
-    // Size of data moment sample interval
-    // 0.25 .. 4.0 after scaling back
-    u16 dmr_sample_interval;
-    readFromBuffer(&dmr_sample_interval, buffer, 2);
-    dmr_sample_interval = swapBytes(dmr_sample_interval);
-
-    // Threshold parameter which specifies the minimum difference in echo power between two
-    // resolution gates for them not to be labeled "overlayed"
-    // 0.0 .. 20.0
-    u16 t_over;
-    readFromBuffer(&t_over, buffer, 2);
-    t_over = swapBytes(t_over);
-
-    // SNR threshold for valid data
-    // -12.0 .. 20.0
-    s16 snr_threshold;
-    readFromBuffer(&snr_threshold, buffer, 2);
-    snr_threshold = swapBytes(snr_threshold);
-
-    // 0 = none
-    // 1 = recombined azimuthal radials
-    // 2 = recombined range gates
-    // 3 = recombined radials and range gates to legacy resolution
-    unsigned char control_flags;
-    readFromBuffer(&control_flags, buffer, 1);
-
-    // 8 or 16
-    unsigned char dm_gate_bit_count;
-    readFromBuffer(&dm_gate_bit_count, buffer, 1);
-
-    // Scale value used to convert Data Moments from integer to floating point data
-    // > 0 .. 65535
-    u32 scale;
-    readFromBuffer(&scale, buffer, 4);
-    scale = swapBytes(scale);
-
-    // Offset value used to convert Data Moments from integer to floating point data
-    // 2.0 .. 65535
-    u32 offset;
-    readFromBuffer(&offset, buffer, 4);
-    offset = swapBytes(offset);
-
-    // Data Moments start here...
 }
 
 bool ParseNexradRadarFile(
@@ -868,7 +1036,9 @@ bool ParseNexradRadarFile(
                 radial_buffer.buffer = uncompressed_data;
                 radial_buffer.position = 0;
 
-                // ??
+                // @todo
+                // need to loop this and read all the messages
+
                 seekBuffer(&radial_buffer, CTM_HEADER_SIZE);
                 msg_info = readMessageHeader(&radial_buffer);
                 if (msg_info.type == 31)
