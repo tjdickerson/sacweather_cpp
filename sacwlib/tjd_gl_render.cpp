@@ -303,7 +303,7 @@ bool RenderInit(void* window)
     InitFont(FontAtlasTexture);
 
     // 
-    {
+    if (false){
         TextBufferData = {};
         LoadTextBuffer(&TextBufferData, -85.790f, 32.537f, 0.5f, 9, "123456789");
         //LoadTextBuffer(&TextBufferData, 0, 0, 9, "123456789");

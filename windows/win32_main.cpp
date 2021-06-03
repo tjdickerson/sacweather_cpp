@@ -1,17 +1,114 @@
 // 
 
 #include <windows.h>
+#include <wininet.h>
 #include <cstdio>
 #include "tjd_gl.h"
-#include "tjd_ftp.h"
+// #include "tjd_ftp.h"
 #include "tjd_ui.h"
 #include "sacw_api.h"
 #include "win32_menu.h"
 
-#include "imgui/imgui_impl_win32.h"
+// #include "imgui/imgui_impl_win32.h"
+
+
+// @todo
+// probably move this somewhere else
+class WinBindStatusCallback : public IBindStatusCallback
+{
+public:
+    STDMETHOD(OnObjectAvailable)(REFIID riid, IUnknown* punk) { return E_NOTIMPL; }
+
+    STDMETHOD(OnStartBinding)(
+        /* [in] */ DWORD dwReserved,
+        /* [in] */ IBinding __RPC_FAR* pib
+    )
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(GetPriority)(
+        /* [out] */ LONG __RPC_FAR* pnPriority
+    )
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnLowResource)(
+        /* [in] */ DWORD reserved
+    )
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnProgress)(
+        /* [in] */ ULONG ulProgress,
+        /* [in] */ ULONG ulProgressMax,
+        /* [in] */ ULONG ulStatusCode,
+        /* [in] */ LPCWSTR wszStatusText
+    );
+
+    STDMETHOD(OnStopBinding)(
+        /* [in] */ HRESULT hresult,
+        /* [unique][in] */ LPCWSTR szError
+    );
+
+    STDMETHOD(GetBindInfo)(
+        /* [out] */ DWORD __RPC_FAR* grfBINDF,
+        /* [unique][out][in] */ BINDINFO __RPC_FAR* pbindinfo
+    )
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnDataAvailable)(
+        /* [in] */ DWORD grfBSCF,
+        /* [in] */ DWORD dwSize,
+        /* [in] */ FORMATETC __RPC_FAR* pformatetc,
+        /* [in] */ STGMEDIUM __RPC_FAR* pstgmed
+    )
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD_(ULONG, AddRef)()
+    {
+        return 0;
+    }
+
+    STDMETHOD_(ULONG, Release)()
+    {
+        return 0;
+    }
+
+    STDMETHOD(QueryInterface)(
+        /* [in] */ REFIID riid,
+        /* [iid_is][out] */ void __RPC_FAR* __RPC_FAR* ppvObject
+    )
+    {
+        return E_NOTIMPL;
+    }
+};
+
+HRESULT WinBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)
+{
+    const char* filename = "C:\\tmp\\testing_radar.nx3";
+    sacw_RadarInit(filename, 94);
+    return 0;
+}
+
+HRESULT WinBindStatusCallback::OnProgress(
+        /* [in] */ ULONG ulProgress,
+        /* [in] */ ULONG ulProgressMax,
+        /* [in] */ ULONG ulStatusCode,
+        /* [in] */ LPCWSTR wszStatusText
+    )
+{
+    printf("Progress: %d/%d\n", ulProgress, ulProgressMax);
+    return 0;
+}
 
 // Forward declarations just so I can order these however.
-
 HWND InitWindow(HINSTANCE);
 LRESULT CALLBACK WinMessageCallback(HWND, UINT, WPARAM, LPARAM);
 void LogMessage(const char* message);
@@ -19,39 +116,55 @@ void LogMessage(const char* message);
 void PanMap(f32 x, f32 y);
 static LRESULT Win32InitOpenGL(HDC hdc);
 
-
 static bool gIsRunning;
 
-static bool  Panning = false;
+static bool Panning = false;
 static v2f32 ClickLast = {};
 
 static s32 KEY_PANNING = VK_LBUTTON;
 
-
 static char* CmdLineArgs;
 
-
-int CALLBACK WinMain(HINSTANCE instance,
-                     HINSTANCE prevInstance,
-                     LPSTR     cmdLine,
-                     int       cmdShow)
-{   
-    CmdLineArgs = strtok(cmdLine, " ");    
+int CALLBACK WinMain(
+    HINSTANCE instance,
+    HINSTANCE prevInstance,
+    LPSTR cmdLine,
+    int cmdShow
+)
+{
+    CmdLineArgs = strtok(cmdLine, " ");
     CmdLineArgs = strtok(NULL, " ");
 
     HWND hwnd = InitWindow(instance);
 
-    if (!hwnd) 
+    if (!hwnd)
     {
         LogMessage("Failed to create window.");
         return -1;
-    }       
+    }
 
     ShowWindow(hwnd, cmdShow);
     UpdateWindow(hwnd);
 
     HDC hdc = GetDC(hwnd);
     MSG message;
+
+    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
+    const char* filename = "C:\\tmp\\testing_radar.nx3";
+
+    bool testing_level2 = true;
+    if (!testing_level2)
+    {
+        DeleteUrlCacheEntry(file_url);
+        WinBindStatusCallback wbcb;
+        URLDownloadToFile(nullptr, file_url, filename, 0, &wbcb);
+    }
+    else
+    {
+        const char* filename = "C:\\shapes\\KIND_20210526_1423";
+        sacw_RadarInit(filename, 94);
+    }
+
     while (gIsRunning)
     {
         // This is a blocking call, consider exploring PeekMessage.
@@ -64,16 +177,14 @@ int CALLBACK WinMain(HINSTANCE instance,
         // 
         sacw_MainLoop();
 
-
         SwapBuffers(hdc);
-    }   
+    }
 
     // if this turns out to be needed, it may need to be moved elsewhere @todo
     sacw_Cleanup();
 
     return (int)message.wParam;
 }
-
 
 void PanMap(f32 x, f32 y)
 {
@@ -87,7 +198,6 @@ void PanMap(f32 x, f32 y)
     ClickLast.x = x;
     ClickLast.y = y;
 }
-
 
 /*
  * I am compiling and building this as a console application so I can write out to the command
@@ -106,7 +216,7 @@ int main(int argc, char** argv)
     // } 
     // else 
     // {
-        
+
     // }
 
     result = WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
@@ -114,13 +224,11 @@ int main(int argc, char** argv)
     return result;
 }
 
-
 void HandleKeyDown(unsigned int keyCode)
 {
     printf("Key code: %d\n", keyCode);
     if (keyCode == KEY_PANNING) Panning = true;
 }
-
 
 void HandleKeyUp(unsigned int keyCode)
 {
@@ -129,10 +237,12 @@ void HandleKeyUp(unsigned int keyCode)
 
 // extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT CALLBACK WinMessageCallback(HWND hwnd, 
-                                    UINT message, 
-                                    WPARAM wParam, 
-                                    LPARAM lParam)
+LRESULT CALLBACK WinMessageCallback(
+    HWND hwnd,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam
+)
 {
     LRESULT result = 0;
 
@@ -147,7 +257,7 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
             LogMessage("Window created.");
 
             // initialize opengl for windows
-            result = Win32InitOpenGL(hdc);            
+            result = Win32InitOpenGL(hdc);
 
             if (result == 0)
             {
@@ -155,11 +265,11 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
 
                 CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
                 sacw_UpdateViewport(cs->cx, cs->cy);
-            }            
+            }
 
             gIsRunning = true;
         }
-        break;
+            break;
 
         case WM_SIZE:
         {
@@ -167,42 +277,42 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
             f32 height = (f32)HIWORD(lParam);
             sacw_UpdateViewport(width, height);
         }
-        break;
+            break;
 
         case WM_MOUSEWHEEL:
         {
             f32 delta = GET_WHEEL_DELTA_WPARAM(wParam); // @todo
             sacw_ZoomMap(delta);
         }
-        break;
+            break;
 
         case WM_LBUTTONDOWN:
         {
             ClickLast.x = (lParam & 0xffff);
             ClickLast.y = (lParam & 0xffff0000) >> 16;
-    
+
             HandleKeyDown(VK_LBUTTON);
         }
-        break;
+            break;
 
         case WM_LBUTTONUP:
         {
             HandleKeyUp(VK_LBUTTON);
         }
-        break;
-        
+            break;
+
         case WM_KEYDOWN:
         {
             HandleKeyDown(wParam);
         }
-        break;
+            break;
 
         case WM_KEYUP:
         {
             HandleKeyUp(wParam);
         }
-        break;
-        
+            break;
+
         case WM_MOUSEMOVE:
         {
             if (Panning)
@@ -210,30 +320,28 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd,
                 PanMap(lParam & 0xffff, (lParam & 0xffff0000) >> 16);
             }
         }
-        break;
+            break;
 
         case WM_CLOSE:
         {
             gIsRunning = false;
-            PostQuitMessage(0);         
+            PostQuitMessage(0);
         }
-        break;
+            break;
 
         case WM_DESTROY:
         {
             gIsRunning = false;
             PostQuitMessage(0);
         }
-        break;
+            break;
 
-        default:
-            result = DefWindowProc(hwnd, message, wParam, lParam);
-        break;
+        default:result = DefWindowProc(hwnd, message, wParam, lParam);
+            break;
     }
 
     return result;
 }
-
 
 HWND InitWindow(HINSTANCE instance)
 {
@@ -245,29 +353,28 @@ HWND InitWindow(HINSTANCE instance)
     wndClass.hIcon = 0;
     wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 
-
-    if (!RegisterClass(&wndClass)) 
+    if (!RegisterClass(&wndClass))
     {
         LogMessage("Failed to register window class.");
         return 0;
-    }    
+    }
 
     HMENU menu = BuildMenu();
     HWND hwnd = CreateWindowEx(
-            0,
-            wndClass.lpszClassName,
-            "SAC Weather",
-            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-            CW_USEDEFAULT, CW_USEDEFAULT,       // x, y
-            //1000, 1000,                         // w, h
-            CW_USEDEFAULT, CW_USEDEFAULT, 
-            0,
-            menu,
-            instance,
-            0
-    );    
+        0,
+        wndClass.lpszClassName,
+        "SAC Weather",
+        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        CW_USEDEFAULT, CW_USEDEFAULT,       // x, y
+        //1000, 1000,                         // w, h
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        0,
+        menu,
+        instance,
+        0
+    );
 
-    if (!hwnd) 
+    if (!hwnd)
     {
         LogMessage("Error creating window");
         return 0;
@@ -284,12 +391,10 @@ void ShowError(const char* message)
     printf("%s\n", message);
 }
 
-
 void LogMessage(const char* message)
 {
     printf("%s\n", message);
 }
-
 
 /*int DownloadFile(const char* url, const char* dest)
 {
@@ -302,7 +407,8 @@ void LogMessage(const char* message)
 
 
 
-static LRESULT Win32InitOpenGL(HDC hdc) {
+static LRESULT Win32InitOpenGL(HDC hdc)
+{
     bool success = false;
     PIXELFORMATDESCRIPTOR reqPfd = {};
     reqPfd.nSize = sizeof(reqPfd);
@@ -314,7 +420,7 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
     reqPfd.cDepthBits = 24;
 
     int reqPfdId = ChoosePixelFormat(hdc, &reqPfd);
-    if (!reqPfdId) 
+    if (!reqPfdId)
     {
         LogMessage("No suitable pixel format found.");
         return -1;
@@ -324,14 +430,14 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
     DescribePixelFormat(hdc, reqPfdId, sizeof(pfd), &pfd);
 
     success = SetPixelFormat(hdc, reqPfdId, &pfd);
-    if (!success) 
+    if (!success)
     {
         LogMessage("Failed to set pixel format.");
         return -2;
     }
 
     HGLRC glRC = wglCreateContext(hdc);
-    if (!glRC) 
+    if (!glRC)
     {
         LogMessage("Failed to create OpenGL context.");
         return -3;
@@ -340,7 +446,7 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
     // todo: this may be redundant at the moment since we are requesting a sepcific
     //       openGL feature set right after this. This might be useful as a fall back?
     success = wglMakeCurrent(hdc, glRC);
-    if (!success) 
+    if (!success)
     {
         LogMessage("Failed to wglMakeCurrent.");
         return -4;
@@ -348,23 +454,23 @@ static LRESULT Win32InitOpenGL(HDC hdc) {
 
 
     // request context attributes so we can get a specific OpenGL version/feature set
-    GLint reqAttributes[] = 
-    {
+    GLint reqAttributes[] =
+        {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
             WGL_CONTEXT_MINOR_VERSION_ARB, 2,
             WGL_CONTEXT_PROFILE_MASK_ARB,
             WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0
-    };
+        };
 
     // todo: verify this somehow
     PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
     wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
-            wglGetProcAddress("wglCreateContextAttribsARB");
+        wglGetProcAddress("wglCreateContextAttribsARB");
 
     HGLRC newGLRC = wglCreateContextAttribsARB(hdc, 0, reqAttributes);
 
-    if (!newGLRC) 
+    if (!newGLRC)
     {
         // todo: then in here we could fall back to a lower version or even
         //       fallback to software rendering..

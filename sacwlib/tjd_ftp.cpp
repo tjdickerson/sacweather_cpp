@@ -155,7 +155,7 @@ int SizeCommand(SOCKET socket, const char* filename)
 
     int retVal = atoi(cFileSize);
 
-    if (res.message) free(res.message);
+    // if (res.message) free(res.message);
 
     return retVal;
 }
@@ -398,6 +398,7 @@ int Send(SOCKET sock, const char* message, int messageLength, int flags)
 RecvResult Recv(SOCKET sock) 
 {
     RecvResult result = {};
+    result.message = nullptr;
     char temp[15000];
     int totalRecieved = 0;
 

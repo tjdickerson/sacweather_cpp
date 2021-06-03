@@ -44,6 +44,9 @@ add_executable(sacweather
         ${sacw-src-dir}tjd_ui.h
         ${sacw-src-dir}tjd_font.cpp
 
+#        ${sacw-src-dir}tjd_ftp.cpp
+#        ${sacw-src-dir}tjd_ftp.h
+
 
         ${sacw-src-dir}glad/glad.h
         ${sacw-src-dir}glad.c
@@ -89,9 +92,13 @@ target_link_libraries(${PROJECT_NAME}
         user32.lib
         gdi32.lib
 
-        # this is needed by ftp stuff
+        # for windows downloading stuff
+        Wininet.lib
         urlmon.lib
-        ws2_32.lib
+
+        # this is needed by ftp stuff
+        #urlmon.lib
+        #ws2_32.lib
 
         # these are needed by ImGui
         imm32.lib

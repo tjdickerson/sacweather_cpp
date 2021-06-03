@@ -15,6 +15,8 @@
 #include "nws_info.h"
 #include <cstring>
 
+#include "windows.h"
+
 MapViewState MapViewInfo;
 bool canRenderRadar;
 bool radarIsStale;
@@ -59,11 +61,14 @@ void DownloadRadarFile()
     printf("Download file: %s\n", remoteFile);
 
     // DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
+    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
 
-    const char* filename = "C:\\shapes\\KIND_20210526_1423";
+
+    //const char* filename = "C:\\shapes\\KIND_20210526_1423";
     //const char* filename = "C:\\tmp\\test_vel.last";
-    //const char* filename = "C:\\tmp\\testing_radar.nx3";   
-
+    const char* filename = "C:\\tmp\\testing_radar.nx3";
+//    URLDownloadToFile(nullptr, file_url, filename, 0, nullptr);
+//
     sacw_RadarInit(filename, CurrentProduct->productCode);  
 }
 
@@ -77,9 +82,9 @@ void centerMapAt(f32 lon, f32 lat)
     f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
     f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale); 
 
-    MapViewInfo.scaleFactor = 1.0f; //80.0f;
-    MapViewInfo.xPan = 0.0f; //-screen_x;
-    MapViewInfo.yPan = 0.0f; //-screen_y;
+    MapViewInfo.scaleFactor = 80.0f;
+    MapViewInfo.xPan = -screen_x;
+    MapViewInfo.yPan = -screen_y;
 }
 
 void sacw_Init(void* window)
@@ -98,7 +103,7 @@ void sacw_Init(void* window)
     RenderInit(window);
 
     #ifndef __ANDROID__
-    DownloadRadarFile();
+    // DownloadRadarFile();
     #endif
 }
 
