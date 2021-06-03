@@ -456,6 +456,19 @@ void readMessage2(struct BufferInfo* buffer)
     seekBuffer(buffer, 60 * 2);
 }
 
+struct RadialData
+{
+    s32 rangeBinCount;
+    f32 angle;
+    f32 * dbz;
+};
+
+struct L2Volume
+{
+    int radialCount;
+    RadialData * radials;
+};
+
 const s32 VOLUME_DATA_PTR = 0;
 const s32 ELEVATION_DATA_PTR = 1;
 const s32 RADIAL_DATA_PTR = 2;
@@ -697,7 +710,7 @@ void processDataBlocks(BufferInfo* buffer, const s32* offsetPointers, s32 pointe
 
 }
 
-void readMessage31(BufferInfo* buffer)
+u16 readMessage31(BufferInfo* buffer)
 {
     // 2620002T
     // Table XVII Digital Radar Data Generic Format Blocks (Message Type 31)
@@ -740,6 +753,7 @@ void readMessage31(BufferInfo* buffer)
     unsigned char spare;
     readFromBuffer(&spare, buffer, 1);
 
+    // Uncompressed length of the radial in bytes including the Data Header block length
     u16 radial_byte_length;
     readFromBuffer(&radial_byte_length, buffer, 2);
     radial_byte_length = swapBytes(radial_byte_length);
@@ -787,6 +801,7 @@ void readMessage31(BufferInfo* buffer)
 
     processDataBlocks(buffer, data_block_ptrs, data_block_count, header_block_start);
 
+    return radial_byte_length;
 }
 
 bool ParseNexradRadarFile(
@@ -988,18 +1003,18 @@ bool ParseNexradRadarFile(
                 // @todo
                 // Need to test/handle this...
 
-                //if (msg_info.size < 0)
-                //    forward_size = TOTAL_SEG_SIZE;
-
-                //else
-                //    forward_size = msg_info.size + PADDING_BYTES;
+//                if (msg_info.size < 0)
+//                    forward_size = TOTAL_SEG_SIZE;
+//
+//                else
+//                    forward_size = msg_info.size;
 
 
                 setBufferPos(&msg_buffer, pre_msg_buf_pos + forward_size);
             }
 
             // might can free uncompressed_data here. @todo
-            if (uncompressed_data) free(uncompressed_data);
+            if (uncompressed_data != nullptr) free(uncompressed_data);
 
             // is this now message 31?
             {
@@ -1032,18 +1047,33 @@ bool ParseNexradRadarFile(
                 bp += compressed_size;
 
 
+
+                L2Volume l2volume = {};
                 BufferInfo radial_buffer = {};
                 radial_buffer.buffer = uncompressed_data;
                 radial_buffer.position = 0;
 
                 // @todo
                 // need to loop this and read all the messages
-
+                int msg_31_count = 0;
                 seekBuffer(&radial_buffer, CTM_HEADER_SIZE);
-                msg_info = readMessageHeader(&radial_buffer);
-                if (msg_info.type == 31)
+                while (true)
                 {
-                    readMessage31(&radial_buffer);
+                    s32 start_pos = radial_buffer.position;
+
+                    msg_info = readMessageHeader(&radial_buffer);
+                    if (msg_info.type == 31)
+                    {
+                        msg_31_count += 1;
+                        int skipBytes = readMessage31(&radial_buffer);
+                        setBufferPos(&radial_buffer, start_pos + msg_info.size + CTM_HEADER_SIZE);
+                    }
+                    else
+                    {
+                        int break_here = 1;
+                        int test = msg_31_count;
+                        break;
+                    }
                 }
             }
 
