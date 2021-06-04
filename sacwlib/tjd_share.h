@@ -1,6 +1,7 @@
 // 
 
 #ifndef _TJD_SHARE_H_
+#define _TJD_SHARE_H_
 
 #include <cstdint>
 
@@ -17,6 +18,8 @@
 #define LOGERR(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #else
 #include <cstdio>
+#include <cstring>
+
 #define LOGINF(...) printf(__VA_ARGS__)
 #define LOGERR(...) printf(__VA_ARGS__)
 #endif
@@ -96,6 +99,32 @@ typedef struct Vector2f32_t
 
 typedef v4f32 color4;
 
+struct BufferInfo
+{
+    unsigned char* buffer;
+    s32 position;
+    u32 totalSize;
+};
 
-#define _TJD_SHARE_H_
+static void readFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
+{
+    memcpy(dest, &bi->buffer[bi->position], length);
+    bi->position += length;
+}
+
+static void seekBuffer(struct BufferInfo* bi, s32 jmp)
+{
+    bi->position += jmp;
+}
+
+static void setBufferPos(struct BufferInfo* bi, s32 pos)
+{
+    bi->position = pos;
+}
+
+static unsigned char peekBuffer(struct BufferInfo* bi, s32 jmp)
+{
+    return bi->buffer[bi->position];
+}
+
 #endif

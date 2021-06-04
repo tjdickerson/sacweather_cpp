@@ -40,6 +40,8 @@ add_executable(sacweather
         ${sacw-src-dir}nws_info.h
         ${sacw-src-dir}nws_info.cpp
 
+        sacwlib/tjd_level2.cpp sacwlib/tjd_level2.h
+
         ${sacw-src-dir}tjd_ui.cpp
         ${sacw-src-dir}tjd_ui.h
         ${sacw-src-dir}tjd_font.cpp
