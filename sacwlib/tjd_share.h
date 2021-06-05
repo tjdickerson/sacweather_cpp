@@ -4,6 +4,7 @@
 #define _TJD_SHARE_H_
 
 #include <cstdint>
+#include <cmath>
 
 #define TJD_LOG_ENABLED 1
 
@@ -63,6 +64,35 @@ static s32 swapBytes(s32 value)
         (value & 0xff000000)    >> 24;
 }
 
+// @todo
+// how to manage that this is actually 4 bytes passed in
+static f32 convertIEEE754(unsigned char* ieee754)
+{
+    u8 sign = ieee754[0] & 0x80;
+    u8 expo = ((((ieee754[0] & 0x7f) << 1)) | (((ieee754[1] & 0x80) >> 7) & 0xff)) - 127;
+    u32 frac = 0x800000 | (((ieee754[1] & 0x7f) << 16)) | ((ieee754[2] & 0xff) << 8) | (ieee754[3] & 0xFF);
+
+    f32 result = 0.0f;
+    for (int i = 23; i >= 0; i--)
+    {
+        u32 check = (frac >> i) & 0x01;
+        if (check == 1)
+        {
+            f32 base = 1.0f;
+            u32 loop_times = (23 - i);
+
+            for (int j = 0; j < loop_times; j++)
+                base *= 0.5f;
+
+            result += base;
+        }
+    }
+
+    result = result * (f32)pow(2, expo) * (sign == 0 ? 1.0f : -1.0f);
+    return result;
+}
+
+
 static u32 swapBytes(u32 value) 
 {
     return 
@@ -101,14 +131,14 @@ typedef v4f32 color4;
 
 struct BufferInfo
 {
-    unsigned char* buffer;
+    unsigned char* data;
     s32 position;
     u32 totalSize;
 };
 
 static void readFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
 {
-    memcpy(dest, &bi->buffer[bi->position], length);
+    memcpy(dest, &bi->data[bi->position], length);
     bi->position += length;
 }
 
@@ -124,7 +154,7 @@ static void setBufferPos(struct BufferInfo* bi, s32 pos)
 
 static unsigned char peekBuffer(struct BufferInfo* bi, s32 jmp)
 {
-    return bi->buffer[bi->position];
+    return bi->data[bi->position];
 }
 
 #endif

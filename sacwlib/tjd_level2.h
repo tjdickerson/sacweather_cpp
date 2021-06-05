@@ -9,15 +9,19 @@
 
 struct RadialData
 {
-    s32 rangeBinCount;
-    f32 angle;
-    f32 * dbz;
+    s32 gateCount;
+    s16 azimuthNumber;
+    f32 azimuth;
+    f32 rangeToFirstGate;
+    f32* dbz;
 };
 
 struct L2Volume
 {
+    f32 lon;
+    f32 lat;
     int radialCount;
-    RadialData * radials;
+    RadialData* radials;
 };
 
 

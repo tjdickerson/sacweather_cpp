@@ -247,7 +247,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 }*/
 
 
-/*void this_might_be_Product_Request_Message(unsigned char* buffer, s32* bufptr)
+/*void this_might_be_Product_Request_Message(unsigned char* data, s32* bufptr)
 {
     // Reference 2620001Y.pdf
     // Figure 3-4. Product Request Message (Sheet 1)
@@ -257,26 +257,26 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 
     // Number of bytes in block, including block divider, in the Product Description Block 
     s16 msg_size;
-    readFromBuffer(&msg_size, buffer, bufptr, 2);
+    readFromBuffer(&msg_size, data, bufptr, 2);
 
     // Internal NEXRAD product code correspondi ng to a weather product in Table I 
     s16 product_code;
-    readFromBuffer(&product_code, buffer, bufptr, 2);
+    readFromBuffer(&product_code, data, bufptr, 2);
 
     // Bit # Value Meaning 0 1 High Priority 0 0 Low Priority 1 1 Map Requested (Bit 0=MSB)
     s16 flags;
-    readFromBuffer(&flags, buffer, bufptr, 2);
+    readFromBuffer(&flags, data, bufptr, 2);
 
     // Monotonically increase for tracking of request
     s16 seq_num;
-    readFromBuffer(&seq_num, buffer, bufptr, 2);        
+    readFromBuffer(&seq_num, data, bufptr, 2);
 
     // -1 for continuous (RPS) product transmissio n. 1 to 9 for one-time requests, when 
     // Volume Scan Start Time of Product (halfwords 18, 19) is = - 1 (equivalent to PUP Repeat Count). 
     // NOTE: For RPS requests, the number of products requested is determined from the Number of Blocks 
     // fields of the Message Header.
     s16 prod_count;
-    readFromBuffer(&prod_count, buffer, bufptr, 2);   
+    readFromBuffer(&prod_count, data, bufptr, 2);
     
 }*/
 
@@ -322,9 +322,9 @@ bool ParseNexradRadarFile(
     if (buffer[0] == 'A' && buffer[1] == 'R' && buffer[2] == '2')
     {
         BufferInfo l2buffer = {};
-        l2buffer.buffer = &buffer[0];
+        l2buffer.data = &buffer[0];
         l2buffer.position = 0;
-        l2buffer.totalSize = 0;
+        l2buffer.totalSize = fileLength;
 
         ReadLevel2File(&l2buffer);
     }

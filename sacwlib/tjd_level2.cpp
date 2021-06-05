@@ -10,6 +10,8 @@
 
 #include "tjd_level2.h"
 
+L2Volume g_L2Volume;
+
 struct MessageHeaderInfo
 {
     unsigned char type;
@@ -160,12 +162,12 @@ void readMessage15(struct BufferInfo* buffer)
 void readMessage18(struct BufferInfo* buffer)
 {
     // Some (most?) of the data in this message doesn't seem important. Might can skip some of it.
-    // seekBuffer(buffer, 9467);
+    // seekBuffer(data, 9467);
 }
 
 void readMessage3(struct BufferInfo* buffer)
 {
-    // seekBuffer(buffer, 480 * 2);
+    // seekBuffer(data, 480 * 2);
 }
 
 void readMessage5(struct BufferInfo* buffer)
@@ -176,7 +178,7 @@ void readMessage5(struct BufferInfo* buffer)
     msg_size = swapBytes(msg_size);
 
     // @todo
-    // seekBuffer(buffer, msg_size);
+    // seekBuffer(data, msg_size);
 
 }
 
@@ -185,7 +187,7 @@ void readMessage2(struct BufferInfo* buffer)
     seekBuffer(buffer, 60 * 2);
 }
 
-void readDataMoment(struct BufferInfo* buffer)
+void readDataMoment(struct BufferInfo* buffer, s32 radialIndex)
 {
     unsigned char data_block_type;
     readFromBuffer(&data_block_type, buffer, 1);
@@ -199,12 +201,14 @@ void readDataMoment(struct BufferInfo* buffer)
     u16 data_moment_gates;
     readFromBuffer(&data_moment_gates, buffer, 2);
     data_moment_gates = swapBytes(data_moment_gates);
+    g_L2Volume.radials[radialIndex].gateCount = data_moment_gates;
 
     // Range to center of first range gate
     // Scaled Int, range from 0 to 32768 (0.0 .. 32.768 after scaling back)
     u16 data_moment_range;
     readFromBuffer(&data_moment_range, buffer, 2);
     data_moment_range = swapBytes(data_moment_range);
+    g_L2Volume.radials[radialIndex].rangeToFirstGate = (f32)data_moment_range * 0.001f;
 
     // Size of data moment sample interval
     // 0.25 .. 4.0 after scaling back
@@ -238,25 +242,35 @@ void readDataMoment(struct BufferInfo* buffer)
 
     // Scale value used to convert Data Moments from integer to floating point data
     // > 0 .. 65535
-    u32 scale;
-    readFromBuffer(&scale, buffer, 4);
-    scale = swapBytes(scale);
+    f32 scale;
+    unsigned char c_scale[4];
+    readFromBuffer(c_scale, buffer, 4);
+    scale = convertIEEE754(c_scale);
 
     // Offset value used to convert Data Moments from integer to floating point data
-    // 2.0 .. 65535
-    u32 offset;
-    readFromBuffer(&offset, buffer, 4);
-    offset = swapBytes(offset);
-
-    // ??
-    unsigned char* moments = nullptr;
+    // 2.0 .. 65535   // 42 84 00 00
+    f32 offset;
+    unsigned char c_offset[4];
+    readFromBuffer(c_offset, buffer, 4);
+    offset = convertIEEE754(c_offset);
 
     if (strncmp((const char*)data_moment_name, "REF", 3) == 0)
     {
-        moments = (unsigned char*)malloc(data_moment_gates * sizeof(unsigned char));
+        g_L2Volume.radials[radialIndex].dbz = (f32*)malloc(data_moment_gates * sizeof(f32));
+
+        unsigned char value;
+        f32 adjusted_value;
+
         for (int i = 0; i < data_moment_gates; i++)
         {
-            readFromBuffer(&moments[i], buffer, 1);
+            readFromBuffer(&value, buffer, 1);
+
+            // @todo
+            // A scale value of 0 indicates floating point moment data for each range gate.
+
+            // F = (N - OFFSET) / SCALE
+            adjusted_value = ((f32)value - offset) / scale;
+            g_L2Volume.radials[radialIndex].dbz[i] = adjusted_value;
         }
     }
 
@@ -283,11 +297,17 @@ void processVolumeDataType(BufferInfo* buffer)
     unsigned char version_min;
     readFromBuffer(&version_min, buffer, 1);
 
-    s32 lat;
-    readFromBuffer(&lat, buffer, 4);
+    f32 lat;
+    unsigned char c_lat[4];
+    readFromBuffer(c_lat, buffer, 4);
+    lat = convertIEEE754(c_lat);
+    g_L2Volume.lat = lat;
 
-    s32 lon;
+    f32 lon;
+    unsigned char c_lon[4];
     readFromBuffer(&lon, buffer, 4);
+    lon = convertIEEE754(c_lon);
+    g_L2Volume.lon = lon;
 
     s16 site_height;
     readFromBuffer(&site_height, buffer, 2);
@@ -356,7 +376,7 @@ void processRadialDataType(BufferInfo* buffer)
     readFromBuffer(&block_size, buffer, 2);
     block_size = swapBytes(block_size);
 
-    // 115 .. 511 km
+    // 11.5 .. 51.1 km
     u16 unamb_range;
     readFromBuffer(&unamb_range, buffer, 2);
     unamb_range = swapBytes(unamb_range);
@@ -385,7 +405,12 @@ void processRadialDataType(BufferInfo* buffer)
     readFromBuffer(&vert_calibration, buffer, 4);
 }
 
-void processDataBlocks(BufferInfo* buffer, const s32* offsetPointers, s32 pointerCount, s32 blockStartPos)
+void processDataBlocks(
+    BufferInfo* buffer,
+    s32 radialIndex,
+    const s32* offsetPointers,
+    s32 pointerCount,
+    s32 blockStartPos)
 {
     for (int i = 0; i < pointerCount; i++)
     {
@@ -409,16 +434,17 @@ void processDataBlocks(BufferInfo* buffer, const s32* offsetPointers, s32 pointe
 
         else if (data_type == 'D')
         {
-            readDataMoment(buffer);
+            readDataMoment(buffer, radialIndex);
         }
     }
 
 }
 
-u16 readMessage31(BufferInfo* buffer)
+u32 readMessage31(BufferInfo* buffer, s32 radialIndex)
 {
     // 2620002T
     // Table XVII Digital Radar Data Generic Format Blocks (Message Type 31)
+    u32 return_code = 0;
 
     s32 header_block_start = buffer->position;
 
@@ -437,16 +463,13 @@ u16 readMessage31(BufferInfo* buffer)
     s16 azimuth_num;
     readFromBuffer(&azimuth_num, buffer, 2);
     azimuth_num = swapBytes(azimuth_num);
+    g_L2Volume.radials[radialIndex].azimuthNumber = azimuth_num;
 
-    // @todo
-    // This isn't how this works. It doesn't work to read into a 4 byte integer then swap it.
-    // Range should be 0 .. 359.956055
-    s32 b_azimuth_angle;
-    readFromBuffer(&b_azimuth_angle, buffer, 4);
-    b_azimuth_angle = swapBytes(b_azimuth_angle);
-
-    f64 azimuth_angle = b_azimuth_angle * 0.01;
-    LOGINF("Azimuth angle: %2.4f\n", azimuth_angle);
+    f32 azimuth_angle;
+    unsigned char caa[4];
+    readFromBuffer(caa, buffer, 4);
+    azimuth_angle = convertIEEE754(caa);
+    g_L2Volume.radials[radialIndex].azimuth = azimuth_angle;
 
     // 0 = uncompressed
     // 1 = compressed using BZIP2
@@ -469,17 +492,27 @@ u16 readMessage31(BufferInfo* buffer)
     unsigned char radial_status;
     readFromBuffer(&radial_status, buffer, 1);
 
+    //  Start of new Elevation 00
+    //  Intermediate Radial Data 01
+    //  End of Elevation 02
+    //  Beginning of Volume Scan 03
+    //  End of Volume Scan 04
+    //  Start of new Elevation - Last Elevation in VCP 05
+    if (radial_status == 0x02)
+    {
+        // @todo
+        // For the moment just read the first one and get out.
+        return_code = 1;
+    }
+
     unsigned char elevation_num;
     readFromBuffer(&elevation_num, buffer, 1);
 
     unsigned char cut_sector_num;
     readFromBuffer(&cut_sector_num, buffer, 1);
 
-    u32 i_elevation_angle;
-    readFromBuffer(&i_elevation_angle, buffer, 4);
-    i_elevation_angle = swapBytes(i_elevation_angle);
-
-    f64 elevation_angle = i_elevation_angle * 0.01;
+    f32 elevation_angle;
+    readFromBuffer(&elevation_angle, buffer, 4);
 
     unsigned char spot_blanking;
     readFromBuffer(&spot_blanking, buffer, 1);
@@ -503,9 +536,9 @@ u16 readMessage31(BufferInfo* buffer)
         data_block_ptr = swapBytes(data_block_ptr);
     }
 
-    processDataBlocks(buffer, data_block_ptrs, data_block_count, header_block_start);
+    processDataBlocks(buffer, radialIndex, data_block_ptrs, data_block_count, header_block_start);
 
-    return radial_byte_length;
+    return return_code;
 }
 
 void ProcessLdmRecords(BufferInfo* buffer)
@@ -519,7 +552,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //        uncompressed_size = 47185920;
 //
 //        compressed_size = 0;
-//        memcpy(&compressed_size, &buffer[bp], 4);
+//        memcpy(&compressed_size, &data[bp], 4);
 //        bp += 4;
 //
 //        compressed_size = swapBytes(compressed_size);
@@ -530,7 +563,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //        p_len = &uncompressed_size;
 //        ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0],
 //            p_len,
-//            (char*)&buffer[bp],
+//            (char*)&data[bp],
 //            compressed_size,
 //            0,
 //            4
@@ -545,7 +578,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //
 //        L2Volume l2volume = {};
 //        BufferInfo radial_buffer = {};
-//        radial_buffer.buffer = uncompressed_data;
+//        radial_buffer.data = uncompressed_data;
 //        radial_buffer.position = 0;
 //
 //        // @todo
@@ -583,6 +616,8 @@ void ProcessMessages(BufferInfo* buffer)
     MessageHeaderInfo msg_info = {};
     s32 pre_msg_buf_pos = 0, post_msg_buf_pos = 0;
 
+    s32 radialIndex = 0;
+
     seekBuffer(buffer, CTM_HEADER_SIZE);
     while (buffer->position < buffer->totalSize)
     {
@@ -616,7 +651,14 @@ void ProcessMessages(BufferInfo* buffer)
 
         else if (msg_info.type == 31)
         {
-            readMessage31(buffer);
+            u32 result = readMessage31(buffer, radialIndex);
+
+            if (result == 1)
+            {
+                break;
+            }
+
+            radialIndex += 1;
         }
 
         /**
@@ -685,63 +727,31 @@ void ReadLevel2File(BufferInfo* mainBuffer)
         icao[4] = '\0';
     }
 
-    // assume the result cant be larger than 45mB?
-    u32 max_uncompressed_size = 47185920;
+    // assume the result cant be larger than 90mB?
+    u32 max_uncompressed_size = 94371840;
     u32 uncompressed_size = max_uncompressed_size;
 
     s32 compressed_size;
-    readFromBuffer(&compressed_size, mainBuffer, 4);
-    compressed_size = swapBytes(compressed_size);
-    compressed_size = abs(compressed_size);
+    u32 total_buffer_size = 0;
+    auto uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
 
-    unsigned char* meta_buffer_entry = &mainBuffer->buffer[mainBuffer->position];
-    s32 meta_compressed_size = compressed_size;
-
-    // Set the position past the compressed data block for after this data is processed.
-    seekBuffer(mainBuffer, compressed_size);
-
-    // The next bit of data should be more compressed data with the size. We can read these into the same buffer.
-    compressed_size = 0;
-    readFromBuffer(&compressed_size, mainBuffer, 4);
-    compressed_size = swapBytes(compressed_size);
-    compressed_size = abs(compressed_size);
-
-    unsigned char* ldm_buffer_entry = &mainBuffer->buffer[mainBuffer->position];
-    s32 ldm_compressed_size = compressed_size;
-
-    // @todo
-    // There are numerous compressed blocks here, I'll need to loop this and uncompress all of them.
-    // There should be at least 4 in total, meta info, 3 "type31" blocks each with 120 messages, and then I dunno.
-
-    // Set the position past the compressed data block for after this data is processed.
-    seekBuffer(mainBuffer, compressed_size);
-
-    auto* uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
-
+    while (mainBuffer->position < mainBuffer->totalSize)
     {
+        compressed_size = 0;
+        readFromBuffer(&compressed_size, mainBuffer, 4);
+        compressed_size = swapBytes(compressed_size);
+        compressed_size = abs(compressed_size);
+
+        unsigned char* buffer_entry = &mainBuffer->data[mainBuffer->position];
+
+        // @todo
+        // for safety keep up with the size of uncompressed data and how much has been put into it already.
+        uncompressed_size = max_uncompressed_size - total_buffer_size;
         u32* p_len = &uncompressed_size;
-        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[0],
+        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[total_buffer_size],
             p_len,
-            (char*)meta_buffer_entry,
-            meta_compressed_size,
-            0,
-            4
-        );
-
-        if (ret != BZ_OK)
-        {
-            LOGERR("Failed to decompress the Level-II LDM Metadata.\n");
-        }
-    }
-
-    u32 meta_uncompressed_size = uncompressed_size;
-
-    {
-        u32* p_len = &uncompressed_size;
-        s32 ret = BZ2_bzBuffToBuffDecompress((char*)&uncompressed_data[meta_uncompressed_size],
-            p_len,
-            (char*)ldm_buffer_entry,
-            ldm_compressed_size,
+            (char*)buffer_entry,
+            compressed_size,
             0,
             4
         );
@@ -749,23 +759,30 @@ void ReadLevel2File(BufferInfo* mainBuffer)
         if (ret != BZ_OK)
         {
             LOGERR("Failed to decompress the Level-II LDM Record data.\n");
+            break;
         }
+
+        total_buffer_size += uncompressed_size;
+
+        // Set the position past the compressed data block for after this data is processed.
+        seekBuffer(mainBuffer, compressed_size);
     }
 
-    u32 ldm_uncompressed_size = uncompressed_size;
-
-    u32 total_buffer_size = meta_uncompressed_size + ldm_uncompressed_size;
-
     // @todo
-    // Here I might could deallocate the 45mb buffer after copying to a smaller buffer,
-    // I'm not sure if the trade off is worth it since the buffer will go bye bye after everything
+    // Here I might could deallocate the 90mb data after copying to a smaller data,
+    // I'm not sure if the trade off is worth it since the data will go bye bye after everything
     // has been processed anyway.
 
 
     BufferInfo l2_buffer = {};
-    l2_buffer.buffer = &uncompressed_data[0];
+    l2_buffer.data = &uncompressed_data[0];
     l2_buffer.totalSize = total_buffer_size;
     l2_buffer.position = 0;
 
+    g_L2Volume = {};
+    g_L2Volume.radialCount = 720;
+    g_L2Volume.radials = (RadialData*)malloc(g_L2Volume.radialCount * sizeof(RadialData));
     ProcessMessages(&l2_buffer);
+
+    free(uncompressed_data);
 }
