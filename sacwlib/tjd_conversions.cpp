@@ -2,20 +2,20 @@
 
 #define math_e 2.718281828f
 
-f32 ConvertLonToScreen(f32 lon)
+f32 AdjustLonForProjection(f32 lon)
 {
-    return lon / 180.0f;
+    return lon;
 }
 
-f32 ConvertLatToScreen(f32 lat)
+f32 AdjustLatForProjection(f32 lat)
 {
     // Converts latitude into radians to apply Mercator projection scaling, then converts back
-    // to degrees to scale down for screen coordinates.
+    // to degrees
     f32 result = DegToRad(lat);    
     result = log(tan(QUARTER_PI + (0.5f * result)));
     result = RadToDeg(result);
 
-    return result / 180.0f;
+    return result;
 }
 
 f32 ScreenToY (f32 value)
@@ -41,12 +41,10 @@ v2f32 AdjustCoordinatesForMap(f32 x, f32 y)
 
     p.x = (x * PI) * (1.0f / 180.0f);
     p.x = (180.0f * p.x) / PI;
-    p.x /= 180.0f;
 
     p.y = (y * PI) * (1.0f / 180.0f);
     p.y = log(tan((f32)QUARTER_PI + (0.5f * p.y)));
     p.y = (180.0f * p.y) / PI;
-    p.y /= 180.0f;
 
     return p;
 }

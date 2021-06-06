@@ -22,9 +22,9 @@ inline f32 RadToDeg(f32 rad)
 }
 
 
-f32 ConvertLonToScreen(f32 lon);
+f32 AdjustLonForProjection(f32 lon);
 
-f32 ConvertLatToScreen(f32 lat);
+f32 AdjustLatForProjection(f32 lat);
 
 f32 ScreenToY (f32 value);
 

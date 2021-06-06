@@ -71,8 +71,8 @@ bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
     memcpy(&indexHeader.mbr, &sfIndex[bp], sizeof(f64) * 8);
     bp += sizeof(f64) * 8;
 
-    indexHeader.fileLength = swapBytes(indexHeader.fileLength);
-    indexHeader.fileCode = swapBytes(indexHeader.fileCode);
+    indexHeader.fileLength = SwapBytes(indexHeader.fileLength);
+    indexHeader.fileCode = SwapBytes(indexHeader.fileCode);
     assert(indexHeader.fileCode == 9994);
 
     if (indexHeader.shapeType != 3 && indexHeader.shapeType != 5)
@@ -105,7 +105,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
         memcpy(&indexRec, &sfIndex[bp], sizeof(indexRec));
         bp += sizeof(indexRec);
 
-        indexRec.offset = swapBytes(indexRec.offset);
+        indexRec.offset = SwapBytes(indexRec.offset);
 
         // here is where dbf file can be processed, it is small enough to be read entirely 
         // and then could be accessed here in relation to the shapefile itself

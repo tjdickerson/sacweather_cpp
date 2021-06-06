@@ -149,10 +149,10 @@ int CALLBACK WinMain(
     HDC hdc = GetDC(hwnd);
     MSG message;
 
-    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
+    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kdgx/sn.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 
-    bool testing_level2 = true;
+    bool testing_level2 = false;
     if (!testing_level2)
     {
         DeleteUrlCacheEntry(file_url);
@@ -226,8 +226,16 @@ int main(int argc, char** argv)
 
 void HandleKeyDown(unsigned int keyCode)
 {
-    printf("Key code: %d\n", keyCode);
-    if (keyCode == KEY_PANNING) Panning = true;
+    // printf("Key code: %d\n", keyCode);
+    if (keyCode == KEY_PANNING)
+    {
+        Panning = true;
+        f32 points[2];
+        sacw_GetPolarFromScreen(ClickLast.x, ClickLast.y, points);
+
+        LOGINF("Clicked:  sx: %2.2f  sy: %2.2f   px: %2.2f  py: %2.2f\n",
+            ClickLast.x, ClickLast.y, points[0], points[1]);
+    }
 }
 
 void HandleKeyUp(unsigned int keyCode)

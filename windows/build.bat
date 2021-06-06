@@ -23,7 +23,7 @@ set linkFlags= /link /subsystem:console
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib urlmon.lib ws2_32.lib opengl32.lib %prjdir%\lib\libbz2.lib
+	set libs= user32.lib gdi32.lib Wininet.lib urlmon.lib ws2_32.lib opengl32.lib %prjdir%\lib\libbz2.lib
 )
 
 
@@ -41,6 +41,8 @@ set src=%src% ^
 %cd%\sacwlib\tjd_shapefile.cpp ^
 %cd%\sacwlib\tjd_gl_render.cpp ^
 %cd%\sacwlib\tjd_radar.cpp ^
+%cd%\sacwlib\tjd_level3.cpp ^
+%cd%\sacwlib\tjd_level2.cpp ^
 %cd%\sacwlib\tjd_conversions.cpp ^
 %cd%\sacwlib\nws_info.cpp ^
 %cd%\sacwlib\tjd_ui.cpp ^

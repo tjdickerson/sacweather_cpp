@@ -450,8 +450,8 @@ void renderLayers()
 
 
     {
-        f32 x = ConvertLonToScreen(-85.790f);
-        f32 y = ConvertLatToScreen(32.537f);
+        f32 x = AdjustLonForProjection(-85.790f);
+        f32 y = AdjustLatForProjection(32.537f);
 
         v2f32 point = {};
         point.x = x;
@@ -484,6 +484,7 @@ void renderLayers()
         adjTranslationMatrix(0.0f, 0.0f); 
         renderText(off_x * (MapViewInfo.xScale * MapViewInfo.xScale), off_y);
     }
+   
 }
 
 

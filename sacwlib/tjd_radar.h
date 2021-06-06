@@ -6,6 +6,25 @@
 #include "sacw_api.h"
 #include "nws_info.h"
 
+
+#define TJD_RADAR_OK    0
+
+
+constexpr s64 NEXRAD_BASE_MS = 86400000;
+
+// Converts nexrad date/time format to standard millisecond timestamp
+static s64 NexradToTimestamp(u32 nexradDate, u32 nexradTime)
+{
+    // @todo
+    // Do the nexrad times always indicate seconds or do they sometimes indicate milliseconds?
+    // In theory:
+    //  s32 multi = 1;
+    //  if (isSeconds) multi = 1000
+
+    return (nexradDate * NEXRAD_BASE_MS) + (nexradTime * 1000);
+}
+
+
 typedef struct RangeBin_t
 {
     v2f32 p1;
@@ -13,7 +32,6 @@ typedef struct RangeBin_t
     v2f32 p3;
     v2f32 p4;
     f32 colorIndex;
-    //color4 color;
 } RangeBin;
 
 
@@ -84,13 +102,27 @@ static color4 VelocityMap[] =
 //  Unsure about everything below this line
 // -------------------------------------------------------------
 
-typedef struct brda_t
+struct BaseReflectivityDataArray_47
 {
-    unsigned char maxReflectivity[8];
-    unsigned char compressionMethod [2];
-    unsigned char hiUncompProdSize[2];
-    unsigned char loUncompProdSize[2];                
-} brda;
+    unsigned char c_maxReflectivity[6];
+
+    // @todo
+    // Bits 5-15 (0-800)
+    //      Bits 5-15 contains the delta time, in seconds, btween the last radial in the elevation scan used to
+    //      create the product and the start of the volume scan.
+    // Bits 0-4:
+    //      0 – Non Supplemental Scan
+    //      1 – SAILS Scan
+    //      2 – MRLE Scan
+    //
+    unsigned char c_deltaTime[2];
+
+    // halfword 51 contains 0 if no compression is applied
+    // halfword 51 contains 1 if the data are compressed using bzip2
+    s16 compressionMethod;
+
+    u32 uncompressedSize;
+};
 
 typedef struct ReflectivityThreshold_t
 {
@@ -106,25 +138,32 @@ typedef struct ReflectivityThreshold_t
 constexpr s32 RANGE = 124;
 typedef struct ProductDescription_t {
     s16 divider;
-    s32 lat;
-    s32 lon;
+    f32 lat;
+    f32 lon;
     s16 height;
     s16 productCode;
     s16 operationalMode;
     s16 vcp;
     s16 sequenceNum;
     s16 volScanNum;
-    s16 volScanDate;
-    s32 volScanTime;
-    s16 productDate;
-    s32 productTime;
-    unsigned char h27_28[4];
+    s64 volScanTimestamp;
+    s64 prodGenTimestamp;
+
+    // half words 27-28
+    union
+    {
+        unsigned char h27_28[4];
+    };
+
     s16 elevationNum;
 
+    // half word 30
     union 
     {
         s16 elevationAngle;
-        unsigned char h30[2];
+
+        // stored as 16-bit integer to make endian reversal easier.
+        u16 h30;
     };
 
     union 
@@ -133,10 +172,13 @@ typedef struct ProductDescription_t {
         ReflectivityThreshold reflectivityThreshold;
     };
 
+    // half words 47-53
     union 
     {
         unsigned char h47_53[14];
-        brda br;
+
+        // Can't do this because of padding issues. 14 bytes doesn't play nice.
+        // BaseReflectivityDataArray_47 brda;
     };
 
     unsigned char version;
@@ -144,6 +186,11 @@ typedef struct ProductDescription_t {
     s32 symbologyOffset;
     s32 graphicOffset;
     s32 tabularOffset;
+
+    //
+
+    BaseReflectivityDataArray_47 brda;
+
 } ProductDescription;
 
 
@@ -159,7 +206,7 @@ typedef struct SymbologyHeader_t {
 
 
 void tjd_RadarInit();
-void tjd_GetRadarRenderData(RenderBufferData* rbd);
+s32 tjd_GetRadarRenderData(RenderBufferData* rbd);
 bool ParseNexradRadarFile(
     const char* filename, 
     WSR88DInfo* wsrInfo, 

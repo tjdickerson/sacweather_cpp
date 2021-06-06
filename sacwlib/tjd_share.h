@@ -41,7 +41,7 @@ typedef double      f64;
 typedef float       f32;
 
 
-static s16 swapBytes(s16 value) 
+static s16 SwapBytes(s16 value)
 {
     return 
         (value & 0x00ff) << 8 | 
@@ -55,7 +55,7 @@ static u16 swapBytes(u16 value)
         (value & 0xff00) >> 8;
 }
 
-static s32 swapBytes(s32 value) 
+static s32 SwapBytes(s32 value)
 {
     return 
         (value & 0xff)          << 24   | 
@@ -63,6 +63,16 @@ static s32 swapBytes(s32 value)
         (value & 0xff00)        <<  8   | 
         (value & 0xff000000)    >> 24;
 }
+
+static u32 SwapBytes(u32 value)
+{
+    return
+        (value & 0xff)          << 24   |
+        (value & 0xff0000)      >>  8   |
+        (value & 0xff00)        <<  8   |
+        (value & 0xff000000)    >> 24;
+}
+
 
 // @todo
 // how to manage that this is actually 4 bytes passed in
@@ -73,18 +83,14 @@ static f32 convertIEEE754(unsigned char* ieee754)
     u32 frac = 0x800000 | (((ieee754[1] & 0x7f) << 16)) | ((ieee754[2] & 0xff) << 8) | (ieee754[3] & 0xFF);
 
     f32 result = 0.0f;
+    f32 div;
     for (int i = 23; i >= 0; i--)
     {
         u32 check = (frac >> i) & 0x01;
         if (check == 1)
         {
-            f32 base = 1.0f;
-            u32 loop_times = (23 - i);
-
-            for (int j = 0; j < loop_times; j++)
-                base *= 0.5f;
-
-            result += base;
+            div = (f32)pow(2, 23 - i);
+            result += 1.0f / div;
         }
     }
 
@@ -136,7 +142,7 @@ struct BufferInfo
     u32 totalSize;
 };
 
-static void readFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
+static void ReadFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
 {
     memcpy(dest, &bi->data[bi->position], length);
     bi->position += length;

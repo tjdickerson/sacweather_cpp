@@ -72,7 +72,7 @@ add_executable(sacweather
         ${imgui_dir}imgui_impl_opengl3.h
         ${imgui_dir}imgui_impl_win32.h
 
-        )
+        sacwlib/tjd_level3.cpp sacwlib/tjd_level3.h)
 
 
 # Build BZip2

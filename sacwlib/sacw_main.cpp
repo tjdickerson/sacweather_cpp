@@ -76,13 +76,10 @@ void DownloadRadarFile()
 
 void centerMapAt(f32 lon, f32 lat)
 {
-    f32 screen_x = ConvertLonToScreen(lon);
-    f32 screen_y = ConvertLatToScreen(lat);
+    f32 screen_x = AdjustLonForProjection(lon);
+    f32 screen_y = AdjustLatForProjection(lat);
 
-    f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
-    f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale); 
-
-    MapViewInfo.scaleFactor = 80.0f;
+    MapViewInfo.scaleFactor = 0.4f;
     MapViewInfo.xPan = -screen_x;
     MapViewInfo.yPan = -screen_y;
 }
@@ -97,10 +94,12 @@ void sacw_Init(void* window)
     MapViewInfo.scaleFactor = 1.0f; //80.0f;
     MapViewInfo.xScale = 1.0f;
     MapViewInfo.yScale = 1.0f;
-    MapViewInfo.xPan = 0.0f; // -ConvertLonToScreen(-85.790f);
-    MapViewInfo.yPan = 0.0f; // -ConvertLatToScreen(32.537f);
+    MapViewInfo.xPan = 0.0f; // -AdjustLonForProjection(-85.790f);
+    MapViewInfo.yPan = 0.0f; // -AdjustLatForProjection(32.537f);
 
     RenderInit(window);
+
+    centerMapAt(-85.790f, 32.537f);
 
     #ifndef __ANDROID__
     // DownloadRadarFile();
@@ -123,8 +122,8 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
 
     if (success)
     {
-        // MapViewInfo.xPan = -ConvertLonToScreen(wsrInfo.lon);
-        // MapViewInfo.yPan = -ConvertLatToScreen(wsrInfo.lat);
+        // MapViewInfo.xPan = -AdjustLonForProjection(wsrInfo.lon);
+        // MapViewInfo.yPan = -AdjustLatForProjection(wsrInfo.lat);
 
         centerMapAt(wsrInfo.lon, wsrInfo.lat);
 
@@ -198,20 +197,14 @@ void sacw_GetRadarRenderData(RenderBufferData* rbd)
 
 s64 sacw_GetScanTime()
 {
-    s64 idunno = 86400000;
-    s32 scanDate = gProductDescription.productDate - 1;
-    s32 scanTime = gProductDescription.productTime;
-
-    s64 whateven = (scanDate * idunno) + (scanTime * 1000);
-
-    LOGINF("Scan Time: %d %d %lld\n", scanDate, scanTime, whateven);
-    return whateven;
+    return gProductDescription.volScanTimestamp;
 }
 
 void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
 {
     // ?
     v2f32 convertedPoint = ConvertScreenToCoords(x, y);
+
     points[0] = convertedPoint.x;
     points[1] = convertedPoint.y;
 }
@@ -248,8 +241,8 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
         for(int i = 0; i < stateData.numPoints; i++)
         {
             v2f64 point = stateData.points.at(i);
-            rbd->vertices[idx] = ConvertLonToScreen(point.x);
-            rbd->vertices[idx + 1] = ConvertLatToScreen(point.y);
+            rbd->vertices[idx] = AdjustLonForProjection(point.x);
+            rbd->vertices[idx + 1] = AdjustLatForProjection(point.y);
             idx += 2;
         }    
 
@@ -268,8 +261,8 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
         for(int i = 0; i < countyData.numPoints; i++)
         {
             v2f64 point = countyData.points.at(i);
-            rbd->vertices[idx] = ConvertLonToScreen(point.x);
-            rbd->vertices[idx + 1] = ConvertLatToScreen(point.y);
+            rbd->vertices[idx] = AdjustLonForProjection(point.x);
+            rbd->vertices[idx + 1] = AdjustLatForProjection(point.y);
             idx += 2;
         }    
 
@@ -325,6 +318,32 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y)
     // width = 984;
     // height = 961;
 
+    f32 totalWidth = 2.0f;
+    f32 totalHeight = 2.0f;
+    f32 xRadius = 1.0f;
+    f32 yRadius = 1.0f;
+
+    f32 fx = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    totalWidth /= fx;
+    xRadius /= fx;
+
+    f32 xPan = MapViewInfo.xPan;
+    coords.x = ((x * totalWidth) / (width)) - xRadius;
+    coords.x = coords.x - xPan;
+
+    f32 fy = (MapViewInfo.scaleFactor / MapViewInfo.yScale);
+    totalHeight /= fy;
+    yRadius /= fy;
+
+    f32 yPan = MapViewInfo.yPan;
+    coords.y = ((y * totalHeight) / (height)) - yRadius;
+    coords.y = coords.y + yPan;
+    coords.y *= -1.0f;
+
+    coords.y = ScreenToY(coords.y);
+    return coords;
+
+#if 0
     f32 totalWidth = 360.0f;
     f32 totalHeight = 360.0f;
     f32 xRadius = 180.0f;
@@ -355,4 +374,5 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y)
     LOGINF("Lon Lat: %2.4f %2.4f\n", coords.x, coords.y);
 
     return coords;
+#endif
 }

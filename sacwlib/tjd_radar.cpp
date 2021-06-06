@@ -10,6 +10,7 @@
 #include "tjd_conversions.h"
 #include "tjd_radar.h"
 #include "tjd_level2.h"
+#include "tjd_level3.h"
 
 s16 RadialCount = 1;
 s16 BinCount = 1;
@@ -20,7 +21,6 @@ s32* StartsArray;
 s32* CountsArray;
 
 RangeBin* RangeBins;
-void CalcRangeBinLocations(f32 cx, f32 cy, f32 range);
 void SetRangeBin(s32 radialIndex, s32 binIndex, s32 colorIndex);
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex);
 
@@ -44,43 +44,173 @@ bool RasterImagePacket(
     s16 packetCode
 );
 
-void tjd_GetRadarRenderData(RenderBufferData* rbd)
+s32 getColorFromLevel(u8 level, f32 minDbz, f32 incDbz)
 {
-    rbd->vertexCount = BinCount * RadialCount * 6;
-    rbd->vertices = (f32*)malloc(rbd->vertexCount * 3 * sizeof(f32));
+    f32 dbz = minDbz + (level * incDbz);
+    s8 color = 0;
+    if (dbz < 5) color = 0;
+    else if (dbz < 10) color = 1;
+    else if (dbz < 15) color = 2;
+    else if (dbz < 20) color = 3;
+    else if (dbz < 25) color = 4;
+    else if (dbz < 30) color = 5;
+    else if (dbz < 35) color = 6;
+    else if (dbz < 40) color = 7;
+    else if (dbz < 45) color = 8;
+    else if (dbz < 50) color = 9;
+    else if (dbz < 55) color = 10;
+    else if (dbz < 60) color = 11;
+    else if (dbz < 65) color = 12;
+    else if (dbz < 70) color = 13;
+    else if (dbz < 75) color = 14;
+    else if (dbz >= 75) color = 15;
 
-    int vi = 0;
-    for (int i = 0; i < BinCount * RadialCount; i++)
-    {
-        rbd->vertices[vi++] = RangeBins[i].p1.x;
-        rbd->vertices[vi++] = RangeBins[i].p1.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-
-        rbd->vertices[vi++] = RangeBins[i].p2.x;
-        rbd->vertices[vi++] = RangeBins[i].p2.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-
-        rbd->vertices[vi++] = RangeBins[i].p3.x;
-        rbd->vertices[vi++] = RangeBins[i].p3.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-
-        //
-
-        rbd->vertices[vi++] = RangeBins[i].p3.x;
-        rbd->vertices[vi++] = RangeBins[i].p3.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-
-        rbd->vertices[vi++] = RangeBins[i].p2.x;
-        rbd->vertices[vi++] = RangeBins[i].p2.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-
-        rbd->vertices[vi++] = RangeBins[i].p4.x;
-        rbd->vertices[vi++] = RangeBins[i].p4.y;
-        rbd->vertices[vi++] = RangeBins[i].colorIndex;
-    }
+    return color;
 }
 
-void CalcRangeBinLocation(
+void calcRangeBinLocation(
+    s32 binIndex,
+    f32 cx,
+    f32 cy,
+    f32 range,
+    f32 binCount,
+    f32 angleStart,
+    f32 angleDelta,
+    RangeBin* bin
+)
+{
+    f32 dx1, dy1, dx2, dy2;
+    f32 sweepCenterLeft = angleStart - (angleDelta * 0.5f);
+    f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);
+
+    dx1 = (binIndex) * (range / (float)binCount) / (cos(cy * PI / 180.0f));
+    dy1 = (binIndex) * (range / (float)binCount);
+
+    dx2 = (binIndex + 1) * (range / (float)binCount) / (cos(cy * PI / 180.0f));
+    dy2 = (binIndex + 1) * (range / (float)binCount);
+
+
+    // "bottom" left
+    bin->p1.x = dx1 * sin(DegToRad(sweepCenterLeft));
+    bin->p1.y = dy1 * cos(DegToRad(sweepCenterLeft));
+
+    // "bottom" right
+    bin->p2.x = dx1 * sin(DegToRad(sweepCenterRight));
+    bin->p2.y = dy1 * cos(DegToRad(sweepCenterRight));
+
+    // "top" left
+    bin->p3.x = dx2 * sin(DegToRad(sweepCenterLeft));
+    bin->p3.y = dy2 * cos(DegToRad(sweepCenterLeft));
+
+    // "top" right
+    bin->p4.x = dx2 * sin(DegToRad(sweepCenterRight));
+    bin->p4.y = dy2 * cos(DegToRad(sweepCenterRight));
+
+
+
+
+    // Convert the nautical mile results into lon/lat degree offsets
+    bin->p1.x = (cx + (bin->p1.x / 60.0f));
+    bin->p1.y = (cy + (bin->p1.y / 60.0f));
+
+    bin->p2.x = (cx + (bin->p2.x / 60.0f));
+    bin->p2.y = (cy + (bin->p2.y / 60.0f));
+
+    bin->p3.x = (cx + (bin->p3.x / 60.0f));
+    bin->p3.y = (cy + (bin->p3.y / 60.0f));
+
+    bin->p4.x = (cx + (bin->p4.x / 60.0f));
+    bin->p4.y = (cy + (bin->p4.y / 60.0f));
+
+
+    // Convert to screen coordinates.
+    bin->p1.x = AdjustLonForProjection(bin->p1.x);
+    bin->p1.y = AdjustLatForProjection(bin->p1.y);
+
+    bin->p2.x = AdjustLonForProjection(bin->p2.x);
+    bin->p2.y = AdjustLatForProjection(bin->p2.y);
+
+    bin->p3.x = AdjustLonForProjection(bin->p3.x);
+    bin->p3.y = AdjustLatForProjection(bin->p3.y);
+
+    bin->p4.x = AdjustLonForProjection(bin->p4.x);
+    bin->p4.y = AdjustLatForProjection(bin->p4.y);
+}
+
+s32 tjd_GetRadarRenderData(RenderBufferData* rbd)
+{
+    // @todo
+    // - Check if the archive struct is populated...
+    // - Can this same function handle Level2 also
+
+    s32 num_radials = g_L3Archive.radial.radialCount;
+    s32 num_gates = g_L3Archive.radial.gateCount;
+    s32 total_gates = num_radials * num_gates;
+    RangeBin bin = {};
+
+    rbd->vertexCount = total_gates * 6;
+    rbd->vertices = (f32*)malloc(rbd->vertexCount * 3 * sizeof(f32));
+
+    s32 vi = 0;
+    s32 bin_index = 0;
+    for(int i = 0; i < num_radials; i++)
+    {
+        L3Radial* radial = &g_L3Archive.radial.radials[i];
+        bin_index = 0;
+
+        for(int j = radial->radialStartIndex; j < radial->radialStartIndex + radial->levelCount; j++)
+        {
+            unsigned char level = g_L3Archive.radial.levels[j];
+            bin_index += 1;
+
+            if (level == 0) continue;
+
+            // @todo
+            // get range back in here.
+            calcRangeBinLocation(
+                bin_index,
+                g_L3Archive.centerLon,
+                g_L3Archive.centerLat,
+                248.0f,
+                radial->levelCount,
+                radial->startAngle,
+                radial->angleDelta,
+                &bin);
+
+            bin.colorIndex = (f32)getColorFromLevel(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+
+            rbd->vertices[vi++] = bin.p1.x;
+            rbd->vertices[vi++] = bin.p1.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+
+            rbd->vertices[vi++] = bin.p2.x;
+            rbd->vertices[vi++] = bin.p2.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+
+            rbd->vertices[vi++] = bin.p3.x;
+            rbd->vertices[vi++] = bin.p3.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+
+            //
+
+            rbd->vertices[vi++] = bin.p3.x;
+            rbd->vertices[vi++] = bin.p3.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+
+            rbd->vertices[vi++] = bin.p2.x;
+            rbd->vertices[vi++] = bin.p2.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+
+            rbd->vertices[vi++] = bin.p4.x;
+            rbd->vertices[vi++] = bin.p4.y;
+            rbd->vertices[vi++] = bin.colorIndex;
+        }
+    }
+
+    return TJD_RADAR_OK;
+}
+
+/*void CalcRangeBinLocation(
     s32 radialIndex,
     s32 binIndex,
     f32 cx,
@@ -137,18 +267,18 @@ void CalcRangeBinLocation(
 
 
     // Convert to screen coordinates.
-    bin->p1.x = ConvertLonToScreen(bin->p1.x);
-    bin->p1.y = ConvertLatToScreen(bin->p1.y);
+    bin->p1.x = AdjustLonForProjection(bin->p1.x);
+    bin->p1.y = AdjustLatForProjection(bin->p1.y);
 
-    bin->p2.x = ConvertLonToScreen(bin->p2.x);
-    bin->p2.y = ConvertLatToScreen(bin->p2.y);
+    bin->p2.x = AdjustLonForProjection(bin->p2.x);
+    bin->p2.y = AdjustLatForProjection(bin->p2.y);
 
-    bin->p3.x = ConvertLonToScreen(bin->p3.x);
-    bin->p3.y = ConvertLatToScreen(bin->p3.y);
+    bin->p3.x = AdjustLonForProjection(bin->p3.x);
+    bin->p3.y = AdjustLatForProjection(bin->p3.y);
 
-    bin->p4.x = ConvertLonToScreen(bin->p4.x);
-    bin->p4.y = ConvertLatToScreen(bin->p4.y);
-}
+    bin->p4.x = AdjustLonForProjection(bin->p4.x);
+    bin->p4.y = AdjustLatForProjection(bin->p4.y);
+}*/
 
 RangeBin* GetRangeBin(s32 radialIndex, s32 binIndex)
 {
@@ -217,17 +347,17 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 
 
     // convert to screen coords
-    cell->p1.x = ConvertLonToScreen(cell->p1.x);
-    cell->p1.y = ConvertLatToScreen(cell->p1.y);
+    cell->p1.x = AdjustLonForProjection(cell->p1.x);
+    cell->p1.y = AdjustLatForProjection(cell->p1.y);
 
-    cell->p2.x = ConvertLonToScreen(cell->p2.x);
-    cell->p2.y = ConvertLatToScreen(cell->p2.y);
+    cell->p2.x = AdjustLonForProjection(cell->p2.x);
+    cell->p2.y = AdjustLatForProjection(cell->p2.y);
 
-    cell->p3.x = ConvertLonToScreen(cell->p3.x);
-    cell->p3.y = ConvertLatToScreen(cell->p3.y);
+    cell->p3.x = AdjustLonForProjection(cell->p3.x);
+    cell->p3.y = AdjustLatForProjection(cell->p3.y);
 
-    cell->p4.x = ConvertLonToScreen(cell->p4.x);
-    cell->p4.y = ConvertLatToScreen(cell->p4.y);
+    cell->p4.x = AdjustLonForProjection(cell->p4.x);
+    cell->p4.y = AdjustLatForProjection(cell->p4.y);
 
     //cell->color = ReflectivityMap[colorIndex];
     cell->colorIndex = (f32)colorIndex;
@@ -240,7 +370,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 }
 
 
-/*void readFromBuffer(void* dest, unsigned char* src, s32* bufptr, s32 length)
+/*void ReadFromBuffer(void* dest, unsigned char* src, s32* bufptr, s32 length)
 {
     memcpy(dest, &src[*bufptr], length);
     *bufptr += length;    
@@ -276,7 +406,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
     // NOTE: For RPS requests, the number of products requested is determined from the Number of Blocks 
     // fields of the Message Header.
     s16 prod_count;
-    readFromBuffer(&prod_count, data, bufptr, 2);
+    ReadFromBuffer(&prod_count, data, bufptr, 2);
     
 }*/
 
@@ -302,15 +432,15 @@ bool ParseNexradRadarFile(
     }
 
     fseek(fp, 0, SEEK_END);
-    u32 fileLength = ftell(fp);
+    u32 file_length = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
     // Reading the whole file into a buffer and then parsing out the contents
-    unsigned char* buffer = (unsigned char*)malloc(fileLength * sizeof(unsigned char));
-    int bytesRead = fread(buffer, 1, fileLength, fp);
+    unsigned char* buffer = (unsigned char*)malloc(file_length * sizeof(unsigned char));
+    int bytesRead = fread(buffer, 1, file_length, fp);
     fclose(fp);
 
-    if (bytesRead != fileLength)
+    if (bytesRead != file_length)
     {
         LOGERR("Failed to read radar file %s\n", filename);
 
@@ -318,24 +448,44 @@ bool ParseNexradRadarFile(
         return false;
     }
 
-    // Reference 2620010H.pdf 
-    if (buffer[0] == 'A' && buffer[1] == 'R' && buffer[2] == '2')
+    // SDUS54 means level 3 file.
+    if (strncmp((const char*)buffer, "SDUS54", 6) == 0)
+    {
+        BufferInfo l3buffer = {};
+        l3buffer.data = &buffer[0];
+        l3buffer.position = 0;
+        l3buffer.totalSize = file_length;
+
+        ReadLevel3File(&l3buffer);
+
+        // @todo
+        // I don't know if I need this WSR88DInfo stuct or just use the l3 stuff?
+        if (g_L3Archive.valid)
+        {
+            wsrInfo->lat = g_L3Archive.centerLat;
+            wsrInfo->lon = g_L3Archive.centerLon;
+        }
+    }
+
+    // Reference 2620010H.pdf
+    // AR2 means level 2 file.
+    else if (strncmp((const char*)buffer, "AR2", 3) == 0)
     {
         BufferInfo l2buffer = {};
         l2buffer.data = &buffer[0];
         l2buffer.position = 0;
-        l2buffer.totalSize = fileLength;
+        l2buffer.totalSize = file_length;
 
         ReadLevel2File(&l2buffer);
     }
 
+
+#if 0
     // The file data for radar files starts off with a 30 bytes text header
-    // @todo, can use this to verify it is a valid file?
     char textHeader[31];
     memcpy(textHeader, &buffer[bp], 30);
     bp += 30;
     textHeader[30] = '\0';
-
 
     // The next 18 bytes is the MessageHeader
     unsigned char messageHeaderBuffer[18];
@@ -376,13 +526,13 @@ bool ParseNexradRadarFile(
     // Height of the radar site in feet above sea level.
     memcpy(&pd->height, &buffer[bp], 2);
     bp += 2;
-    pd->height = swapBytes(pd->height);
+    pd->height = SwapBytes(pd->height);
 
 
     // Product Code referencing which NEXRAD product is contained in this file.
     memcpy(&pd->productCode, &buffer[bp], 2);
     bp += 2;
-    pd->productCode = swapBytes(pd->productCode);
+    pd->productCode = SwapBytes(pd->productCode);
 
 
     // Operational Mode of the WSR-88D
@@ -391,21 +541,21 @@ bool ParseNexradRadarFile(
     // 2 - Precipitation/Severe Weather
     memcpy(&pd->operationalMode, &buffer[bp], 2);
     bp += 2;
-    pd->operationalMode = swapBytes(pd->operationalMode);
+    pd->operationalMode = SwapBytes(pd->operationalMode);
 
 
     // RDA Volume Coverage Pattern
     // @todo Document the VCP types and meanings
     memcpy(&pd->vcp, &buffer[bp], 2);
     bp += 2;
-    pd->vcp = swapBytes(pd->vcp);
+    pd->vcp = SwapBytes(pd->vcp);
 
 
     // Sequence Number may not be useful.
     // Refer to Figure 3-4 of 2620001X.pdf
     memcpy(&pd->sequenceNum, &buffer[bp], 2);
     bp += 2;
-    pd->sequenceNum = swapBytes(pd->sequenceNum);
+    pd->sequenceNum = SwapBytes(pd->sequenceNum);
 
 
     // This is a counter of volume scans for the radar site, it rolls back to one every 80 
@@ -413,7 +563,7 @@ bool ParseNexradRadarFile(
     // show if it's populated.
     memcpy(&pd->volScanNum, &buffer[bp], 2);
     bp += 2;
-    pd->volScanNum = swapBytes(pd->volScanNum);
+    pd->volScanNum = SwapBytes(pd->volScanNum);
 
 
     // Volume Scan Date is stored as number of days since 1 Jan 1970.
@@ -425,18 +575,18 @@ bool ParseNexradRadarFile(
     // Volume Scan Time is stored as number of seconds since Midnight.
     memcpy(&pd->volScanTime, &buffer[bp], 4);
     bp += 4;
-    pd->volScanTime = swapBytes(pd->volScanTime);
+    pd->volScanTime = SwapBytes(pd->volScanTime);
 
 
     // @todo
     // Figure out the diference between volume scan date/time and product date/time
     memcpy(&pd->productDate, &buffer[bp], 2);
     bp += 2;
-    pd->productDate = swapBytes(pd->productDate);
+    pd->productDate = SwapBytes(pd->productDate);
 
     memcpy(&pd->productTime, &buffer[bp], 4);
     bp += 4;
-    pd->productTime = swapBytes(pd->productTime);
+    pd->productTime = SwapBytes(pd->productTime);
 
 
     // Reference TABLE V for Product dependant parameters 1 and 2.
@@ -447,7 +597,7 @@ bool ParseNexradRadarFile(
     // Elevation number within volume scan has range of 0-20
     memcpy(&pd->elevationNum, &buffer[bp], 2);
     bp += 2;
-    pd->elevationNum = swapBytes(pd->elevationNum);
+    pd->elevationNum = SwapBytes(pd->elevationNum);
 
 
     // Halfword 30 changes based on product, see TABLE V for parameter 3
@@ -455,7 +605,7 @@ bool ParseNexradRadarFile(
     {
         memcpy(&pd->elevationAngle, &buffer[bp], 2);
         bp += 2;
-        pd->elevationAngle = swapBytes(pd->elevationAngle);
+        pd->elevationAngle = SwapBytes(pd->elevationAngle);
     }
     else
     {
@@ -492,15 +642,15 @@ bool ParseNexradRadarFile(
     bp += 1;
 
     memcpy(&pd->symbologyOffset, &buffer[bp], 4);
-    pd->symbologyOffset = swapBytes(pd->symbologyOffset);
+    pd->symbologyOffset = SwapBytes(pd->symbologyOffset);
     bp += 4;
 
     memcpy(&pd->graphicOffset, &buffer[bp], 4);
-    pd->graphicOffset = swapBytes(pd->graphicOffset);
+    pd->graphicOffset = SwapBytes(pd->graphicOffset);
     bp += 4;
 
     memcpy(&pd->tabularOffset, &buffer[bp], 4);
-    pd->tabularOffset = swapBytes(pd->tabularOffset);
+    pd->tabularOffset = SwapBytes(pd->tabularOffset);
     bp += 4;
 
     if (compressed)
@@ -509,15 +659,15 @@ bool ParseNexradRadarFile(
 
         // @todo .... why no work
         //unsigned int srcLen = productLength - (messageHeaderLength + sizeof(pd->);
-        unsigned int srcLen = fileLength - bp;
+        unsigned int srcLen = file_length - bp;
 
         /*u16 hi = 0;
         u16 lo = 0;
         memcpy(&hi, &pd->br.hiUncompProdSize[0], 2);
         memcpy(&lo, &pd->br.loUncompProdSize[0], 2);
 
-        hi = swapBytes(hi);
-        lo = swapBytes(lo);       
+        hi = SwapBytes(hi);
+        lo = SwapBytes(lo);
 
         u32 len = (hi << 16) | lo;*/
 
@@ -570,16 +720,16 @@ bool ParseNexradRadarFile(
     memcpy(&sh, &buffer[bp], sizeof(sh));
     bp += sizeof(sh);
 
-    sh.divider = swapBytes(sh.divider);
-    sh.blockId = swapBytes(sh.blockId);
-    sh.blockLength = swapBytes(sh.blockLength);
-    sh.layers = swapBytes(sh.layers);
-    sh.layerDivider = swapBytes(sh.layerDivider);
-    sh.layerLength = swapBytes(sh.layerLength);
+    sh.divider = SwapBytes(sh.divider);
+    sh.blockId = SwapBytes(sh.blockId);
+    sh.blockLength = SwapBytes(sh.blockLength);
+    sh.layers = SwapBytes(sh.layers);
+    sh.layerDivider = SwapBytes(sh.layerDivider);
+    sh.layerLength = SwapBytes(sh.layerLength);
 
     s16 packetCode;
     memcpy(&packetCode, &buffer[bp], 2);
-    packetCode = swapBytes(packetCode);
+    packetCode = SwapBytes(packetCode);
     bp += 2;
 
     bool result = false;
@@ -603,31 +753,11 @@ bool ParseNexradRadarFile(
     }
 
     return result;
+#endif
+    return true;
 }
 
-s32 GetColorFromDbz(u8 level, f32 minDbz, f32 incDbz)
-{
-    f32 dbz = minDbz + (level * incDbz);
-    s8 color = 0;
-    if (dbz < 5) color = 0;
-    else if (dbz < 10) color = 1;
-    else if (dbz < 15) color = 2;
-    else if (dbz < 20) color = 3;
-    else if (dbz < 25) color = 4;
-    else if (dbz < 30) color = 5;
-    else if (dbz < 35) color = 6;
-    else if (dbz < 40) color = 7;
-    else if (dbz < 45) color = 8;
-    else if (dbz < 50) color = 9;
-    else if (dbz < 55) color = 10;
-    else if (dbz < 60) color = 11;
-    else if (dbz < 65) color = 12;
-    else if (dbz < 70) color = 13;
-    else if (dbz < 75) color = 14;
-    else if (dbz >= 75) color = 15;
 
-    return color;
-}
 
 // @todo
 // Clean this up
@@ -666,6 +796,7 @@ s32 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
 
     return color;
 }
+/*
 
 bool RadialImagePacket(
     unsigned char* buffer,
@@ -696,12 +827,12 @@ bool RadialImagePacket(
     memcpy(&radialCount, &buffer[bp], 2);
     bp += 2;
 
-    firstBin = swapBytes(firstBin);
-    iCenterSweep = swapBytes(iCenterSweep);
-    jCenterSweep = swapBytes(jCenterSweep);
-    binCount = swapBytes(binCount);
-    scaleFactor = swapBytes(scaleFactor);
-    radialCount = swapBytes(radialCount);
+    firstBin = SwapBytes(firstBin);
+    iCenterSweep = SwapBytes(iCenterSweep);
+    jCenterSweep = SwapBytes(jCenterSweep);
+    binCount = SwapBytes(binCount);
+    scaleFactor = SwapBytes(scaleFactor);
+    radialCount = SwapBytes(radialCount);
 
     LOGINF("Bin Count: %d\n", binCount);
     LOGINF("Radial Count: %d\n", radialCount);
@@ -710,9 +841,9 @@ bool RadialImagePacket(
     RadialCount = radialCount;
 
     // @todo
-    f32 minDbz = swapBytes(pd->reflectivityThreshold.minimumDbz) * 0.1f;
-    f32 incDbz = swapBytes(pd->reflectivityThreshold.dbzIncrement) * 0.1f;
-    f32 dbzLevels = swapBytes(pd->reflectivityThreshold.levelCount);
+    f32 minDbz = SwapBytes(pd->reflectivityThreshold.minimumDbz) * 0.1f;
+    f32 incDbz = SwapBytes(pd->reflectivityThreshold.dbzIncrement) * 0.1f;
+    f32 dbzLevels = SwapBytes(pd->reflectivityThreshold.levelCount);
 
     // init stuff
     int totalBinCount = BinCount * RadialCount;
@@ -752,15 +883,15 @@ bool RadialImagePacket(
 
         memcpy(&rleCount, &buffer[bp], sizeof(rleCount));
         bp += sizeof(rleCount);
-        rleCount = swapBytes(rleCount);
+        rleCount = SwapBytes(rleCount);
 
         memcpy(&i_angleStart, &buffer[bp], sizeof(i_angleStart));
         bp += sizeof(i_angleStart);
-        f_angleStart = swapBytes(i_angleStart) * 0.1f;
+        f_angleStart = SwapBytes(i_angleStart) * 0.1f;
 
         memcpy(&i_angleDelta, &buffer[bp], sizeof(i_angleDelta));
         bp += sizeof(i_angleDelta);
-        f_angleDelta = swapBytes(i_angleDelta) * 0.1f;
+        f_angleDelta = SwapBytes(i_angleDelta) * 0.1f;
 
         if ((packetCode & 0xffff) == 0xaf1f)
         {
@@ -828,11 +959,11 @@ bool RasterImagePacket(
 
     memcpy(&packetCode1, &buffer[bp], 2);
     bp += 2;
-    packetCode1 = swapBytes(packetCode1);
+    packetCode1 = SwapBytes(packetCode1);
 
     memcpy(&packetCode2, &buffer[bp], 2);
     bp += 2;
-    packetCode2 = swapBytes(packetCode2);
+    packetCode2 = SwapBytes(packetCode2);
 
     assert((packetCode1 & 0xffff) == 0x8000);
     assert((packetCode2 & 0xffff) == 0x00c0);
@@ -840,23 +971,23 @@ bool RasterImagePacket(
     s16 iStart, jStart;
     memcpy(&iStart, &buffer[bp], 2);
     bp += 2;
-    iStart = swapBytes(iStart);
+    iStart = SwapBytes(iStart);
 
     memcpy(&jStart, &buffer[bp], 2);
     bp += 2;
-    jStart = swapBytes(jStart);
+    jStart = SwapBytes(jStart);
 
     s16 xScale, yScale;
     memcpy(&xScale, &buffer[bp], 2);
     bp += 2;
-    xScale = swapBytes(xScale);
+    xScale = SwapBytes(xScale);
 
     // skip xScale fractional
     bp += 2;
 
     memcpy(&yScale, &buffer[bp], 2);
     bp += 2;
-    yScale = swapBytes(yScale);
+    yScale = SwapBytes(yScale);
 
     // skip xScale fractional
     bp += 2;
@@ -864,12 +995,12 @@ bool RasterImagePacket(
     s16 numberOfRows;
     memcpy(&numberOfRows, &buffer[bp], 2);
     bp += 2;
-    numberOfRows = swapBytes(numberOfRows);
+    numberOfRows = SwapBytes(numberOfRows);
 
     s16 packingDescriptor;
     memcpy(&packingDescriptor, &buffer[bp], 2);
     bp += 2;
-    packingDescriptor = swapBytes(packingDescriptor);
+    packingDescriptor = SwapBytes(packingDescriptor);
 
     assert(packingDescriptor == 2);
 
@@ -906,7 +1037,7 @@ bool RasterImagePacket(
 
         memcpy(&rowBytes, &buffer[bp], 2);
         bp += 2;
-        rowBytes = swapBytes(rowBytes);
+        rowBytes = SwapBytes(rowBytes);
 
         for (int j = 0; j < rowBytes; j++)
         {
@@ -930,4 +1061,4 @@ bool RasterImagePacket(
     }
 
     return true;
-}
+}*/

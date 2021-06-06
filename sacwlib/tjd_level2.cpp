@@ -48,26 +48,26 @@ MessageHeaderInfo readMessageHeader(struct BufferInfo* bi)
 {
     u16 msg_size_hw;
     unsigned char c_msg_size_hw[2];
-    readFromBuffer(c_msg_size_hw, bi, 2);
+    ReadFromBuffer(c_msg_size_hw, bi, 2);
 
     msg_size_hw = c_msg_size_hw[0] << 8 | c_msg_size_hw[1];
 
     unsigned char rda_channel;
-    readFromBuffer(&rda_channel, bi, 1);
+    ReadFromBuffer(&rda_channel, bi, 1);
 
     unsigned char msg_type;
-    readFromBuffer(&msg_type, bi, 1);
+    ReadFromBuffer(&msg_type, bi, 1);
 
     s16 seq_num;
-    readFromBuffer(&seq_num, bi, 2);
+    ReadFromBuffer(&seq_num, bi, 2);
 
     s16 nexrad_date;
-    readFromBuffer(&nexrad_date, bi, 2);
-    nexrad_date = swapBytes(nexrad_date);
+    ReadFromBuffer(&nexrad_date, bi, 2);
+    nexrad_date = SwapBytes(nexrad_date);
 
     s32 nexrad_time;
-    readFromBuffer(&nexrad_time, bi, 4);
-    nexrad_time = swapBytes(nexrad_time);
+    ReadFromBuffer(&nexrad_time, bi, 4);
+    nexrad_time = SwapBytes(nexrad_time);
 
     /** 2620002T.pdf
      * 6. A size value 65535 indicates that byte locations 12-15 are used to specify the message size, in bytes.
@@ -78,12 +78,12 @@ MessageHeaderInfo readMessageHeader(struct BufferInfo* bi)
      * */
 
     s16 seg_count;
-    readFromBuffer(&seg_count, bi, 2);
-    seg_count = swapBytes(seg_count);
+    ReadFromBuffer(&seg_count, bi, 2);
+    seg_count = SwapBytes(seg_count);
 
     s16 seg_num;
-    readFromBuffer(&seg_num, bi, 2);
-    seg_num = swapBytes(seg_num);
+    ReadFromBuffer(&seg_num, bi, 2);
+    seg_num = SwapBytes(seg_num);
 
     s32 msg_size = 0;
 
@@ -110,16 +110,16 @@ void readMessage15(struct BufferInfo* buffer)
 {
 
     s16 nexrad_date;
-    readFromBuffer(&nexrad_date, buffer, 2);
-    nexrad_date = swapBytes(nexrad_date);
+    ReadFromBuffer(&nexrad_date, buffer, 2);
+    nexrad_date = SwapBytes(nexrad_date);
 
     s16 nexrad_time;
-    readFromBuffer(&nexrad_time, buffer, 2);
-    nexrad_time = swapBytes(nexrad_time);
+    ReadFromBuffer(&nexrad_time, buffer, 2);
+    nexrad_time = SwapBytes(nexrad_time);
 
     s16 elevation_segments;
-    readFromBuffer(&elevation_segments, buffer, 2);
-    elevation_segments = swapBytes(elevation_segments);
+    ReadFromBuffer(&elevation_segments, buffer, 2);
+    elevation_segments = SwapBytes(elevation_segments);
 
     /**
      *
@@ -144,16 +144,16 @@ void readMessage15(struct BufferInfo* buffer)
         for (int j = 0; j < 360; j++)
         {
             s16 range_zones;
-            readFromBuffer(&range_zones, buffer, 2);
-            range_zones = swapBytes(range_zones);
+            ReadFromBuffer(&range_zones, buffer, 2);
+            range_zones = SwapBytes(range_zones);
 
             for (int k = 0; k < range_zones; k++)
             {
                 s16 op_code;
-                readFromBuffer(&op_code, buffer, 2);
+                ReadFromBuffer(&op_code, buffer, 2);
 
                 s16 end_range;
-                readFromBuffer(&end_range, buffer, 2);
+                ReadFromBuffer(&end_range, buffer, 2);
             }
         }
     }
@@ -174,8 +174,8 @@ void readMessage5(struct BufferInfo* buffer)
 {
     // Number of halfwords in message.
     s16 msg_size;
-    readFromBuffer(&msg_size, buffer, 2);
-    msg_size = swapBytes(msg_size);
+    ReadFromBuffer(&msg_size, buffer, 2);
+    msg_size = SwapBytes(msg_size);
 
     // @todo
     // seekBuffer(data, msg_size);
@@ -190,68 +190,68 @@ void readMessage2(struct BufferInfo* buffer)
 void readDataMoment(struct BufferInfo* buffer, s32 radialIndex)
 {
     unsigned char data_block_type;
-    readFromBuffer(&data_block_type, buffer, 1);
+    ReadFromBuffer(&data_block_type, buffer, 1);
 
     unsigned char data_moment_name[3];
-    readFromBuffer(&data_moment_name, buffer, 3);
+    ReadFromBuffer(&data_moment_name, buffer, 3);
 
     u32 reserved;
-    readFromBuffer(&reserved, buffer, 4);
+    ReadFromBuffer(&reserved, buffer, 4);
 
     u16 data_moment_gates;
-    readFromBuffer(&data_moment_gates, buffer, 2);
+    ReadFromBuffer(&data_moment_gates, buffer, 2);
     data_moment_gates = swapBytes(data_moment_gates);
     g_L2Volume.radials[radialIndex].gateCount = data_moment_gates;
 
     // Range to center of first range gate
     // Scaled Int, range from 0 to 32768 (0.0 .. 32.768 after scaling back)
     u16 data_moment_range;
-    readFromBuffer(&data_moment_range, buffer, 2);
+    ReadFromBuffer(&data_moment_range, buffer, 2);
     data_moment_range = swapBytes(data_moment_range);
     g_L2Volume.radials[radialIndex].rangeToFirstGate = (f32)data_moment_range * 0.001f;
 
     // Size of data moment sample interval
     // 0.25 .. 4.0 after scaling back
     u16 dmr_sample_interval;
-    readFromBuffer(&dmr_sample_interval, buffer, 2);
+    ReadFromBuffer(&dmr_sample_interval, buffer, 2);
     dmr_sample_interval = swapBytes(dmr_sample_interval);
 
     // Threshold parameter which specifies the minimum difference in echo power between two
     // resolution gates for them not to be labeled "overlayed"
     // 0.0 .. 20.0
     u16 t_over;
-    readFromBuffer(&t_over, buffer, 2);
+    ReadFromBuffer(&t_over, buffer, 2);
     t_over = swapBytes(t_over);
 
     // SNR threshold for valid data
     // -12.0 .. 20.0
     s16 snr_threshold;
-    readFromBuffer(&snr_threshold, buffer, 2);
-    snr_threshold = swapBytes(snr_threshold);
+    ReadFromBuffer(&snr_threshold, buffer, 2);
+    snr_threshold = SwapBytes(snr_threshold);
 
     // 0 = none
     // 1 = recombined azimuthal radials
     // 2 = recombined range gates
     // 3 = recombined radials and range gates to legacy resolution
     unsigned char control_flags;
-    readFromBuffer(&control_flags, buffer, 1);
+    ReadFromBuffer(&control_flags, buffer, 1);
 
     // 8 or 16
     unsigned char dm_gate_bit_count;
-    readFromBuffer(&dm_gate_bit_count, buffer, 1);
+    ReadFromBuffer(&dm_gate_bit_count, buffer, 1);
 
     // Scale value used to convert Data Moments from integer to floating point data
     // > 0 .. 65535
     f32 scale;
     unsigned char c_scale[4];
-    readFromBuffer(c_scale, buffer, 4);
+    ReadFromBuffer(c_scale, buffer, 4);
     scale = convertIEEE754(c_scale);
 
     // Offset value used to convert Data Moments from integer to floating point data
     // 2.0 .. 65535   // 42 84 00 00
     f32 offset;
     unsigned char c_offset[4];
-    readFromBuffer(c_offset, buffer, 4);
+    ReadFromBuffer(c_offset, buffer, 4);
     offset = convertIEEE754(c_offset);
 
     if (strncmp((const char*)data_moment_name, "REF", 3) == 0)
@@ -263,7 +263,7 @@ void readDataMoment(struct BufferInfo* buffer, s32 radialIndex)
 
         for (int i = 0; i < data_moment_gates; i++)
         {
-            readFromBuffer(&value, buffer, 1);
+            ReadFromBuffer(&value, buffer, 1);
 
             // @todo
             // A scale value of 0 indicates floating point moment data for each range gate.
@@ -280,64 +280,64 @@ void readDataMoment(struct BufferInfo* buffer, s32 radialIndex)
 void processVolumeDataType(BufferInfo* buffer)
 {
     unsigned char data_type;
-    readFromBuffer(&data_type, buffer, 1);
+    ReadFromBuffer(&data_type, buffer, 1);
 
     assert(data_type == 'R');
 
     unsigned char data_name[3];
-    readFromBuffer(&data_name, buffer, 3);
+    ReadFromBuffer(&data_name, buffer, 3);
 
     u16 size_of_block;
-    readFromBuffer(&size_of_block, buffer, 2);
+    ReadFromBuffer(&size_of_block, buffer, 2);
     size_of_block = swapBytes(size_of_block);
 
     unsigned char version_maj;
-    readFromBuffer(&version_maj, buffer, 1);
+    ReadFromBuffer(&version_maj, buffer, 1);
 
     unsigned char version_min;
-    readFromBuffer(&version_min, buffer, 1);
+    ReadFromBuffer(&version_min, buffer, 1);
 
     f32 lat;
     unsigned char c_lat[4];
-    readFromBuffer(c_lat, buffer, 4);
+    ReadFromBuffer(c_lat, buffer, 4);
     lat = convertIEEE754(c_lat);
     g_L2Volume.lat = lat;
 
     f32 lon;
     unsigned char c_lon[4];
-    readFromBuffer(&lon, buffer, 4);
+    ReadFromBuffer(&lon, buffer, 4);
     lon = convertIEEE754(c_lon);
     g_L2Volume.lon = lon;
 
     s16 site_height;
-    readFromBuffer(&site_height, buffer, 2);
-    site_height = swapBytes(site_height);
+    ReadFromBuffer(&site_height, buffer, 2);
+    site_height = SwapBytes(site_height);
 
     u16 feedhorn_height;
-    readFromBuffer(&feedhorn_height, buffer, 2);
+    ReadFromBuffer(&feedhorn_height, buffer, 2);
     feedhorn_height = swapBytes(feedhorn_height);
 
     s32 calibration_constant;
-    readFromBuffer(&calibration_constant, buffer, 4);
+    ReadFromBuffer(&calibration_constant, buffer, 4);
 
     s32 horiz_shv_tx_power;
-    readFromBuffer(&horiz_shv_tx_power, buffer, 4);
-    horiz_shv_tx_power = swapBytes(horiz_shv_tx_power);
+    ReadFromBuffer(&horiz_shv_tx_power, buffer, 4);
+    horiz_shv_tx_power = SwapBytes(horiz_shv_tx_power);
 
     s32 vert_shv_tx_power;
-    readFromBuffer(&vert_shv_tx_power, buffer, 4);
-    vert_shv_tx_power = swapBytes(vert_shv_tx_power);
+    ReadFromBuffer(&vert_shv_tx_power, buffer, 4);
+    vert_shv_tx_power = SwapBytes(vert_shv_tx_power);
 
     s32 system_diff_ref;
-    readFromBuffer(&system_diff_ref, buffer, 4);
-    system_diff_ref = swapBytes(system_diff_ref);
+    ReadFromBuffer(&system_diff_ref, buffer, 4);
+    system_diff_ref = SwapBytes(system_diff_ref);
 
     u16 vcp_num;
-    readFromBuffer(&vcp_num, buffer, 2);
+    ReadFromBuffer(&vcp_num, buffer, 2);
     vcp_num = swapBytes(vcp_num);
 
     u16 processing_status;
-    readFromBuffer(&processing_status, buffer, 2);
+    ReadFromBuffer(&processing_status, buffer, 2);
     processing_status = swapBytes(processing_status);
 
 }
@@ -345,64 +345,64 @@ void processVolumeDataType(BufferInfo* buffer)
 void processElevationDataType(BufferInfo* buffer)
 {
     unsigned char data_type;
-    readFromBuffer(&data_type, buffer, 1);
+    ReadFromBuffer(&data_type, buffer, 1);
 
     unsigned char data_name[3];
-    readFromBuffer(&data_name, buffer, 3);
+    ReadFromBuffer(&data_name, buffer, 3);
 
     u16 block_size;
-    readFromBuffer(&block_size, buffer, 2);
+    ReadFromBuffer(&block_size, buffer, 2);
     block_size = swapBytes(block_size);
 
     // -0.02 .. 0.002;
     s16 atmos;
-    readFromBuffer(&atmos, buffer, 2);
-    atmos = swapBytes(atmos);
+    ReadFromBuffer(&atmos, buffer, 2);
+    atmos = SwapBytes(atmos);
 
     // Scaling constant used by the Signal Processor for this elevation to calculate reflectivity
     s32 calibration_constant;
-    readFromBuffer(&calibration_constant, buffer, 4);
+    ReadFromBuffer(&calibration_constant, buffer, 4);
 }
 
 void processRadialDataType(BufferInfo* buffer)
 {
     unsigned char data_type;
-    readFromBuffer(&data_type, buffer, 1);
+    ReadFromBuffer(&data_type, buffer, 1);
 
     unsigned char data_name[3];
-    readFromBuffer(&data_name, buffer, 3);
+    ReadFromBuffer(&data_name, buffer, 3);
 
     u16 block_size;
-    readFromBuffer(&block_size, buffer, 2);
+    ReadFromBuffer(&block_size, buffer, 2);
     block_size = swapBytes(block_size);
 
     // 11.5 .. 51.1 km
     u16 unamb_range;
-    readFromBuffer(&unamb_range, buffer, 2);
+    ReadFromBuffer(&unamb_range, buffer, 2);
     unamb_range = swapBytes(unamb_range);
 
     s32 horiz_noise_level;
-    readFromBuffer(&horiz_noise_level, buffer, 4);
+    ReadFromBuffer(&horiz_noise_level, buffer, 4);
 
     s32 vert_noise_level;
-    readFromBuffer(&vert_noise_level, buffer, 4);
+    ReadFromBuffer(&vert_noise_level, buffer, 4);
 
     // 8 .. 35.61
     u16 nyquist_vel;
-    readFromBuffer(&nyquist_vel, buffer, 2);
+    ReadFromBuffer(&nyquist_vel, buffer, 2);
     nyquist_vel = swapBytes(nyquist_vel);
 
     u16 radial_flags;
-    readFromBuffer(&radial_flags, buffer, 2);
+    ReadFromBuffer(&radial_flags, buffer, 2);
     radial_flags = swapBytes(radial_flags);
 
     // -99.0 .. 99.0
     s32 horiz_calibration;
-    readFromBuffer(&horiz_calibration, buffer, 4);
+    ReadFromBuffer(&horiz_calibration, buffer, 4);
 
     // -99.0 .. 99.0
     s32 vert_calibration;
-    readFromBuffer(&vert_calibration, buffer, 4);
+    ReadFromBuffer(&vert_calibration, buffer, 4);
 }
 
 void processDataBlocks(
@@ -449,25 +449,25 @@ u32 readMessage31(BufferInfo* buffer, s32 radialIndex)
     s32 header_block_start = buffer->position;
 
     char radar_id[4];
-    readFromBuffer(radar_id, buffer, 4);
+    ReadFromBuffer(radar_id, buffer, 4);
 
     // Radial data collection time in milliseconds past midnight GMT
     u32 collection_time;
-    readFromBuffer(&collection_time, buffer, 4);
+    ReadFromBuffer(&collection_time, buffer, 4);
     collection_time = swapBytes(collection_time);
 
     u16 nexrad_date;
-    readFromBuffer(&nexrad_date, buffer, 2);
+    ReadFromBuffer(&nexrad_date, buffer, 2);
     nexrad_date = swapBytes(nexrad_date);
 
     s16 azimuth_num;
-    readFromBuffer(&azimuth_num, buffer, 2);
-    azimuth_num = swapBytes(azimuth_num);
+    ReadFromBuffer(&azimuth_num, buffer, 2);
+    azimuth_num = SwapBytes(azimuth_num);
     g_L2Volume.radials[radialIndex].azimuthNumber = azimuth_num;
 
     f32 azimuth_angle;
     unsigned char caa[4];
-    readFromBuffer(caa, buffer, 4);
+    ReadFromBuffer(caa, buffer, 4);
     azimuth_angle = convertIEEE754(caa);
     g_L2Volume.radials[radialIndex].azimuth = azimuth_angle;
 
@@ -476,21 +476,21 @@ u32 readMessage31(BufferInfo* buffer, s32 radialIndex)
     // 2 = compressed using zlib
     // 3 = future use
     unsigned char compression_indicator;
-    readFromBuffer(&compression_indicator, buffer, 1);
+    ReadFromBuffer(&compression_indicator, buffer, 1);
 
     unsigned char spare;
-    readFromBuffer(&spare, buffer, 1);
+    ReadFromBuffer(&spare, buffer, 1);
 
     // Uncompressed length of the radial in bytes including the Data Header block length
     u16 radial_byte_length;
-    readFromBuffer(&radial_byte_length, buffer, 2);
+    ReadFromBuffer(&radial_byte_length, buffer, 2);
     radial_byte_length = swapBytes(radial_byte_length);
 
     unsigned char azimuth_res_scaling;
-    readFromBuffer(&azimuth_res_scaling, buffer, 1);
+    ReadFromBuffer(&azimuth_res_scaling, buffer, 1);
 
     unsigned char radial_status;
-    readFromBuffer(&radial_status, buffer, 1);
+    ReadFromBuffer(&radial_status, buffer, 1);
 
     //  Start of new Elevation 00
     //  Intermediate Radial Data 01
@@ -506,24 +506,24 @@ u32 readMessage31(BufferInfo* buffer, s32 radialIndex)
     }
 
     unsigned char elevation_num;
-    readFromBuffer(&elevation_num, buffer, 1);
+    ReadFromBuffer(&elevation_num, buffer, 1);
 
     unsigned char cut_sector_num;
-    readFromBuffer(&cut_sector_num, buffer, 1);
+    ReadFromBuffer(&cut_sector_num, buffer, 1);
 
     f32 elevation_angle;
-    readFromBuffer(&elevation_angle, buffer, 4);
+    ReadFromBuffer(&elevation_angle, buffer, 4);
 
     unsigned char spot_blanking;
-    readFromBuffer(&spot_blanking, buffer, 1);
+    ReadFromBuffer(&spot_blanking, buffer, 1);
 
     // 0 = no indexing
     // 1 to 100 means indexing angle of 0.01 to 1.00
     unsigned char azimuth_indexing_mode;
-    readFromBuffer(&azimuth_indexing_mode, buffer, 1);
+    ReadFromBuffer(&azimuth_indexing_mode, buffer, 1);
 
     u16 data_block_count;
-    readFromBuffer(&data_block_count, buffer, 2);
+    ReadFromBuffer(&data_block_count, buffer, 2);
     data_block_count = swapBytes(data_block_count);
 
     // My interpretation of the reference document is that there is at least 4 and at most 10.
@@ -532,8 +532,8 @@ u32 readMessage31(BufferInfo* buffer, s32 radialIndex)
     s32 data_block_ptrs[10];
     for (s32& data_block_ptr : data_block_ptrs)
     {
-        readFromBuffer(&data_block_ptr, buffer, 4);
-        data_block_ptr = swapBytes(data_block_ptr);
+        ReadFromBuffer(&data_block_ptr, buffer, 4);
+        data_block_ptr = SwapBytes(data_block_ptr);
     }
 
     processDataBlocks(buffer, radialIndex, data_block_ptrs, data_block_count, header_block_start);
@@ -555,7 +555,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //        memcpy(&compressed_size, &data[bp], 4);
 //        bp += 4;
 //
-//        compressed_size = swapBytes(compressed_size);
+//        compressed_size = SwapBytes(compressed_size);
 //        compressed_size = abs(compressed_size);
 //
 //        uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
@@ -704,7 +704,7 @@ void ReadLevel2File(BufferInfo* mainBuffer)
 
     // volume header
     char file_header[25];
-    readFromBuffer(file_header, mainBuffer, 24);
+    ReadFromBuffer(file_header, mainBuffer, 24);
     file_header[24] = '\0';
 
     { // Parse out the volume header info. Might be useful.
@@ -738,8 +738,8 @@ void ReadLevel2File(BufferInfo* mainBuffer)
     while (mainBuffer->position < mainBuffer->totalSize)
     {
         compressed_size = 0;
-        readFromBuffer(&compressed_size, mainBuffer, 4);
-        compressed_size = swapBytes(compressed_size);
+        ReadFromBuffer(&compressed_size, mainBuffer, 4);
+        compressed_size = SwapBytes(compressed_size);
         compressed_size = abs(compressed_size);
 
         unsigned char* buffer_entry = &mainBuffer->data[mainBuffer->position];
