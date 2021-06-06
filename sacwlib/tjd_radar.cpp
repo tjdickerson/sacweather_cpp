@@ -454,7 +454,7 @@ bool ParseNexradRadarFile(
         BufferInfo l3buffer = {};
         l3buffer.data = &buffer[0];
         l3buffer.position = 0;
-        l3buffer.totalSize = file_length;
+        l3buffer.length = file_length;
 
         ReadLevel3File(&l3buffer);
 
@@ -474,7 +474,7 @@ bool ParseNexradRadarFile(
         BufferInfo l2buffer = {};
         l2buffer.data = &buffer[0];
         l2buffer.position = 0;
-        l2buffer.totalSize = file_length;
+        l2buffer.length = file_length;
 
         ReadLevel2File(&l2buffer);
     }

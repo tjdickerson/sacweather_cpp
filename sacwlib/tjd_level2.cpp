@@ -162,12 +162,12 @@ void readMessage15(struct BufferInfo* buffer)
 void readMessage18(struct BufferInfo* buffer)
 {
     // Some (most?) of the data in this message doesn't seem important. Might can skip some of it.
-    // seekBuffer(data, 9467);
+    // SeekBuffer(data, 9467);
 }
 
 void readMessage3(struct BufferInfo* buffer)
 {
-    // seekBuffer(data, 480 * 2);
+    // SeekBuffer(data, 480 * 2);
 }
 
 void readMessage5(struct BufferInfo* buffer)
@@ -178,13 +178,13 @@ void readMessage5(struct BufferInfo* buffer)
     msg_size = SwapBytes(msg_size);
 
     // @todo
-    // seekBuffer(data, msg_size);
+    // SeekBuffer(data, msg_size);
 
 }
 
 void readMessage2(struct BufferInfo* buffer)
 {
-    seekBuffer(buffer, 60 * 2);
+    SeekBuffer(buffer, 60 * 2);
 }
 
 void readDataMoment(struct BufferInfo* buffer, s32 radialIndex)
@@ -415,10 +415,10 @@ void processDataBlocks(
     for (int i = 0; i < pointerCount; i++)
     {
         s32 off_pos = blockStartPos + offsetPointers[i];
-        setBufferPos(buffer, off_pos);
+        SetBufferPos(buffer, off_pos);
 
-        unsigned char data_type = peekBuffer(buffer, 1);
-        unsigned char data_name = peekBuffer(buffer, 2);
+        unsigned char data_type = PeekBuffer(buffer, 1);
+        unsigned char data_name = PeekBuffer(buffer, 2);
 
         if (data_type == 'R')
         {
@@ -584,7 +584,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //        // @todo
 //        // need to loop this and read all the messages
 //        int msg_31_count = 0;
-//        seekBuffer(&radial_buffer, CTM_HEADER_SIZE);
+//        SeekBuffer(&radial_buffer, CTM_HEADER_SIZE);
 //        while (true)
 //        {
 //            s32 start_pos = radial_buffer.position;
@@ -594,7 +594,7 @@ void ProcessLdmRecords(BufferInfo* buffer)
 //            {
 //                msg_31_count += 1;
 //                int skipBytes = readMessage31(&radial_buffer);
-//                setBufferPos(&radial_buffer, start_pos + msg_info.size + CTM_HEADER_SIZE);
+//                SetBufferPos(&radial_buffer, start_pos + msg_info.size + CTM_HEADER_SIZE);
 //            }
 //            else
 //            {
@@ -618,8 +618,8 @@ void ProcessMessages(BufferInfo* buffer)
 
     s32 radialIndex = 0;
 
-    seekBuffer(buffer, CTM_HEADER_SIZE);
-    while (buffer->position < buffer->totalSize)
+    SeekBuffer(buffer, CTM_HEADER_SIZE);
+    while (buffer->position < buffer->length)
     {
         pre_msg_buf_pos = buffer->position;
         msg_info = readMessageHeader(buffer);
@@ -693,7 +693,7 @@ void ProcessMessages(BufferInfo* buffer)
 //                    forward_size = msg_info.size;
 
 
-        setBufferPos(buffer, pre_msg_buf_pos + msg_info.size);
+        SetBufferPos(buffer, pre_msg_buf_pos + msg_info.size);
     }
 
 }
@@ -735,14 +735,15 @@ void ReadLevel2File(BufferInfo* mainBuffer)
     u32 total_buffer_size = 0;
     auto uncompressed_data = (unsigned char*)malloc(uncompressed_size * sizeof(unsigned char));
 
-    while (mainBuffer->position < mainBuffer->totalSize)
+    while (mainBuffer->position < mainBuffer->length)
     {
         compressed_size = 0;
         ReadFromBuffer(&compressed_size, mainBuffer, 4);
         compressed_size = SwapBytes(compressed_size);
         compressed_size = abs(compressed_size);
 
-        unsigned char* buffer_entry = &mainBuffer->data[mainBuffer->position];
+        //unsigned char* buffer_entry = &mainBuffer->data[mainBuffer->position];
+        auto buffer_entry = GetBufferMarker(mainBuffer);
 
         // @todo
         // for safety keep up with the size of uncompressed data and how much has been put into it already.
@@ -765,7 +766,7 @@ void ReadLevel2File(BufferInfo* mainBuffer)
         total_buffer_size += uncompressed_size;
 
         // Set the position past the compressed data block for after this data is processed.
-        seekBuffer(mainBuffer, compressed_size);
+        SeekBuffer(mainBuffer, compressed_size);
     }
 
     // @todo
@@ -776,7 +777,7 @@ void ReadLevel2File(BufferInfo* mainBuffer)
 
     BufferInfo l2_buffer = {};
     l2_buffer.data = &uncompressed_data[0];
-    l2_buffer.totalSize = total_buffer_size;
+    l2_buffer.length = total_buffer_size;
     l2_buffer.position = 0;
 
     g_L2Volume = {};

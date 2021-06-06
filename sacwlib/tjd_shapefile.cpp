@@ -17,35 +17,37 @@ void GenerateFilename(char* buffer, const char* filepath, const char* ext)
 }
 
 
-bool ReadIndexFile(unsigned char* &buffer, const char* filepath)
+bool ReadIndexFile(BufferInfo* buffer, const char* filepath)
 {
     bool result = true;
 
     // read in shapefile index
-    char indexFilename[256];
-    indexFilename[0] = '\0';
-    GenerateFilename(indexFilename, filepath, SF_INDEX_EXT);
+    char index_filename[256];
+    index_filename[0] = '\0';
+    GenerateFilename(index_filename, filepath, SF_INDEX_EXT);
 
-    FILE* fp; 
-    fp = fopen(indexFilename, "rb");
+    FILE* fp = nullptr;
+    fp = fopen(index_filename, "rb");
     if (!fp)
     {
-        printf("Error opening file %s\n", indexFilename);
+        printf("Error opening file %s\n", index_filename);
         return false;
     }    
 
-    int fileLength = 0;
+    size_t file_length = 0;
     fseek(fp, 0, SEEK_END);
-    fileLength = ftell(fp);
+    file_length = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    buffer = (unsigned char*)malloc(fileLength * sizeof(unsigned char));
-    assert(buffer != NULL);
+    auto data = (unsigned char*)malloc(file_length * sizeof(unsigned char));
+    assert(data != nullptr);
 
-    int bytesRead = fread(buffer, 1, fileLength, fp);
-    assert(bytesRead == fileLength);    
+    int bytes_read = fread(data, 1, file_length, fp);
+    assert(bytes_read == file_length);
 
-    if (fp) fclose(fp);    
+    InitBuffer(buffer, data, bytes_read);
+
+    fclose(fp);
     return result;
 }
 
@@ -53,97 +55,98 @@ bool ReadIndexFile(unsigned char* &buffer, const char* filepath)
 bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
 {
     bool result = true;
-    unsigned char* sfIndex = NULL;
     unsigned int bp = 0;
 
-    if (!ReadIndexFile(sfIndex, filepath) || sfIndex == NULL)
+    BufferInfo index_buffer = {};
+
+    if (!ReadIndexFile(&index_buffer, filepath) || index_buffer.length == 0)
     {
         LOGERR("Failed to load index file.\n");
         return false;
     }    
 
-    ShapeFileHeader indexHeader = {};
-    ShapeIndexRecord indexRec = {};
+    ShapeFileHeader index_header = {};
+    ShapeIndexRecord index_record = {};
 
-    memcpy(&indexHeader, sfIndex, sizeof(s32) * 9);
-    bp += sizeof(s32) * 9;
+    // @todo
+    // This may not be a good way to do this. This might have issues with different systems.
+    // Read in two chunks to get around struct alignment problems.
+    ReadFromBuffer(&index_header, &index_buffer, sizeof(s32) * 9);
+    ReadFromBuffer(&index_header.mbr, &index_buffer, sizeof(f64) * 8);
 
-    memcpy(&indexHeader.mbr, &sfIndex[bp], sizeof(f64) * 8);
-    bp += sizeof(f64) * 8;
+    index_header.fileLength = SwapBytes(index_header.fileLength);
+    index_header.fileCode = SwapBytes(index_header.fileCode);
+    assert(index_header.fileCode == 9994);
 
-    indexHeader.fileLength = SwapBytes(indexHeader.fileLength);
-    indexHeader.fileCode = SwapBytes(indexHeader.fileCode);
-    assert(indexHeader.fileCode == 9994);
-
-    if (indexHeader.shapeType != 3 && indexHeader.shapeType != 5)
+    if (index_header.shapeType != 3 && index_header.shapeType != 5)
     {
-        LOGERR("Unsupported shape type: %d\n", indexHeader.shapeType);
+        LOGERR("Unsupported shape type: %d\n", index_header.shapeType);
         return false;
     }    
 
 
+    // @todo
+    // Maybe I should bite the bullet and just use string for these types of situations.
     char shapeFilename[256];
     shapeFilename[0] = '\0';
     GenerateFilename(shapeFilename, filepath, SF_SHAPE_EXT);
 
     FILE *fp = fopen(shapeFilename, "rb");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
         LOGERR("Failed to open shapefile...\n");
         return false;
     }
 
-    ShapeFileRecHeader sfRec = {};
+    ShapeFileRecHeader sf_rec_header = {};
     ShapeFile2DBR br = {};
-    int bytesRead = 0;
-    int recordShapeType = 0;    
+    int bytes_read = 0;
+    int record_shapte_type = 0;
 
 
     // fileLength is stored as the length of the file in 16-bit words
-    while (bp < (indexHeader.fileLength * 2))
+    while (bp < (index_header.fileLength * 2))
     {
-        memcpy(&indexRec, &sfIndex[bp], sizeof(indexRec));
-        bp += sizeof(indexRec);
-
-        indexRec.offset = SwapBytes(indexRec.offset);
+        ReadFromBuffer(&index_record, &index_buffer, sizeof(index_record));
+        index_record.offset = SwapBytes(index_record.offset);
 
         // here is where dbf file can be processed, it is small enough to be read entirely 
         // and then could be accessed here in relation to the shapefile itself
 
-        fseek(fp, indexRec.offset * 2, SEEK_SET);
+        fseek(fp, index_record.offset * 2, SEEK_SET);
 
         // This may be something we can skip entirely... @todo
-        bytesRead = fread(&sfRec, sizeof(s32), 2, fp);
-        if (bytesRead != 2)
+        bytes_read = fread(&sf_rec_header, sizeof(s32), 2, fp);
+        if (bytes_read != 2)
         {
-            LOGERR("Error while reading shapefile record header %d.\n", indexRec.offset);
+            LOGERR("Error while reading shapefile record header %d.\n", index_record.offset);
             result = false;
             break;
         }
 
-        bytesRead = fread(&recordShapeType, sizeof(int), 1, fp);
-        assert(bytesRead == 1 && recordShapeType == indexHeader.shapeType);
+        bytes_read = fread(&record_shapte_type, sizeof(int), 1, fp);
+        assert(bytes_read == 1 && record_shapte_type == index_header.shapeType);
 
         // bounding rectangle .. unused at the moment.
-        bytesRead = fread(&br, sizeof(f64), 4, fp);
-        assert(bytesRead == 4);
+        bytes_read = fread(&br, sizeof(f64), 4, fp);
+        assert(bytes_read == 4);
 
         // number of parts
         int nParts = 0;
-        bytesRead = fread(&nParts, sizeof(s32), 1, fp);
-        assert(bytesRead == 1);
+        bytes_read = fread(&nParts, sizeof(s32), 1, fp);
+        assert(bytes_read == 1);
 
         // number of points
         int nPoints = 0;
-        bytesRead = fread(&nPoints, sizeof(s32), 1, fp);
-        assert(bytesRead == 1);
+        bytes_read = fread(&nPoints, sizeof(s32), 1, fp);
+        assert(bytes_read == 1);
 
         // change me if you stop using vector... @todo
         for(int i = 0; i < nParts; i++)
         {
             s32 pidx = 0;
-            bytesRead = fread(&pidx, sizeof(s32), 1, fp);
-            assert(bytesRead == 1);
+            bytes_read = fread(&pidx, sizeof(s32), 1, fp);
+            assert(bytes_read == 1);
 
             // We want all the shapefile data to be one long array of information for all shapes
             // instead of per-shape. Offset the starting by the current start points.            
@@ -156,8 +159,8 @@ bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
         for(int i = 0; i < nPoints; i++)
         {
             v2f64 point = {};
-            bytesRead = fread(&point, sizeof(v2f64), 1, fp);
-            assert(bytesRead == 1);
+            bytes_read = fread(&point, sizeof(v2f64), 1, fp);
+            assert(bytes_read == 1);
 
             shapeData->points.push_back(point);
         }     
@@ -177,7 +180,7 @@ bool ReadShapeFile(ShapeData* shapeData, const char* filepath)
 
 
     if (fp) fclose(fp);
-    if (sfIndex) free(sfIndex);
+    if (index_buffer.length > 0) free(index_buffer.data);
     LOGINF("Shapefile Done. (%s, %s)\n", shapeFilename, filepath);
 
     return result;

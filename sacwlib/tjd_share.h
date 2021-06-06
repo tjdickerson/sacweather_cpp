@@ -111,10 +111,10 @@ static u32 swapBytes(u32 value)
 
 typedef struct Vector4f32_t
 {
-    union { f32 x; f32 r; };
-    union { f32 y; f32 g; };
-    union { f32 z; f32 b; };
-    union { f32 w; f32 a; };    
+    union { f32 min_x; f32 x; f32 r; };
+    union { f32 min_y; f32 y; f32 g; };
+    union { f32 max_x; f32 z; f32 b; };
+    union { f32 max_y; f32 w; f32 a; };
 } v4f32;
 
 typedef struct Vector2f64_t
@@ -137,30 +137,81 @@ typedef v4f32 color4;
 
 struct BufferInfo
 {
-    unsigned char* data;
+    void* data;
     s32 position;
-    u32 totalSize;
+    u32 length;
 };
 
-static void ReadFromBuffer(void* dest, struct BufferInfo* bi, s32 length)
+static void InitBuffer(BufferInfo* buffer, void* data, u32 length)
 {
-    memcpy(dest, &bi->data[bi->position], length);
-    bi->position += length;
+    buffer->data = nullptr;
+    buffer->position = 0;
+    buffer->length = 0;
+
+    if (data != nullptr)
+    {
+        buffer->data = data;
+        buffer->length = length;
+    }
 }
 
-static void seekBuffer(struct BufferInfo* bi, s32 jmp)
+static void* GetBufferMarker(struct BufferInfo* buffer)
 {
-    bi->position += jmp;
+    return ((unsigned char*)buffer->data + buffer->position);
 }
 
-static void setBufferPos(struct BufferInfo* bi, s32 pos)
+static bool ReadFromBuffer(void* dest, struct BufferInfo* buffer, s32 length)
 {
-    bi->position = pos;
+    if (buffer->position + length <= buffer->length)
+    {
+        memcpy(dest, ((unsigned char*)buffer->data + buffer->position), length);
+        buffer->position += length;
+
+        return true;
+    }
+
+    return false;
 }
 
-static unsigned char peekBuffer(struct BufferInfo* bi, s32 jmp)
+static bool SeekBuffer(struct BufferInfo* buffer, s32 jmp)
 {
-    return bi->data[bi->position];
+    if (buffer->position + jmp < buffer->length)
+    {
+        buffer->position += jmp;
+        return true;
+    }
+
+    return false;
+}
+
+static bool SetBufferPos(struct BufferInfo* buffer, s32 pos)
+{
+    if (pos >= 0 && pos < buffer->length)
+    {
+        buffer->position = pos;
+        return true;
+    }
+
+    return false;
+}
+
+static unsigned char PeekBuffer(struct BufferInfo* buffer, s32 jmp)
+{
+    if (buffer->data != nullptr && (buffer->position + jmp) < buffer->length)
+    {
+        return *((unsigned char*)buffer->data + buffer->position + jmp);
+    }
+
+    return 0;
+}
+
+static void FreeBuffer(struct BufferInfo* buffer)
+{
+    if (buffer->data != nullptr)
+    {
+        free(buffer->data);
+        buffer->data = nullptr;
+    }
 }
 
 #endif

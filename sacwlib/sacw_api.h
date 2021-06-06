@@ -29,10 +29,11 @@ typedef struct MapViewState_t
     f32 yPan;
     f32 xScale;
     f32 yScale;
+    v4f32 worldScreenBounds;
 } MapViewState;
 
 
-extern MapViewState MapViewInfo;
+extern MapViewState g_MapViewInfo;
 
 extern bool canRenderRadar;
 
@@ -58,6 +59,8 @@ void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points);
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties);
 
 void sacw_GetRadarRenderData(RenderBufferData* rbd);
+
+v2f32 ConvertScreenToCoords(MapViewState* map, s32 x, s32 y);
 
 #define _SACW_API_H_
 #endif

@@ -428,11 +428,11 @@ v2f32 AddVectorV2f(v2f32 v1, v2f32 v2)
 bool show_demo = true;
 void renderLayers()
 {   
-    f32 x_scale = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
-    f32 y_scale = (MapViewInfo.scaleFactor / MapViewInfo.yScale);    
+    f32 x_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.xScale);
+    f32 y_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.yScale);
 
-    f32 trans_x = MapViewInfo.xPan;
-    f32 trans_y = MapViewInfo.yPan;
+    f32 trans_x = g_MapViewInfo.xPan;
+    f32 trans_y = g_MapViewInfo.yPan;
 
     adjScaleMatrix(x_scale, y_scale);    
     //adjTranslationMatrix(trans_x * x_scale, trans_y * y_scale);      
@@ -462,7 +462,7 @@ void renderLayers()
         direction.y = point.y > 0 ? 1.0f : -1.0f;
 
         v2f32 v_scale = {};
-        v_scale.x = x_scale / MapViewInfo.xScale;
+        v_scale.x = x_scale / g_MapViewInfo.xScale;
         v_scale.y = y_scale;
 
         v2f32 v_trans = {};
@@ -480,9 +480,9 @@ void renderLayers()
         // and the and the resulting product of the matrix multiplications needs to be passed to the shader.
         // A scale can still be applied to prevent the font from stretching after window resize, but the
         // square of the scale needs to be multiplied into the offset.
-        adjScaleMatrix(1.0f / MapViewInfo.xScale, 1.0f / MapViewInfo.yScale);  
+        adjScaleMatrix(1.0f / g_MapViewInfo.xScale, 1.0f / g_MapViewInfo.yScale);
         adjTranslationMatrix(0.0f, 0.0f); 
-        renderText(off_x * (MapViewInfo.xScale * MapViewInfo.xScale), off_y);
+        renderText(off_x * (g_MapViewInfo.xScale * g_MapViewInfo.xScale), off_y);
     }
    
 }
@@ -495,7 +495,7 @@ void Render()
     glClear(GL_COLOR_BUFFER_BIT);
     
 
-    glViewport(0, 0, MapViewInfo.mapWidthPixels, MapViewInfo.mapHeightPixels);
+    glViewport(0, 0, g_MapViewInfo.mapWidthPixels, g_MapViewInfo.mapHeightPixels);
 
     renderLayers();
 
@@ -505,16 +505,16 @@ void Render()
     /*bool splitScreen = false;
     if (splitScreen)
     {
-        ModelMatrix[0] = (MapViewInfo.scaleFactor * 0.5f) / MapViewInfo.xScale;
-        ModelMatrix[12] = MapViewInfo.xPan * ModelMatrix[0];
+        ModelMatrix[0] = (g_MapViewInfo.scaleFactor * 0.5f) / g_MapViewInfo.xScale;
+        ModelMatrix[12] = g_MapViewInfo.xPan * ModelMatrix[0];
 
         // bottom view
         {
             glViewport(
                 0, 
                 0, 
-                MapViewInfo.mapWidthPixels, 
-                MapViewInfo.mapHeightPixels * 0.5f);
+                g_MapViewInfo.mapWidthPixels,
+                g_MapViewInfo.mapHeightPixels * 0.5f);
             
             renderLayers();
         }
@@ -523,9 +523,9 @@ void Render()
         {
             glViewport(
             0, 
-            MapViewInfo.mapHeightPixels * 0.5f, 
-            MapViewInfo.mapWidthPixels, 
-            MapViewInfo.mapHeightPixels * 0.5f);
+            g_MapViewInfo.mapHeightPixels * 0.5f,
+            g_MapViewInfo.mapWidthPixels,
+            g_MapViewInfo.mapHeightPixels * 0.5f);
 
             renderLayers();
         }       
@@ -537,8 +537,8 @@ void Render()
         glViewport(
                 0, 
                 0, 
-                MapViewInfo.mapWidthPixels, 
-                MapViewInfo.mapHeightPixels);
+                g_MapViewInfo.mapWidthPixels,
+                g_MapViewInfo.mapHeightPixels);
 
         renderLayers();
     }*/
@@ -614,18 +614,18 @@ void RenderViewportUpdate(f32 width, f32 height)
 
     if (width > height)
     {
-        MapViewInfo.xScale = width / height;
-        MapViewInfo.yScale = 1.0f;
+        g_MapViewInfo.xScale = width / height;
+        g_MapViewInfo.yScale = 1.0f;
     }
 
     else
     {
-        MapViewInfo.xScale = 1.0f;
-        MapViewInfo.yScale = height / width;
+        g_MapViewInfo.xScale = 1.0f;
+        g_MapViewInfo.yScale = height / width;
     }
 
-    MapViewInfo.mapWidthPixels = width;
-    MapViewInfo.mapHeightPixels = height;
+    g_MapViewInfo.mapWidthPixels = width;
+    g_MapViewInfo.mapHeightPixels = height;
 
     glViewport(0, 0, width, height);
 }

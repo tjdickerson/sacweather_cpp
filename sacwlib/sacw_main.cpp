@@ -17,7 +17,7 @@
 
 #include "windows.h"
 
-MapViewState MapViewInfo;
+MapViewState g_MapViewInfo;
 bool canRenderRadar;
 bool radarIsStale;
 
@@ -79,23 +79,24 @@ void centerMapAt(f32 lon, f32 lat)
     f32 screen_x = AdjustLonForProjection(lon);
     f32 screen_y = AdjustLatForProjection(lat);
 
-    MapViewInfo.scaleFactor = 0.4f;
-    MapViewInfo.xPan = -screen_x;
-    MapViewInfo.yPan = -screen_y;
+    g_MapViewInfo.scaleFactor = 0.4f;
+    g_MapViewInfo.xPan = -screen_x;
+    g_MapViewInfo.yPan = -screen_y;
 }
 
 void sacw_Init(void* window)
 {    
     radarIsStale = false;
-    MapViewInfo = {};    
+    g_MapViewInfo = {};
+    g_MapViewInfo.worldScreenBounds = {};
 
     InitNexradProducts();
 
-    MapViewInfo.scaleFactor = 1.0f; //80.0f;
-    MapViewInfo.xScale = 1.0f;
-    MapViewInfo.yScale = 1.0f;
-    MapViewInfo.xPan = 0.0f; // -AdjustLonForProjection(-85.790f);
-    MapViewInfo.yPan = 0.0f; // -AdjustLatForProjection(32.537f);
+    g_MapViewInfo.scaleFactor = 1.0f; //80.0f;
+    g_MapViewInfo.xScale = 1.0f;
+    g_MapViewInfo.yScale = 1.0f;
+    g_MapViewInfo.xPan = 0.0f; // -AdjustLonForProjection(-85.790f);
+    g_MapViewInfo.yPan = 0.0f; // -AdjustLatForProjection(32.537f);
 
     RenderInit(window);
 
@@ -122,8 +123,8 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
 
     if (success)
     {
-        // MapViewInfo.xPan = -AdjustLonForProjection(wsrInfo.lon);
-        // MapViewInfo.yPan = -AdjustLatForProjection(wsrInfo.lat);
+        // g_MapViewInfo.xPan = -AdjustLonForProjection(wsrInfo.lon);
+        // g_MapViewInfo.yPan = -AdjustLatForProjection(wsrInfo.lat);
 
         centerMapAt(wsrInfo.lon, wsrInfo.lat);
 
@@ -161,7 +162,27 @@ void sacw_UpdateViewport(f32 width, f32 height)
 void LogMapInfo()
 {
     LOGINF("MapInfo:    xPan %2.4f  yPan %2.4f  scaleFactor %2.4f   xScale %2.4f    yScale %2.4f\n",
-        MapViewInfo.xPan, MapViewInfo.yPan, MapViewInfo.scaleFactor, MapViewInfo.xScale, MapViewInfo.yScale);
+        g_MapViewInfo.xPan, g_MapViewInfo.yPan, g_MapViewInfo.scaleFactor, g_MapViewInfo.xScale, g_MapViewInfo.yScale);
+
+    LOGINF("            minx %2.4f  miny %2.4f  maxx %2.4f  maxy %2.4f\n",
+        g_MapViewInfo.worldScreenBounds.min_x,
+        g_MapViewInfo.worldScreenBounds.min_y,
+        g_MapViewInfo.worldScreenBounds.max_x,
+        g_MapViewInfo.worldScreenBounds.max_y);
+}
+
+void AdjustWorldScreenBounds()
+{
+    // @todo
+    // May need a bit of padding on this just to avoid weird cases with comparing floats.
+    v2f32 top_left = ConvertScreenToCoords(&g_MapViewInfo, 0, 0);
+    v2f32 bottom_right =
+        ConvertScreenToCoords(&g_MapViewInfo, (s32)g_MapViewInfo.mapWidthPixels, (s32)g_MapViewInfo.mapHeightPixels);
+
+    g_MapViewInfo.worldScreenBounds.min_x = top_left.x;
+    g_MapViewInfo.worldScreenBounds.max_x = bottom_right.x;
+    g_MapViewInfo.worldScreenBounds.min_y = bottom_right.y;
+    g_MapViewInfo.worldScreenBounds.max_y = top_left.y;
 }
 
 void sacw_ZoomMap(f32 zoom)
@@ -171,13 +192,14 @@ void sacw_ZoomMap(f32 zoom)
     f32 speed = 1.0f;
     f32 dir = zoom > 0 ? 1 : -1;
 
-    f32 delta = (MapViewInfo.scaleFactor * 0.1f) * dir * speed;
-    f32 targetScale = MapViewInfo.scaleFactor + delta;
+    f32 delta = (g_MapViewInfo.scaleFactor * 0.1f) * dir * speed;
+    f32 targetScale = g_MapViewInfo.scaleFactor + delta;
 
     // if (targetScale < 10) targetScale = 10 + 1;
     // else if (targetScale > 250) targetScale = 250 - 1;
 
-    MapViewInfo.scaleFactor = targetScale;    
+    g_MapViewInfo.scaleFactor = targetScale;
+    AdjustWorldScreenBounds();
 
     LogMapInfo();
 }
@@ -185,8 +207,10 @@ void sacw_ZoomMap(f32 zoom)
 
 void sacw_PanMap(f32 x, f32 y)
 {
-    MapViewInfo.xPan += (x / MapViewInfo.scaleFactor) * -0.002f;
-    MapViewInfo.yPan += (y / MapViewInfo.scaleFactor) * 0.002f;
+    g_MapViewInfo.xPan += (x / g_MapViewInfo.scaleFactor) * -0.002f;
+    g_MapViewInfo.yPan += (y / g_MapViewInfo.scaleFactor) * 0.002f;
+
+    AdjustWorldScreenBounds();
 }
 
 
@@ -203,7 +227,7 @@ s64 sacw_GetScanTime()
 void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
 {
     // ?
-    v2f32 convertedPoint = ConvertScreenToCoords(x, y);
+    v2f32 convertedPoint = ConvertScreenToCoords(&g_MapViewInfo, x, y);
 
     points[0] = convertedPoint.x;
     points[1] = convertedPoint.y;
@@ -279,13 +303,13 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
 
 }
 
-v2f32 ConvertScreenToCoords(s32 x, s32 y) 
+v2f32 ConvertScreenToCoords(MapViewState* map, s32 x, s32 y)
 {
-    /* 
+    /*
 
     By shifting the longitude value to the "east" by 180 it essentially becomes a 0 - 360
     screen width. Once the relateive sceen coordinate has been scaled down, then we can just
-    shift the values back "west" by 180. This makes it trivial to convert from a screen 
+    shift the values back "west" by 180. This makes it trivial to convert from a screen
     coordinate to a longitute.
 
     The same can be applied to latitude. The mercator projection can be applied after this
@@ -308,13 +332,13 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y)
     ((x1 * w2) / w1) - 180 = x2
 
     */
-    
+
     // TODO: This may not work when the screen is smaller than 360x360.
 
     v2f32 coords = {};
 
-    f32 width = MapViewInfo.mapWidthPixels; 
-    f32 height = MapViewInfo.mapHeightPixels;
+    f32 width = map->mapWidthPixels;
+    f32 height = map->mapHeightPixels;
     // width = 984;
     // height = 961;
 
@@ -323,56 +347,23 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y)
     f32 xRadius = 1.0f;
     f32 yRadius = 1.0f;
 
-    f32 fx = (MapViewInfo.scaleFactor / MapViewInfo.xScale);
+    f32 fx = (map->scaleFactor / map->xScale);
     totalWidth /= fx;
     xRadius /= fx;
 
-    f32 xPan = MapViewInfo.xPan;
+    f32 xPan = map->xPan;
     coords.x = ((x * totalWidth) / (width)) - xRadius;
     coords.x = coords.x - xPan;
 
-    f32 fy = (MapViewInfo.scaleFactor / MapViewInfo.yScale);
+    f32 fy = (map->scaleFactor / map->yScale);
     totalHeight /= fy;
     yRadius /= fy;
 
-    f32 yPan = MapViewInfo.yPan;
+    f32 yPan = map->yPan;
     coords.y = ((y * totalHeight) / (height)) - yRadius;
     coords.y = coords.y + yPan;
     coords.y *= -1.0f;
 
     coords.y = ScreenToY(coords.y);
     return coords;
-
-#if 0
-    f32 totalWidth = 360.0f;
-    f32 totalHeight = 360.0f;
-    f32 xRadius = 180.0f;
-    f32 yRadius = 180.0f;
-    f32 xPan = MapViewInfo.xPan * (MapViewInfo.scaleFactor / MapViewInfo.xScale);
-    f32 yPan = MapViewInfo.yPan * (MapViewInfo.scaleFactor / MapViewInfo.yScale);
-
-    f32 xAdjust = MapViewInfo.scaleFactor / MapViewInfo.xScale;
-    f32 yAdjust = MapViewInfo.scaleFactor / MapViewInfo.yScale;
-
-    totalWidth  /= xAdjust;
-    totalHeight /= yAdjust;
-    xRadius /= xAdjust;
-    yRadius /= yAdjust;
-    xPan /= xAdjust;
-    yPan /= yAdjust;
-   
-    coords.x = ((x * totalWidth) / (width)) - xRadius;
-    coords.x = xPan * 180.0f - coords.x;
-    coords.x *= -1.0f;
-
-    coords.y = ((y * totalHeight) / (height)) - yRadius;         
-    coords.y = yPan * 180.0f + coords.y;
-    coords.y *= -1.0f;
-
-    coords.y = ScreenToY(coords.y);
-
-    LOGINF("Lon Lat: %2.4f %2.4f\n", coords.x, coords.y);
-
-    return coords;
-#endif
 }
