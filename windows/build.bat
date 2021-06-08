@@ -23,7 +23,7 @@ set linkFlags= /link /subsystem:console
 
 @rem If windows, then grab the windows libs.
 if %BUILD_TYPE%==%TARG_WIN32% (
-	set libs= user32.lib gdi32.lib Wininet.lib urlmon.lib ws2_32.lib opengl32.lib %prjdir%\lib\libbz2.lib
+	set libs= user32.lib gdi32.lib UxTheme.lib Wininet.lib urlmon.lib ws2_32.lib opengl32.lib %prjdir%\lib\libbz2.lib
 )
 
 

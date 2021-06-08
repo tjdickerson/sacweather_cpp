@@ -1,8 +1,13 @@
 // 
+#define _WIN32_WINNT 0x06000000
 
 #include <windows.h>
 #include <wininet.h>
 #include <cstdio>
+#include <dwmapi.h>
+#include <uxtheme.h>
+#include <vssym32.h>
+#include <windowsx.h>
 #include "tjd_gl.h"
 // #include "tjd_ftp.h"
 #include "tjd_ui.h"
@@ -12,12 +17,20 @@
 // #include "imgui/imgui_impl_win32.h"
 
 
+#define LEFTEXTENDWIDTH     8
+#define RIGHTEXTENDWIDTH    8
+#define BOTTOMEXTENDWIDTH   20
+#define TOPEXTENDWIDTH      27
+
 // @todo
 // probably move this somewhere else
 class WinBindStatusCallback : public IBindStatusCallback
 {
 public:
-    STDMETHOD(OnObjectAvailable)(REFIID riid, IUnknown* punk) { return E_NOTIMPL; }
+    STDMETHOD(OnObjectAvailable)(REFIID riid, IUnknown* punk)
+    {
+        return E_NOTIMPL;
+    }
 
     STDMETHOD(OnStartBinding)(
         /* [in] */ DWORD dwReserved,
@@ -98,11 +111,11 @@ HRESULT WinBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)
 }
 
 HRESULT WinBindStatusCallback::OnProgress(
-        /* [in] */ ULONG ulProgress,
-        /* [in] */ ULONG ulProgressMax,
-        /* [in] */ ULONG ulStatusCode,
-        /* [in] */ LPCWSTR wszStatusText
-    )
+    /* [in] */ ULONG ulProgress,
+    /* [in] */ ULONG ulProgressMax,
+    /* [in] */ ULONG ulStatusCode,
+    /* [in] */ LPCWSTR wszStatusText
+)
 {
     printf("Progress: %d/%d\n", ulProgress, ulProgressMax);
     return 0;
@@ -149,7 +162,7 @@ int CALLBACK WinMain(
     HDC hdc = GetDC(hwnd);
     MSG message;
 
-    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kdgx/sn.last";
+    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 
     bool testing_level2 = false;
@@ -245,17 +258,238 @@ void HandleKeyUp(unsigned int keyCode)
 
 // extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT CALLBACK WinMessageCallback(
-    HWND hwnd,
-    UINT message,
-    WPARAM wParam,
-    LPARAM lParam
-)
+void PaintCaption(HWND hwnd, HDC hdc)
+{
+    RECT rcClient;
+    GetClientRect(hwnd, &rcClient);
+
+    HTHEME hTheme = OpenThemeData(nullptr, L"CompositedWindow::Window");
+    if (hTheme)
+    {
+        HDC hdcPaint = CreateCompatibleDC(hdc);
+        if (hdcPaint)
+        {
+            //int cx = RECTWIDTH(rcClient);
+            //int cy = RECTHEIGHT(rcClient);
+
+            int cx = rcClient.right - rcClient.left;
+            int cy = rcClient.bottom - rcClient.top;
+
+            // Define the BITMAPINFO structure used to draw text.
+            // Note that biHeight is negative. This is done because
+            // DrawThemeTextEx() needs the bitmap to be in top-to-bottom
+            // order.
+            BITMAPINFO dib = { 0 };
+            dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            dib.bmiHeader.biWidth = cx;
+            dib.bmiHeader.biHeight = -cy;
+            dib.bmiHeader.biPlanes = 1;
+            dib.bmiHeader.biBitCount = 24;
+            dib.bmiHeader.biCompression = BI_RGB;
+
+            HBITMAP hbm = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
+            if (hbm)
+            {
+                HBITMAP hbmOld = (HBITMAP)SelectObject(hdcPaint, hbm);
+
+                // Setup the theme drawing options.
+                DTTOPTS DttOpts = { sizeof(DTTOPTS) };
+                DttOpts.dwFlags = DTT_COMPOSITED | DTT_GLOWSIZE;
+                DttOpts.iGlowSize = 15;
+
+                // Select a font.
+                LOGFONT lgFont;
+                HFONT hFontOld = NULL;
+                // if (SUCCEEDED(GetThemeSysFont(hTheme, TMT_CAPTIONFONT, &lgFont)))
+                // {
+                //     HFONT hFont = CreateFontIndirect(&lgFont);
+                //     hFontOld = (HFONT)SelectObject(hdcPaint, hFont);
+                // }
+
+                // Draw the title.
+                RECT rcPaint = rcClient;
+                rcPaint.top += 8;
+                rcPaint.right -= 125;
+                rcPaint.left += 8;
+                rcPaint.bottom = 50;
+                DrawThemeTextEx(
+                    hTheme,
+                    hdcPaint,
+                    0, 0,
+                    L"SacWeather",
+                    -1,
+                    DT_LEFT | DT_WORD_ELLIPSIS,
+                    &rcPaint,
+                    &DttOpts
+                );
+
+                // Blit text to the frame.
+                BitBlt(hdc, 0, 0, cx, cy, hdcPaint, 0, 0, SRCCOPY);
+
+                SelectObject(hdcPaint, hbmOld);
+                if (hFontOld)
+                {
+                    SelectObject(hdcPaint, hFontOld);
+                }
+                DeleteObject(hbm);
+            }
+            DeleteDC(hdcPaint);
+        }
+        CloseThemeData(hTheme);
+    }
+}
+
+HRESULT HitTestNCA(HWND hwnd, WPARAM wParam, LPARAM lParam)
+{
+// Get the point coordinates for the hit test.
+    POINT ptMouse = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+    // Get the window rectangle.
+    RECT rcWindow;
+    GetWindowRect(hwnd, &rcWindow);
+
+    // Get the frame rectangle, adjusted for the style without a caption.
+    RECT rcFrame = { 0 };
+    AdjustWindowRectEx(&rcFrame, WS_OVERLAPPEDWINDOW & ~WS_CAPTION, FALSE, NULL);
+
+    // Determine if the hit test is for resizing. Default middle (1,1).
+    USHORT uRow = 1;
+    USHORT uCol = 1;
+    bool fOnResizeBorder = false;
+
+    // Determine if the point is at the top or bottom of the window.
+    if (ptMouse.y >= rcWindow.top && ptMouse.y < rcWindow.top + TOPEXTENDWIDTH)
+    {
+        fOnResizeBorder = (ptMouse.y < (rcWindow.top - rcFrame.top));
+        uRow = 0;
+    }
+    else if (ptMouse.y < rcWindow.bottom && ptMouse.y >= rcWindow.bottom - BOTTOMEXTENDWIDTH)
+    {
+        uRow = 2;
+    }
+
+    // Determine if the point is at the left or right of the window.
+    if (ptMouse.x >= rcWindow.left && ptMouse.x < rcWindow.left + LEFTEXTENDWIDTH)
+    {
+        uCol = 0; // left side
+    }
+    else if (ptMouse.x < rcWindow.right && ptMouse.x >= rcWindow.right - RIGHTEXTENDWIDTH)
+    {
+        uCol = 2; // right side
+    }
+
+    // Hit test (HTTOPLEFT, ... HTBOTTOMRIGHT)
+    LRESULT hitTests[3][3] =
+        {
+            { HTTOPLEFT, fOnResizeBorder ? HTTOP : HTCAPTION, HTTOPRIGHT },
+            { HTLEFT, HTNOWHERE, HTRIGHT },
+            { HTBOTTOMLEFT, HTBOTTOM, HTBOTTOMRIGHT },
+        };
+
+    return hitTests[uRow][uCol];
+}
+
+LRESULT CustomFrameCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, bool* passMessage)
+{
+    LRESULT lRet = 0;
+    HRESULT hr = S_OK;
+    bool fCallDWP = true; // Pass on to DefWindowProc?
+
+    fCallDWP = !DwmDefWindowProc(hwnd, message, wParam, lParam, &lRet);
+
+    // Handle window creation.
+    if (message == WM_CREATE)
+    {
+        RECT rcClient;
+        GetWindowRect(hwnd, &rcClient);
+
+        // Inform application of the frame change.
+//        SetWindowPos(
+//            hwnd,
+//            NULL,
+//            rcClient.left, rcClient.top,
+//            rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
+//            SWP_FRAMECHANGED
+//        );
+
+        fCallDWP = true;
+        lRet = 0;
+    }
+
+    // Handle window activation.
+    if (message == WM_ACTIVATE)
+    {
+        // Extend the frame into the client area.
+        MARGINS margins;
+
+        margins.cxLeftWidth = LEFTEXTENDWIDTH;      // 8
+        margins.cxRightWidth = RIGHTEXTENDWIDTH;    // 8
+        margins.cyBottomHeight = BOTTOMEXTENDWIDTH; // 20
+        margins.cyTopHeight = TOPEXTENDWIDTH;       // 27
+
+        hr = DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        if (!SUCCEEDED(hr))
+        {
+            // Handle error.
+        }
+
+        fCallDWP = true;
+        lRet = 0;
+    }
+
+    if (message == WM_PAINT)
+    {
+        HDC hdc;
+        {
+            PAINTSTRUCT ps;
+            hdc = BeginPaint(hwnd, &ps);
+            PaintCaption(hwnd, hdc);
+            EndPaint(hwnd, &ps);
+        }
+
+        fCallDWP = true;
+        lRet = 0;
+    }
+
+    // Handle the non-client size message.
+    if ((message == WM_NCCALCSIZE) && (wParam == TRUE))
+    {
+        // Calculate new NCCALCSIZE_PARAMS based on custom NCA inset.
+        NCCALCSIZE_PARAMS* pncsp = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
+
+        pncsp->rgrc[0].left = pncsp->rgrc[0].left + 0;
+        pncsp->rgrc[0].top = pncsp->rgrc[0].top + 0;
+        pncsp->rgrc[0].right = pncsp->rgrc[0].right - 0;
+        pncsp->rgrc[0].bottom = pncsp->rgrc[0].bottom - 0;
+
+        lRet = 0;
+
+        // No need to pass the message on to the DefWindowProc.
+        fCallDWP = false;
+    }
+
+    // Handle hit testing in the NCA if not handled by DwmDefWindowProc.
+    if ((message == WM_NCHITTEST) && (lRet == 0))
+    {
+        lRet = HitTestNCA(hwnd, wParam, lParam);
+
+        if (lRet != HTNOWHERE)
+        {
+            fCallDWP = false;
+        }
+    }
+
+    *passMessage = fCallDWP;
+
+    return lRet;
+}
+
+LRESULT ApplicationMessageCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
-
-/*    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
-        return true;*/
+    HDC hdc;
+    PAINTSTRUCT ps;
 
     switch (message)
     {
@@ -273,6 +507,16 @@ LRESULT CALLBACK WinMessageCallback(
 
                 CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
                 sacw_UpdateViewport(cs->cx, cs->cy);
+
+                RECT rcClient;
+                GetWindowRect(hwnd, &rcClient);
+                SetWindowPos(
+                    hwnd,
+                    NULL,
+                    rcClient.left, rcClient.top,
+                    rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
+                    SWP_FRAMECHANGED
+                );
             }
 
             gIsRunning = true;
@@ -325,6 +569,14 @@ LRESULT CALLBACK WinMessageCallback(
         {
             if (Panning)
             {
+                /*MoveWindow(
+                    hwnd,
+                    lParam & 0xffff,
+                    (lParam & 0xffff0000) >> 16,
+                    1000,
+                    1000,
+                    false
+                );*/
                 PanMap(lParam & 0xffff, (lParam & 0xffff0000) >> 16);
             }
         }
@@ -344,8 +596,42 @@ LRESULT CALLBACK WinMessageCallback(
         }
             break;
 
+        case WM_PAINT:
+        {
+            hdc = BeginPaint(hwnd, &ps);
+            PaintCaption(hwnd, hdc);
+            // Do I need to do things here?
+            EndPaint(hwnd, &ps);
+        }
+            break;
+
         default:result = DefWindowProc(hwnd, message, wParam, lParam);
             break;
+    }
+
+    return result;
+}
+
+LRESULT CALLBACK WinMessageCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = 0;
+
+/*    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
+        return true;*/
+
+    HRESULT cpr = S_OK;
+    BOOL dwmEnabled = FALSE;
+    bool passMessage = true;
+    cpr = DwmIsCompositionEnabled(&dwmEnabled);
+
+    if (SUCCEEDED(cpr))
+    {
+        result = CustomFrameCallback(hwnd, message, wParam, lParam, &passMessage);
+    }
+
+    if (passMessage)
+    {
+        result = ApplicationMessageCallback(hwnd, message, wParam, lParam);
     }
 
     return result;
@@ -376,11 +662,25 @@ HWND InitWindow(HINSTANCE instance)
         CW_USEDEFAULT, CW_USEDEFAULT,       // x, y
         //1000, 1000,                         // w, h
         CW_USEDEFAULT, CW_USEDEFAULT,
-        0,
-        menu,
+        nullptr,
+        nullptr,
         instance,
-        0
+        nullptr
     );
+
+//    HWND hwnd = CreateWindowEx(
+//        WS_EX_APPWINDOW,
+//        wndClass.lpszClassName,
+//        "SAC Weather",
+//        WS_POPUP,
+//        500, 250, //CW_USEDEFAULT, CW_USEDEFAULT,       // x, y
+//        1000, 1000,                         // w, h
+//        //CW_USEDEFAULT, CW_USEDEFAULT,
+//        0,
+//        nullptr,
+//        instance,
+//        0
+//    );
 
     if (!hwnd)
     {

@@ -93,6 +93,7 @@ target_link_libraries(${PROJECT_NAME}
         # this is needed by windows api stuff
         user32.lib
         gdi32.lib
+        UxTheme.lib
 
         # for windows downloading stuff
         Wininet.lib
