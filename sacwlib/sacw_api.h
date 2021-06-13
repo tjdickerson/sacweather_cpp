@@ -2,38 +2,93 @@
 
 #ifndef _SACW_API_H_
 
-
+#include <glad/glad.h>
 #include "tjd_share.h"
+#include "tjd_shapefile.h"
 
-typedef struct RenderBufferData_t
+
+struct RenderBufferData
 {
     f32* vertices;
-    s32  vertexCount;
-} RenderBufferData;
+    s64  vertexCount;
+};
 
 
 typedef struct RenderVertData_t
 {
-    s32 numParts;    
+    s32 numParts;
     s32* starts;
     s32* counts;
 } RenderVertData;
 
-
-typedef struct MapViewState_t
+struct GeoTextMarker
 {
-    f32 mapWidthPixels;
-    f32 mapHeightPixels;
-    f32 scaleFactor;
-    f32 xPan;
-    f32 yPan;
-    f32 xScale;
-    f32 yScale;
-    v4f32 worldScreenBounds;
-} MapViewState;
+    v2f32 position;
+    u32 textLength;
+    char text[256];
+    color4 color;
+
+    u32 startIndex;
+    u32 count;
+};
+
+struct GeoTextRenderInfo
+{
+    GLuint vao{};
+    GLuint vbo{};
+    GLuint shader{};
+
+    GLint vertexAttribute{};
+
+    GLint transUniLoc{};
+    GLint rotUniLoc{};
+    GLint scaleUniLoc{};
+    GLint colorUniLoc{};
+    GLint offsetUniLoc{};
+
+    u32 markerCount;
+    GeoTextMarker* markers;
+};
+
+struct ShapeRenderInfo
+{
+    GLuint vao{};
+    GLuint vbo{};
+    GLuint shader{};
+
+    GLint vertexAttribute{};
+
+    GLint transUniLoc{};
+    GLint rotUniLoc{};
+    GLint scaleUniLoc{};
+    GLint colorUniLoc{};
+
+    ShapeFileInfo shapeFile;
+};
+
+struct MapViewInfo
+{
+    f32 mapWidthPixels{};
+    f32 mapHeightPixels{};
+
+    f32 scaleFactor{};
+    f32 xPan{};
+    f32 yPan{};
+    f32 xScale{};
+    f32 yScale{};
+
+    v4f32 worldScreenBounds{};
+
+    s32 shapeFileCount{};
+    ShapeRenderInfo* renderInfo{};
+};
 
 
-extern MapViewState g_MapViewInfo;
+extern MapViewInfo g_MapViewInfo;
+extern GeoTextRenderInfo g_GeoTextRenderInfo;
+
+bool GenerateShapeBufferData(ShapeFileInfo* shapeFileInfo, RenderBufferData* renderData);
+
 
 extern bool canRenderRadar;
 
@@ -60,7 +115,7 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
 
 void sacw_GetRadarRenderData(RenderBufferData* rbd);
 
-v2f32 ConvertScreenToCoords(MapViewState* map, s32 x, s32 y);
+v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y);
 
 #define _SACW_API_H_
 #endif

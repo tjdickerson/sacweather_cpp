@@ -17,9 +17,12 @@
 
 #include "windows.h"
 
-MapViewState g_MapViewInfo;
+MapViewInfo g_MapViewInfo;
+GeoTextRenderInfo g_GeoTextRenderInfo;
+
 bool canRenderRadar;
 bool radarIsStale;
+bool g_mapIsStale;
 
 static NexradProduct* CurrentProduct;
 static ProductDescription gProductDescription;
@@ -84,11 +87,50 @@ void centerMapAt(f32 lon, f32 lat)
     g_MapViewInfo.yPan = -screen_y;
 }
 
+void shapeFileInit()
+{
+    s32 shape_file_count = 2;
+    g_MapViewInfo.shapeFileCount = shape_file_count;
+    g_MapViewInfo.renderInfo = (ShapeRenderInfo*)calloc(shape_file_count, sizeof(ShapeRenderInfo));
+
+    ShapeFileInfo states = {};
+    states.filename = R"(C:\shapes\weather\st_us)";
+    states.lineColor = color4 {1.0f, 1.0f, 1.0f, 1.0f};
+
+    ShapeFileInfo counties = {};
+    counties.filename = R"(C:\shapes\weather\cnt_us)";
+    counties.lineColor = color4 {0.4f, 0.4f, 0.4f, 1.0f};
+
+    /*ShapeFileInfo roads = {};
+    roads.filename = R"(C:\shapes\weather\roads)";
+    roads.lineColor = color4 {0.4f, 0.4f, 1.0f, 1.0f};*/
+
+    g_MapViewInfo.renderInfo[0].shapeFile = counties;
+    g_MapViewInfo.renderInfo[1].shapeFile = states;
+    // g_MapViewInfo.renderInfo[2].shapeFile = roads;
+
+    for(int i = 0; i <  shape_file_count; i++)
+    {
+        ShapeFileInfo* this_file = &g_MapViewInfo.renderInfo[i].shapeFile;
+
+        ReadShapeFile(this_file, this_file->filename.c_str());
+        this_file->needsRefresh = true;
+    }
+
+    g_mapIsStale = true;
+}
+
 void sacw_Init(void* window)
 {    
     radarIsStale = false;
+    g_mapIsStale = false;
+
     g_MapViewInfo = {};
     g_MapViewInfo.worldScreenBounds = {};
+
+    g_GeoTextRenderInfo = {};
+
+    shapeFileInit();
 
     InitNexradProducts();
 
@@ -142,6 +184,13 @@ void sacw_MainLoop()
     {
         radarIsStale = false;
         LoadLatestRadarData();
+    }
+
+    if (g_mapIsStale)
+    {
+        g_mapIsStale = false;
+        LoadMapBufferData();
+        GeoTextLoadBuffer();
     }
 
     Render();
@@ -236,7 +285,7 @@ void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
 
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties)
 {
-
+#if 0
     // @todo
     // handle this differently
     #ifdef __ANDROID__
@@ -247,8 +296,9 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
     const char* countyShapeFile = "C:\\shapes\\weather\\cnt_us";
     #endif
 
-    ShapeData stateData = {};
+    ShapeFileInfo stateData = {};
     ReadShapeFile(&stateData, stateShapeFile);
+
 
     ShapeData countyData = {};
     ReadShapeFile(&countyData, countyShapeFile);
@@ -300,10 +350,10 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
             counties->counts[i] = countyData.counts.at(i);
         }
     }    
-
+#endif
 }
 
-v2f32 ConvertScreenToCoords(MapViewState* map, s32 x, s32 y)
+v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y)
 {
     /*
 

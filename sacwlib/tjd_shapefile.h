@@ -8,6 +8,7 @@
 
 #include "tjd_share.h"
 #include <vector>
+#include <string>
 
 constexpr char* SF_INDEX_EXT = "shx";
 constexpr char* SF_SHAPE_EXT = "shp";
@@ -26,13 +27,13 @@ main file to the first byte of the record header for the record.  Thus, the offs
 firstrecord in the main file is 50, given the 100-byte header.
 */
 
-typedef struct ShapeFile_2D_BR_t
+struct ShapeFile2dBr
 {
-    f64 minX;
-    f64 minY;
-    f64 maxX;
-    f64 maxY;
-} ShapeFile2DBR;
+    f32 minX;
+    f32 minY;
+    f32 maxX;
+    f32 maxY;
+};
 
 typedef struct ShapeFile_MBR_t 
 {
@@ -72,23 +73,44 @@ typedef struct ShapeFileRecHeader_t
     s32 recordLength;
 } ShapeFileRecHeader;
 
-typedef struct TextMarker_t
+struct TextMarker
 {
-    char name[128];
-    v2f64 location;
-} TextMarker;
+    char text[256];
+    u32 textLength;
+    v2f32 location;
+};
 
-typedef struct ShapeData_t
+struct ShapeData
 {
-    s32 numParts;
-    s32 numPoints;
+    s32 partsIndex{};
+    s32 numParts{};
+    s32 numPoints{};
 
-    std::vector<TextMarker> marker;    
+    ShapeFile2dBr boundingBox{};
+    TextMarker featureName{};
+};
 
-    std::vector<s32> parts;
-    std::vector<s32> counts;
-    std::vector<v2f64> points;
-} ShapeData;
+
+struct ShapeFileInfo
+{
+    s32 numFeatures{};
+    ShapeData* features{};
+    bool featuresHaveText{};
+
+    bool needsRefresh{};
+
+    bool pointsInitted{};
+
+    s32 totalNumPoints{};
+    s32 totalNumParts{};
+
+    f32* points{};
+    s32* starts{};
+    s32* counts{};
+
+    color4 lineColor{};
+    std::string filename;
+};
 
 
 typedef struct DBaseFileHeader_t 
@@ -144,7 +166,7 @@ typedef struct StandardPropArray_t
 
 // 
 //
-bool ReadShapeFile(ShapeData* shapeData, const char* name);
+bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath);
 
 
 

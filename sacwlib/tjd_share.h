@@ -164,7 +164,7 @@ static bool ReadFromBuffer(void* dest, struct BufferInfo* buffer, s32 length)
 {
     if (buffer->position + length <= buffer->length)
     {
-        memcpy(dest, ((unsigned char*)buffer->data + buffer->position), length);
+        memcpy(dest, (void*)((char*)buffer->data + buffer->position), length);
         buffer->position += length;
 
         return true;
@@ -199,7 +199,7 @@ static unsigned char PeekBuffer(struct BufferInfo* buffer, s32 jmp)
 {
     if (buffer->data != nullptr && (buffer->position + jmp) < buffer->length)
     {
-        return *((unsigned char*)buffer->data + buffer->position + jmp);
+        return *(((unsigned char*)buffer->data + buffer->position) + jmp);
     }
 
     return 0;

@@ -5,6 +5,8 @@
 #include "tjd_share.h"
 
 bool LoadLatestRadarData();
+bool LoadMapBufferData();
+bool GeoTextLoadBuffer();
 
 bool RenderInit(void* window);
 

@@ -300,11 +300,11 @@ void PaintCaption(HWND hwnd, HDC hdc)
                 // Select a font.
                 LOGFONT lgFont;
                 HFONT hFontOld = NULL;
-                // if (SUCCEEDED(GetThemeSysFont(hTheme, TMT_CAPTIONFONT, &lgFont)))
-                // {
-                //     HFONT hFont = CreateFontIndirect(&lgFont);
-                //     hFontOld = (HFONT)SelectObject(hdcPaint, hFont);
-                // }
+                 // if (SUCCEEDED(GetThemeSysFont(hTheme, TMT_CAPTIONFONT, &lgFont)))
+                 // {
+                 //     HFONT hFont = CreateFontIndirect(&lgFont);
+                 //     hFontOld = (HFONT)SelectObject(hdcPaint, hFont);
+                 // }
 
                 // Draw the title.
                 RECT rcPaint = rcClient;
