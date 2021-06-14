@@ -141,7 +141,7 @@ static u32 GetFileLength(FILE* fp)
     return result;
 }
 
-bool readDbf(const char* filepath, std::vector<std::string>* names)
+bool readDbf(const char* filepath, std::string propName, std::vector<std::string>* names)
 {
     BufferInfo _dbf_buffer = {};
     BufferInfo* dbf_buffer = &_dbf_buffer;
@@ -199,12 +199,11 @@ bool readDbf(const char* filepath, std::vector<std::string>* names)
         void* record_cursor = &record[0];
         record_cursor = (void*)((char*)record_cursor + 1);
 
-        std::string test = "NAME";
         for (auto field_descriptor : field_descriptors)
         {
             std::string field_name = reinterpret_cast<const char*>(field_descriptor.field_name);
 
-            if (test.compare((const char*)field_descriptor.field_name) == 0)
+            if (propName.compare((const char*)field_descriptor.field_name) == 0)
             {
                 memcpy(content, record_cursor, field_descriptor.field_length);
                 std::string shapeName = (const char*)content;
@@ -305,8 +304,14 @@ bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath)
     s32 point_accum = 0;
     s32 parts_offset = 0;
 
+    // set color stuff here?
+    shapeFileInfo->type = index_header.shapeType;
+
     std::vector<std::string> shapeNames;
-    bool dbfValid = readDbf(filepath, &shapeNames);
+    if (shapeFileInfo->displayNames)
+    {
+        shapeFileInfo->displayNames = readDbf(filepath, shapeFileInfo->propName, &shapeNames);
+    }
 
     for (int i = 0; i < feature_count; i++)
     {
@@ -338,8 +343,7 @@ bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath)
         feature->boundingBox.maxX = (f32)bounding_box[2];
         feature->boundingBox.maxY = (f32)bounding_box[3];
 
-        // @todo
-        if (false && dbfValid)
+        if (shapeFileInfo->displayNames)
         {
             if (i < shapeFileInfo->numFeatures)
             {

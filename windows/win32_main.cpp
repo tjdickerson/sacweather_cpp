@@ -14,7 +14,7 @@
 #include "sacw_api.h"
 #include "win32_menu.h"
 
-// #include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_win32.h"
 
 
 #define LEFTEXTENDWIDTH     8
@@ -256,7 +256,7 @@ void HandleKeyUp(unsigned int keyCode)
     if (keyCode == KEY_PANNING) Panning = false;
 }
 
-// extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void PaintCaption(HWND hwnd, HDC hdc)
 {
@@ -616,9 +616,6 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd, UINT message, WPARAM wParam, LPAR
 {
     LRESULT result = 0;
 
-/*    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
-        return true;*/
-
     HRESULT cpr = S_OK;
     BOOL dwmEnabled = FALSE;
     bool passMessage = true;
@@ -627,6 +624,11 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd, UINT message, WPARAM wParam, LPAR
     if (SUCCEEDED(cpr))
     {
         result = CustomFrameCallback(hwnd, message, wParam, lParam, &passMessage);
+    }
+
+    if(passMessage && ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))        
+    {
+        passMessage = false;
     }
 
     if (passMessage)

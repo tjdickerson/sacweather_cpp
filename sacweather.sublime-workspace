@@ -398,6 +398,23 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"panmap",
+			"imgui",
+			"ui",
+			"colorhe",
+			"textmarker",
+			"text_marker->color",
+			"baked",
+			"g_genericBoxBuffer",
+			"renderbox",
+			"MakeBoxAtPO",
+			"makebox",
+			"MakeBo",
+			"renderini",
+			"clearCo",
+			"clearc",
+			"type",
+			"shape",
 			"RenderUi",
 			"UiFragShaderSource",
 			"UiIni",
@@ -508,24 +525,7 @@
 			"GLCREATESHA",
 			"sacw_init",
 			"frag",
-			"build.bat",
-			"src",
-			"NWS_NOAA_RADAR_DIR",
-			"sacw_getmaprender",
-			"GenerateFilename",
-			"NWS_NOAA_RADAR_DIR",
-			"ReflectivityMap",
-			"level",
-			"dbz",
-			"compress",
-			"productLength",
-			"compresse",
-			"BinCount",
-			";\n",
-			"binCount",
-			"totalBinCount",
-			"pd",
-			"Composite"
+			"build.bat"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -550,7 +550,7 @@
 	},
 	"incremental_find":
 	{
-		"height": 32.0
+		"height": 33.3333333333
 	},
 	"input":
 	{
@@ -565,11 +565,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.5,
 			1.0
 		],
 		"rows":
@@ -590,7 +597,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 60.0
+		"height": 62.6666666667
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -599,6 +606,46 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"win32",
+				"windows\\win32_main.cpp"
+			],
+			[
+				"st",
+				"sacwlib\\stb_truetype.h"
+			],
+			[
+				"font",
+				"sacwlib\\tjd_font.cpp"
+			],
+			[
+				"shape",
+				"sacwlib\\tjd_shapefile.h"
+			],
+			[
+				"gl_rend",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacwmain",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"tjd_font",
+				"sacwlib\\tjd_font.cpp"
+			],
+			[
+				"sacwm",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"shapefil",
+				"sacwlib\\tjd_shapefile.cpp"
+			],
+			[
+				"gl_render",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
 			[
 				"tjd_rada",
 				"sacwlib\\tjd_radar.cpp"
@@ -614,10 +661,6 @@
 			[
 				"tjd_sh",
 				"sacwlib\\tjd_share.h"
-			],
-			[
-				"gl_render",
-				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
 				"render",
@@ -668,10 +711,6 @@
 				"sacwlib\\tjd_font.h"
 			],
 			[
-				"win32",
-				"windows\\win32_main.cpp"
-			],
-			[
 				"tjd_ren",
 				"sacwlib\\tjd_gl_render.cpp"
 			],
@@ -696,10 +735,6 @@
 				"sacwlib\\tjd_font.h"
 			],
 			[
-				"font",
-				"sacwlib\\tjd_font.cpp"
-			],
-			[
 				"build",
 				"windows\\build.bat"
 			],
@@ -708,20 +743,12 @@
 				"sacwlib\\tjd_gl.h"
 			],
 			[
-				"shape",
-				"sacwlib\\tjd_shapefile.h"
-			],
-			[
 				"sacw",
 				"sacwlib\\sacw_main.cpp"
 			],
 			[
 				"rend",
 				"sacwlib\\tjd_gl_render.cpp"
-			],
-			[
-				"sacwm",
-				"sacwlib\\sacw_main.cpp"
 			],
 			[
 				"gl.",
@@ -942,10 +969,6 @@
 			[
 				"sacw_a",
 				"src\\sacw_api.h"
-			],
-			[
-				"shapefil",
-				"src\\tjd_shapefile.h"
 			],
 			[
 				"exte",

@@ -28,6 +28,9 @@ struct GeoTextMarker
     char text[256];
     color4 color;
 
+    f32 renderWidth;
+    f32 renderHeight;
+
     u32 startIndex;
     u32 count;
 };

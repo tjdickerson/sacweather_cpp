@@ -91,6 +91,8 @@ struct ShapeData
 };
 
 
+#define SHAPE_TYPE_POLYGON 5
+
 struct ShapeFileInfo
 {
     s32 numFeatures{};
@@ -108,8 +110,15 @@ struct ShapeFileInfo
     s32* starts{};
     s32* counts{};
 
+    bool displayNames{};
+    char propName[128];
+
+    s32 type{};
+    bool fill{};
+
+    color4 fillColor{};
     color4 lineColor{};
-    std::string filename;
+    char filename[256];
 };
 
 
@@ -168,7 +177,21 @@ typedef struct StandardPropArray_t
 //
 bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath);
 
+static void ShapeFileInit(
+    ShapeFileInfo* shapeFileInfo,
+    const std::string& filepath,
+    const color4 lineColor,
+    bool displayNames = false,
+    const std::string& propName = "")
+{
+    memcpy(shapeFileInfo->filename, filepath.c_str(), filepath.length() + 1);
 
+    shapeFileInfo->displayNames = displayNames;
+    if (displayNames)
+        memcpy(shapeFileInfo->propName, propName.c_str(), propName.length() + 1);
+
+    shapeFileInfo->lineColor = lineColor;
+}
 
 #define _TJD_SHAPEFILE_H_
 #endif

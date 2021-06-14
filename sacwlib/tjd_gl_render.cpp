@@ -70,6 +70,8 @@ static GLchar* TextVertShaderSource();
 static GLchar* TextFragShaderSource();
 static GLchar* UiVertShaderSource();
 static GLchar* UiFragShaderSource();
+static GLchar* ObjVertShaderSource();
+static GLchar* ObjFragShaderSource();
 
 static GLuint RadarVao;
 static GLuint RadarVbo;
@@ -124,7 +126,13 @@ static GLfloat g_identMatrix[] =
         0.0f, 0.0f, 0.0f, 1.0f
     };
 
-static v4f32 g_clearColor = { 20.0f / 255.0f, 20.0f / 255.0f, 20.0f / 255.0f, 1.0f };
+static v4f32 g_clearColor = { 
+    //0x1d2025
+    ColorHexToFloat(0x0d), 
+    ColorHexToFloat(0x10), 
+    ColorHexToFloat(0x15), 
+    1.0f
+};
 
 static RenderVertData StateVertData;
 static RenderVertData CountyVertData;
@@ -148,6 +156,7 @@ void adjTranslationMatrix(f32 x, f32 y)
     g_transMatrix[12] = x;
     g_transMatrix[13] = y;
 }
+
 
 bool UiBufferInit()
 {
@@ -210,6 +219,7 @@ bool UiBufferInit()
     return true;
 }
 
+
 bool GeoTextRenderInit(GeoTextRenderInfo* renderInfo)
 {
     GLuint shader = GLCreateShaderProgram(TextVertShaderSource(), TextFragShaderSource());
@@ -247,7 +257,14 @@ bool GeoTextRenderInit(GeoTextRenderInfo* renderInfo)
 
                 marker->position = feature->featureName.location;
                 marker->textLength = feature->featureName.textLength;
-                marker->color = { 1.0f, 0.4f, 1.0f, 1.0f };
+                
+                marker->color = { 
+                    ColorHexToFloat(0x54), 
+                    ColorHexToFloat(0x56), 
+                    ColorHexToFloat(0x65), 
+                    1.0f 
+                };
+
                 memcpy(marker->text, feature->featureName.text, feature->featureName.textLength);
             }
         }
@@ -429,7 +446,7 @@ bool RenderInit(void* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     MapInit();
-    GeoTextRenderInit(&g_GeoTextRenderInfo);
+    GeoTextRenderInit(&g_GeoTextRenderInfo);    
 
     RadarShader = GLCreateShaderProgram(RadarVertShaderSource(), RadarFragShaderSource());
     g_radarVertexAttr = glGetAttribLocation(RadarShader, "position");
@@ -441,7 +458,6 @@ bool RenderInit(void* window)
 
     glGenVertexArrays(1, &RadarVao);
     glGenBuffers(1, &RadarVbo);
-
 
     glGenTextures(1, &FontAtlasTexture);
     InitFont(FontAtlasTexture);
@@ -458,7 +474,8 @@ void RenderUi()
     glDrawArrays(GL_TRIANGLES, 0, 12);
 }
 
-void RenderShapeFile(ShapeRenderInfo* renderInfo)
+
+void renderShapeFile(ShapeRenderInfo* renderInfo)
 {
     glUseProgram(renderInfo->shader);
     glBindVertexArray(renderInfo->vao);
@@ -467,37 +484,50 @@ void RenderShapeFile(ShapeRenderInfo* renderInfo)
     glUniformMatrix4fv(renderInfo->rotUniLoc, 1, GL_FALSE, g_rotMatrix);
     glUniformMatrix4fv(renderInfo->scaleUniLoc, 1, GL_FALSE, g_scaleMatrix);
 
-    ShapeFileInfo* shapeFile = &renderInfo->shapeFile;
+    ShapeFileInfo* shape_file = &renderInfo->shapeFile;
     glUniform4f(
         renderInfo->colorUniLoc,
-        shapeFile->lineColor.r,
-        shapeFile->lineColor.g,
-        shapeFile->lineColor.b,
-        shapeFile->lineColor.a
+        shape_file->lineColor.r,
+        shape_file->lineColor.g,
+        shape_file->lineColor.b,
+        shape_file->lineColor.a
     );
 
+    GLint draw_type = GL_LINE_LOOP;
+    if (shape_file->fill)
+        draw_type = GL_LINE_LOOP; // :(
+
     s32 idx = 0;
-    for (int j = 0; j < shapeFile->numFeatures; j++)
+    for (int j = 0; j < shape_file->numFeatures; j++)
     {
-        ShapeData* feature = &shapeFile->features[j];
+        ShapeData* feature = &shape_file->features[j];
         for (int k = 0; k < feature->numParts; k++)
         {
-            idx = feature->partsIndex + k;
-            glDrawArrays(
-                GL_LINE_STRIP,
-                shapeFile->starts[idx],
-                shapeFile->counts[idx]
-            );
+            bool draw =
+                feature->boundingBox.maxX > g_MapViewInfo.worldScreenBounds.min_x &&
+                feature->boundingBox.minX < g_MapViewInfo.worldScreenBounds.max_x &&
+                feature->boundingBox.maxY > g_MapViewInfo.worldScreenBounds.min_y &&
+                feature->boundingBox.minY < g_MapViewInfo.worldScreenBounds.max_y;
+
+            if (draw)
+            {
+                idx = feature->partsIndex + k;
+                glDrawArrays(
+                    draw_type,
+                    shape_file->starts[idx],
+                    shape_file->counts[idx]
+                );
+            }
         }
     }
 
 }
 
-void RenderMap()
+void renderMap()
 {
     for (int i = 0; i < g_MapViewInfo.shapeFileCount; i++)
     {
-        RenderShapeFile(&g_MapViewInfo.renderInfo[i]);
+        renderShapeFile(&g_MapViewInfo.renderInfo[i]);
     }
 }
 
@@ -534,7 +564,6 @@ void renderGeoText()
         f32 offset[2];
         offset[0] = off_x;
         offset[1] = off_y;
-
 
         glUseProgram(g_GeoTextRenderInfo.shader);
         glBindVertexArray(g_GeoTextRenderInfo.vao);
@@ -610,12 +639,12 @@ void renderLayers()
         RenderRadar();
     }
 
-    RenderMap();
+    renderMap();
     renderGeoText();
 
-    //TestIMGUI(show_demo);
 
     {
+        TestIMGUI(show_demo);
         RenderUi();
     }
 
@@ -630,9 +659,6 @@ void Render()
     glViewport(0, 0, g_MapViewInfo.mapWidthPixels, g_MapViewInfo.mapHeightPixels);
 
     renderLayers();
-
-    glUseProgram(0);
-    glFlush();
 
     /*bool splitScreen = false;
     if (splitScreen)
@@ -1080,6 +1106,36 @@ static GLchar* UiFragShaderSource()
         }
     )glsl";
 #endif
+
+    return (GLchar*)source;
+}
+
+
+static GLchar* ObjVertShaderSource() {
+    const char* source = R"glsl(
+        #version 150
+        in vec2 position;
+        in vec4 color;
+
+        out vec4 frag_color;
+        void main() {
+            frag_color = color;
+            gl_Position = vec4(position, 0.0, 1.0);
+        }
+    )glsl";
+
+    return (GLchar*)source;
+}
+
+static GLchar* ObjFragShaderSource() {
+    const char* source = R"glsl(
+        #version 150
+        in  vec4 frag_color;
+        out vec4 outColor;
+        void main() {
+            outColor = frag_color;
+        }
+    )glsl";
 
     return (GLchar*)source;
 }

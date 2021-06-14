@@ -89,31 +89,43 @@ void centerMapAt(f32 lon, f32 lat)
 
 void shapeFileInit()
 {
-    s32 shape_file_count = 2;
+    s32 shape_file_count = 3;
     g_MapViewInfo.shapeFileCount = shape_file_count;
     g_MapViewInfo.renderInfo = (ShapeRenderInfo*)calloc(shape_file_count, sizeof(ShapeRenderInfo));
 
+    std::string filename = "";
+    color4 line_color = {};
+
+
+    ShapeFileInfo base = {};
+    filename = R"(C:\shapes\weather\bound_p)";
+    line_color = { ColorHexToFloat(0x35), ColorHexToFloat(0x3a), ColorHexToFloat(0x3a), 1.0f };
+    ShapeFileInit(&base, filename, line_color);
+
     ShapeFileInfo states = {};
-    states.filename = R"(C:\shapes\weather\st_us)";
-    states.lineColor = color4 {1.0f, 1.0f, 1.0f, 1.0f};
+    filename = R"(C:\shapes\weather\st_us)";
+    line_color = {ColorHexToFloat(0x31), ColorHexToFloat(0x33), ColorHexToFloat(0x33), 1.0f};
+    ShapeFileInit(&states, filename, line_color, true, "NAME");
 
     ShapeFileInfo counties = {};
-    counties.filename = R"(C:\shapes\weather\cnt_us)";
-    counties.lineColor = color4 {0.4f, 0.4f, 0.4f, 1.0f};
+    filename = R"(C:\shapes\weather\cnt_us)";
+    line_color = {ColorHexToFloat(0x25), ColorHexToFloat(0x28), ColorHexToFloat(0x28), 1.0f};
+    ShapeFileInit(&counties, filename, line_color);
 
     /*ShapeFileInfo roads = {};
     roads.filename = R"(C:\shapes\weather\roads)";
     roads.lineColor = color4 {0.4f, 0.4f, 1.0f, 1.0f};*/
 
-    g_MapViewInfo.renderInfo[0].shapeFile = counties;
-    g_MapViewInfo.renderInfo[1].shapeFile = states;
+    g_MapViewInfo.renderInfo[0].shapeFile = base;
+    g_MapViewInfo.renderInfo[1].shapeFile = counties;
+    g_MapViewInfo.renderInfo[2].shapeFile = states;
     // g_MapViewInfo.renderInfo[2].shapeFile = roads;
 
     for(int i = 0; i <  shape_file_count; i++)
     {
         ShapeFileInfo* this_file = &g_MapViewInfo.renderInfo[i].shapeFile;
 
-        ReadShapeFile(this_file, this_file->filename.c_str());
+        ReadShapeFile(this_file, this_file->filename);
         this_file->needsRefresh = true;
     }
 

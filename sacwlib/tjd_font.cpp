@@ -15,14 +15,14 @@
 // ascii 32..126
 stbtt_bakedchar cdata[96];
 
-#define TMP_BMP_WIDTH 512
-#define TMP_BMP_HEIGHT 512
+#define TMP_BMP_WIDTH 1024
+#define TMP_BMP_HEIGHT 1024
 unsigned char tmp_work_bitmap[TMP_BMP_WIDTH * TMP_BMP_HEIGHT];
 unsigned char tmp_flipped_bitmap[TMP_BMP_WIDTH * TMP_BMP_HEIGHT];
 
 void InitFont(GLuint textureId)
 {
-    const char* font_location = "C:\\code\\sacweather\\resources\\fonts\\WorkSans-Regular.ttf";
+    const char* font_location = "C:\\code\\sacweather\\resources\\fonts\\OpenSans-SemiBold.ttf";
     long file_length;
     unsigned char* font_buffer;
 
@@ -48,7 +48,7 @@ void InitFont(GLuint textureId)
         LOGERR("Failed to load font %s\n", font_location);
     }
 
-    stbtt_BakeFontBitmap(font_buffer, 0, 32.0, tmp_work_bitmap, TMP_BMP_WIDTH, TMP_BMP_HEIGHT, 32, 96, cdata);
+    stbtt_BakeFontBitmap(font_buffer, 0, 64.0, tmp_work_bitmap, TMP_BMP_WIDTH, TMP_BMP_HEIGHT, 32, 96, cdata);
 
 
 /*    for (int row = TMP_BMP_HEIGHT; row > 0; row--)
@@ -117,70 +117,141 @@ void CreateGeoTextVertices(GeoTextRenderInfo* renderInfo, RenderBufferData* buff
             const char* c = &textMarker->text[j];
             if (*c >= 32 && *c < 128)
             {
-                const stbtt_bakedchar* b = cdata + *c - 32;
+                stbtt_aligned_quad q;
+                stbtt_GetBakedQuad(cdata, TMP_BMP_WIDTH, TMP_BMP_HEIGHT, *c - 32, &temp_x, &temp_y, &q, 1);
 
                 f32 botlx, botly, toplx, toply, botrx, botry, toprx, topry;
-                f32 c_h_half, c_w_half, fy0, fy1;
 
-                c_w_half = (f32)(b->x1 - b->x0) * 0.5f;
-                c_h_half = (f32)(b->y1 - b->y0) * 0.5f;
+                botlx = q.x0;
+                botly = -q.y1;
 
-                c_w_half *= bmp_w_factor;
-                c_h_half *= bmp_h_factor;
+                toplx = q.x0;
+                toply = -q.y0;
 
-                fy0 = b->y0;
-                fy1 = b->y1;
+                botrx = q.x1;
+                botry = -q.y1;
 
-                botlx = temp_x - c_w_half;
-                botly = temp_y - c_h_half;
+                toprx = q.x1;
+                topry = -q.y0;
 
-                toplx = temp_x - c_w_half;
-                toply = temp_y + c_h_half;
+                f32 scale = 0.5f;
+                botlx *= scale * bmp_w_factor;
+                botly *= scale * bmp_h_factor;
 
-                botrx = temp_x + c_w_half;
-                botry = temp_y - c_h_half;
+                toplx *= scale * bmp_w_factor;
+                toply *= scale * bmp_h_factor;
 
-                toprx = temp_x + c_w_half;
-                topry = temp_y + c_h_half;
+                botrx *= scale * bmp_w_factor;
+                botry *= scale * bmp_h_factor;
 
-                temp_x += (b->xadvance * bmp_w_factor);
+                toprx *= scale * bmp_w_factor;
+                topry *= scale * bmp_h_factor;
 
 
                 // bottom left
                 bufferData->vertices[vi++] = botlx;
                 bufferData->vertices[vi++] = botly;
-                bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy1 * bmp_h_factor;
-
-                // top left
-                bufferData->vertices[vi++] = toplx;
-                bufferData->vertices[vi++] = toply;
-                bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+                bufferData->vertices[vi++] = q.s0;
+                bufferData->vertices[vi++] = q.t1;
 
                 // bottom right
                 bufferData->vertices[vi++] = botrx;
                 bufferData->vertices[vi++] = botry;
-                bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy1 * bmp_h_factor;
+                bufferData->vertices[vi++] = q.s1;
+                bufferData->vertices[vi++] = q.t1;
 
                 // top left
                 bufferData->vertices[vi++] = toplx;
                 bufferData->vertices[vi++] = toply;
-                bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+                bufferData->vertices[vi++] = q.s0;
+                bufferData->vertices[vi++] = q.t0;
 
+
+                // top left
+                bufferData->vertices[vi++] = toplx;
+                bufferData->vertices[vi++] = toply;
+                bufferData->vertices[vi++] = q.s0;
+                bufferData->vertices[vi++] = q.t0;
+
+                // bottom right
+                bufferData->vertices[vi++] = botrx;
+                bufferData->vertices[vi++] = botry;
+                bufferData->vertices[vi++] = q.s1;
+                bufferData->vertices[vi++] = q.t1;
+                
                 // top right
                 bufferData->vertices[vi++] = toprx;
                 bufferData->vertices[vi++] = topry;
-                bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+                bufferData->vertices[vi++] = q.s1;
+                bufferData->vertices[vi++] = q.t0;
 
-                // bottom right
-                bufferData->vertices[vi++] = botrx;
-                bufferData->vertices[vi++] = botry;
-                bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                bufferData->vertices[vi++] = fy1 * bmp_h_factor;
+
+
+
+                // const stbtt_bakedchar* b = cdata + *c - 32;
+
+                // f32 botlx, botly, toplx, toply, botrx, botry, toprx, topry;
+                // f32 c_h_half, c_w_half, fy0, fy1;
+
+                // c_w_half = (f32)(b->x1 - b->x0) * 0.5f;
+                // c_h_half = (f32)(b->y1 - b->y0) * 0.5f;
+
+                // c_w_half *= bmp_w_factor;
+                // c_h_half *= bmp_h_factor;
+
+                // fy0 = b->y0;
+                // fy1 = b->y1;
+
+                // botlx = temp_x - c_w_half;
+                // botly = temp_y - c_h_half;
+
+                // toplx = temp_x - c_w_half;
+                // toply = temp_y + c_h_half;
+
+                // botrx = temp_x + c_w_half;
+                // botry = temp_y - c_h_half;
+
+                // toprx = temp_x + c_w_half;
+                // topry = temp_y + c_h_half;
+
+                // temp_x += (b->xadvance * bmp_w_factor);
+
+
+                // // bottom left
+                // bufferData->vertices[vi++] = botlx;
+                // bufferData->vertices[vi++] = botly;
+                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
+
+                // // top left
+                // bufferData->vertices[vi++] = toplx;
+                // bufferData->vertices[vi++] = toply;
+                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+
+                // // bottom right
+                // bufferData->vertices[vi++] = botrx;
+                // bufferData->vertices[vi++] = botry;
+                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
+
+                // // top left
+                // bufferData->vertices[vi++] = toplx;
+                // bufferData->vertices[vi++] = toply;
+                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+
+                // // top right
+                // bufferData->vertices[vi++] = toprx;
+                // bufferData->vertices[vi++] = topry;
+                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
+
+                // // bottom right
+                // bufferData->vertices[vi++] = botrx;
+                // bufferData->vertices[vi++] = botry;
+                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
+                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
 
             }
         }
