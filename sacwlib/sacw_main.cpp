@@ -89,7 +89,7 @@ void centerMapAt(f32 lon, f32 lat)
 
 void shapeFileInit()
 {
-    s32 shape_file_count = 3;
+    s32 shape_file_count = 5;
     g_MapViewInfo.shapeFileCount = shape_file_count;
     g_MapViewInfo.renderInfo = (ShapeRenderInfo*)calloc(shape_file_count, sizeof(ShapeRenderInfo));
 
@@ -97,29 +97,51 @@ void shapeFileInit()
     color4 line_color = {};
 
 
-    ShapeFileInfo base = {};
-    filename = R"(C:\shapes\weather\bound_p)";
-    line_color = { ColorHexToFloat(0x35), ColorHexToFloat(0x3a), ColorHexToFloat(0x3a), 1.0f };
-    ShapeFileInit(&base, filename, line_color);
-
     ShapeFileInfo states = {};
     filename = R"(C:\shapes\weather\st_us)";
-    line_color = {ColorHexToFloat(0x31), ColorHexToFloat(0x33), ColorHexToFloat(0x33), 1.0f};
+    line_color = {ColorHexToFloat(0x81), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f};
     ShapeFileInit(&states, filename, line_color, true, "NAME");
+    states.lineWidth = 1.2f;
+    states.category = SHAPE_STATES;
 
     ShapeFileInfo counties = {};
     filename = R"(C:\shapes\weather\cnt_us)";
-    line_color = {ColorHexToFloat(0x25), ColorHexToFloat(0x28), ColorHexToFloat(0x28), 1.0f};
+    line_color = {ColorHexToFloat(0x25), ColorHexToFloat(0x30), ColorHexToFloat(0x28), 1.0f};
     ShapeFileInit(&counties, filename, line_color);
+    counties.lineWidth = 1.2f;
+    counties.category = SHAPE_COUNTIES;
+    counties.showPastScale = 0.075f;
 
-    /*ShapeFileInfo roads = {};
-    roads.filename = R"(C:\shapes\weather\roads)";
-    roads.lineColor = color4 {0.4f, 0.4f, 1.0f, 1.0f};*/
+    ShapeFileInfo roads = {};
+    filename = R"(C:\shapes\weather\hways)";
+    line_color = {ColorHexToFloat(0x7a), ColorHexToFloat(0x4c), ColorHexToFloat(0x38), 1.0f};
+    ShapeFileInit(&roads, filename, line_color, true, "SIGN1");
+    roads.category = SHAPE_ROADS;
+    roads.lineWidth = 1.2f;
+    roads.showPastScale = 0.075f;
 
-    g_MapViewInfo.renderInfo[0].shapeFile = base;
-    g_MapViewInfo.renderInfo[1].shapeFile = counties;
-    g_MapViewInfo.renderInfo[2].shapeFile = states;
-    // g_MapViewInfo.renderInfo[2].shapeFile = roads;
+    ShapeFileInfo rivers = {};
+    filename = R"(C:\shapes\weather\maj_riv)";
+    line_color = {ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x70), 1.0f};
+    ShapeFileInit(&rivers, filename, line_color);
+    rivers.category = SHAPE_RIVERS;
+    rivers.lineWidth = 1.7f;
+    rivers.showPastScale = 0.4f;
+
+    ShapeFileInfo lakes = {};
+    filename = R"(C:\shapes\weather\lk_us)";
+    line_color = {ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x78), 1.0f};
+    ShapeFileInit(&lakes, filename, line_color);
+    lakes.category = SHAPE_RIVERS;
+    lakes.lineWidth = 1.7f;
+    lakes.showPastScale = 0.4f;
+
+
+    g_MapViewInfo.renderInfo[0].shapeFile = counties;
+    g_MapViewInfo.renderInfo[1].shapeFile = roads;
+    g_MapViewInfo.renderInfo[2].shapeFile = rivers;
+    g_MapViewInfo.renderInfo[3].shapeFile = lakes;
+    g_MapViewInfo.renderInfo[4].shapeFile = states;
 
     for(int i = 0; i <  shape_file_count; i++)
     {
@@ -222,6 +244,7 @@ void sacw_UpdateViewport(f32 width, f32 height)
 
 void LogMapInfo()
 {
+#if 0
     LOGINF("MapInfo:    xPan %2.4f  yPan %2.4f  scaleFactor %2.4f   xScale %2.4f    yScale %2.4f\n",
         g_MapViewInfo.xPan, g_MapViewInfo.yPan, g_MapViewInfo.scaleFactor, g_MapViewInfo.xScale, g_MapViewInfo.yScale);
 
@@ -230,6 +253,7 @@ void LogMapInfo()
         g_MapViewInfo.worldScreenBounds.min_y,
         g_MapViewInfo.worldScreenBounds.max_x,
         g_MapViewInfo.worldScreenBounds.max_y);
+#endif
 }
 
 void AdjustWorldScreenBounds()
@@ -258,6 +282,8 @@ void sacw_ZoomMap(f32 zoom)
 
     // if (targetScale < 10) targetScale = 10 + 1;
     // else if (targetScale > 250) targetScale = 250 - 1;
+
+    LOGINF("Scale: %.4f\n", g_MapViewInfo.scaleFactor);
 
     g_MapViewInfo.scaleFactor = targetScale;
     AdjustWorldScreenBounds();
@@ -289,7 +315,7 @@ void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
 {
     // ?
     v2f32 convertedPoint = ConvertScreenToCoords(&g_MapViewInfo, x, y);
-
+    LOGINF("Scale: %.4f\n", g_MapViewInfo.scaleFactor);
     points[0] = convertedPoint.x;
     points[1] = convertedPoint.y;
 }

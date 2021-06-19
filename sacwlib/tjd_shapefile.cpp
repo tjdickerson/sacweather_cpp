@@ -113,7 +113,7 @@ bool GenerateShapeBufferData(ShapeFileInfo* shapeFileInfo, RenderBufferData* ren
 {
     if (!shapeFileInfo->pointsInitted)
     {
-        LOGERR("Shape File data not initialized!");
+        LOGERR("Shape File data not initialized!\n");
         return false;
     }
 
@@ -303,25 +303,48 @@ bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath)
     s32 points_offset = 0;
     s32 point_accum = 0;
     s32 parts_offset = 0;
+    s32 actual_feature_count = 0;
 
     // set color stuff here?
     shapeFileInfo->type = index_header.shapeType;
 
+    bool dbfValid = false;
     std::vector<std::string> shapeNames;
     if (shapeFileInfo->displayNames)
     {
-        shapeFileInfo->displayNames = readDbf(filepath, shapeFileInfo->propName, &shapeNames);
+        dbfValid = readDbf(filepath, shapeFileInfo->propName, &shapeNames);
+        shapeFileInfo->displayNames = dbfValid;
     }
 
     for (int i = 0; i < feature_count; i++)
     {
-        feature = &shapeFileInfo->features[i];
-        feature->partsIndex = parts_offset;
+
 
         ReadFromBuffer(&index_record, &index_buffer, sizeof(index_record));
         index_record.offset = SwapBytes(index_record.offset) * 2;
 
+        // @todo
+        // Temp hack for roads until I handle dbf properties better
+        if (shapeFileInfo->category == SHAPE_ROADS)
+        {
+            shapeFileInfo->displayNames = false;
+            std::string type = shapeNames.at(i);
+
+/*            if (type == "I" || type == "Sthy")
+            {
+                int break_here = 1;
+            }
+            else
+            {
+                continue;
+            }*/
+        }
+
         SetBufferPos(shape_buffer, index_record.offset);
+
+        feature = &shapeFileInfo->features[actual_feature_count];
+        feature->partsIndex = parts_offset;
+        actual_feature_count += 1;
 
         // Read in a feature.
 
@@ -415,6 +438,7 @@ bool ReadShapeFile(ShapeFileInfo* shapeFileInfo, const char* filepath)
         points_offset += num_points;
     }
 
+    shapeFileInfo->numFeatures = actual_feature_count;
 
     // @todo
     // Handle if realloc returns 0/nullptr

@@ -83,14 +83,7 @@ static GLint g_radarTransPos;
 static GLint g_radarScalePos;
 static GLint g_radarRotPos;
 
-static GLuint g_UiVao;
-static GLuint g_UiVbo;
-static GLuint g_UiShader;
-static GLint g_UiVertexAttribute;
-static GLint g_UiColorAttribute;
-static GLint g_UiTransPos;
-static GLint g_UiScalePos;
-static GLint g_UiRotPos;
+static UiRenderInfo g_UiRenderInfo = {};
 
 static GLuint FontAtlasTexture;
 
@@ -145,6 +138,7 @@ void logGLString(const char* text, GLenum key)
     LOGINF("GL %s :: %s\n", text, out);
 }
 
+
 void adjScaleMatrix(f32 x, f32 y)
 {
     g_scaleMatrix[0] = x;
@@ -158,12 +152,41 @@ void adjTranslationMatrix(f32 x, f32 y)
 }
 
 
-bool UiBufferInit()
+void useWorldSpace()
 {
-    g_UiShader = GLCreateShaderProgram(UiVertShaderSource(), UiFragShaderSource());
+    f32 x_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.xScale);
+    f32 y_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.yScale);
 
-    glGenVertexArrays(1, &g_UiVao);
-    glBindVertexArray(g_UiVao);
+    f32 trans_x = g_MapViewInfo.xPan;
+    f32 trans_y = g_MapViewInfo.yPan;
+
+
+    adjScaleMatrix(x_scale, y_scale);
+    adjTranslationMatrix(trans_x, trans_y);
+}
+
+void useScreenSpace()
+{
+    glViewport(0, 0, g_MapViewInfo.mapWidthPixels, g_MapViewInfo.mapHeightPixels);
+
+    f32 x_scale = 1.0f / g_MapViewInfo.xScale;
+    f32 y_scale = 1.0f / g_MapViewInfo.yScale;
+
+    adjScaleMatrix(1.0f / g_MapViewInfo.mapWidthPixels, -1.0f / g_MapViewInfo.mapHeightPixels);
+    
+    adjTranslationMatrix(
+        (2.0f / g_MapViewInfo.mapWidthPixels) - g_MapViewInfo.mapWidthPixels,
+        (2.0f / g_MapViewInfo.mapHeightPixels) - g_MapViewInfo.mapHeightPixels
+    );
+}
+
+bool UiBufferInit(UiRenderInfo* renderInfo)
+{
+    GLuint shader = GLCreateShaderProgram(UiVertShaderSource(), UiFragShaderSource());
+    renderInfo->shader = shader;
+
+    glGenVertexArrays(1, &renderInfo->vao);
+    glBindVertexArray(renderInfo->vao);
 
     f32 thing[] = {
         // title bar
@@ -176,7 +199,7 @@ bool UiBufferInit()
         1.0f, 0.95f, 0.3f, 0.3f, 0.35f, 1.0f,
 
         // close button?
-        0.9f, 0.99f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.9, 1.0f, 0.0f, 1.0f, 1.0f,
         0.9f, 0.96f, 0.0f, 1.0f, 1.0f, 1.0f,
         0.96f, 0.99f, 0.0f, 0.0f, 1.0f, 1.0f,
 
@@ -184,10 +207,19 @@ bool UiBufferInit()
         0.9f, 0.96f, 0.0f, 0.0f, 1.0f, 1.0f,
         0.96f, 0.96f, 1.0f, 0.0f, 0.0f, 1.0f,
 
+        // box
+        0.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        0.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        100.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
+
+        100.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        100.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
+
     };
 
-    glGenBuffers(1, &g_UiVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, g_UiVbo);
+    glGenBuffers(1, &renderInfo->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, renderInfo->vbo);
     glBufferData(
         GL_ARRAY_BUFFER,
         sizeof(thing),
@@ -195,26 +227,31 @@ bool UiBufferInit()
         GL_STATIC_DRAW
     );
 
-    g_UiVertexAttribute = glGetAttribLocation(g_UiShader, "Position");
-    glEnableVertexAttribArray(g_UiVertexAttribute);
+    renderInfo->transUniLoc = glGetUniformLocation(renderInfo->shader, "translation");
+    renderInfo->rotUniLoc = glGetUniformLocation(renderInfo->shader, "rotation");
+    renderInfo->scaleUniLoc = glGetUniformLocation(renderInfo->shader, "scale");
+
+    renderInfo->vertexAttribute = glGetAttribLocation(renderInfo->shader, "Position");
+    glEnableVertexAttribArray(renderInfo->vertexAttribute);
     glVertexAttribPointer(
-        g_UiVertexAttribute,
+        renderInfo->vertexAttribute,
         2,
         GL_FLOAT,
         GL_FALSE,
         6 * (sizeof(f32)),
-        NULL
+        nullptr
     );
 
-    g_UiColorAttribute = glGetAttribLocation(g_UiShader, "Color");
-    glEnableVertexAttribArray(g_UiColorAttribute);
+    renderInfo->colorAttribute = glGetAttribLocation(renderInfo->shader, "Color");
+    glEnableVertexAttribArray(renderInfo->colorAttribute);
     glVertexAttribPointer(
-        g_UiColorAttribute,
+        renderInfo->colorAttribute,
         4,
         GL_FLOAT,
         GL_FALSE,
         6 * (sizeof(f32)),
-        (void*)(2 * (sizeof(f32))));
+        (void*)(2 * (sizeof(f32)))
+    );
 
     return true;
 }
@@ -375,6 +412,7 @@ bool LoadMapBufferData()
 
 void MapInit()
 {
+    glLineWidth(2.0f);
     for (int i = 0; i < g_MapViewInfo.shapeFileCount; i++)
     {
         ShapeRenderInfo* renderInfo = &g_MapViewInfo.renderInfo[i];
@@ -443,6 +481,7 @@ bool RenderInit(void* window)
     // logGLString("Extensions", GL_EXTENSIONS);
 
     glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     MapInit();
@@ -462,16 +501,22 @@ bool RenderInit(void* window)
     glGenTextures(1, &FontAtlasTexture);
     InitFont(FontAtlasTexture);
 
-    UiBufferInit();
+    UiBufferInit(&g_UiRenderInfo);
 
     return true;
 }
 
-void RenderUi()
+void RenderUi(UiRenderInfo* renderInfo)
 {
-    glUseProgram(g_UiShader);
-    glBindVertexArray(g_UiVao);
-    glDrawArrays(GL_TRIANGLES, 0, 12);
+    useScreenSpace();
+    glUseProgram(renderInfo->shader);
+    glBindVertexArray(renderInfo->vao);
+
+    glUniformMatrix4fv(renderInfo->transUniLoc, 1, GL_FALSE, g_transMatrix);
+    glUniformMatrix4fv(renderInfo->rotUniLoc, 1, GL_FALSE, g_rotMatrix);
+    glUniformMatrix4fv(renderInfo->scaleUniLoc, 1, GL_FALSE, g_scaleMatrix);
+
+    glDrawArrays(GL_TRIANGLES, 0, 18);
 }
 
 
@@ -485,6 +530,10 @@ void renderShapeFile(ShapeRenderInfo* renderInfo)
     glUniformMatrix4fv(renderInfo->scaleUniLoc, 1, GL_FALSE, g_scaleMatrix);
 
     ShapeFileInfo* shape_file = &renderInfo->shapeFile;
+
+    if (shape_file->showPastScale != 0 && g_MapViewInfo.scaleFactor < shape_file->showPastScale)
+        return;
+
     glUniform4f(
         renderInfo->colorUniLoc,
         shape_file->lineColor.r,
@@ -494,10 +543,13 @@ void renderShapeFile(ShapeRenderInfo* renderInfo)
     );
 
     GLint draw_type = GL_LINE_LOOP;
-    if (shape_file->fill)
-        draw_type = GL_LINE_LOOP; // :(
+    if(shape_file->type == SHAPE_TYPE_POLYLINE)
+        draw_type = GL_LINE_STRIP;
+
+    glLineWidth(shape_file->lineWidth);
 
     s32 idx = 0;
+
     for (int j = 0; j < shape_file->numFeatures; j++)
     {
         ShapeData* feature = &shape_file->features[j];
@@ -624,15 +676,7 @@ bool show_demo = true;
 
 void renderLayers()
 {
-    f32 x_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.xScale);
-    f32 y_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.yScale);
-
-    f32 trans_x = g_MapViewInfo.xPan;
-    f32 trans_y = g_MapViewInfo.yPan;
-
-    adjScaleMatrix(x_scale, y_scale);
-    //adjTranslationMatrix(trans_x * x_scale, trans_y * y_scale);      
-    adjTranslationMatrix(trans_x, trans_y);
+    useWorldSpace();
 
     if (canRenderRadar)
     {
@@ -644,8 +688,8 @@ void renderLayers()
 
 
     {
-        TestIMGUI(show_demo);
-        RenderUi();
+        // TestIMGUI(show_demo);
+        RenderUi(&g_UiRenderInfo);
     }
 
 }
@@ -1062,17 +1106,16 @@ static GLchar* UiVertShaderSource()
         in vec2 Position;
         in vec4 Color;
 
+        uniform mat4 translation;
+        uniform mat4 rotation;
+        uniform mat4 scale;
+
         out vec4 frag_color;
 
         void main() {
 
-            // This calculation is backwards from what is typical, in which scale is applied first.
-            // This is because the entire "map" is using this shader so the whole thing gets scaled and
-            // we want the scale to happen from the translated position instead of the origin, so the 
-            // translation needs to be applied before the scale.
-            
             frag_color = Color;
-            gl_Position = vec4(Position, 0.0, 1.0);
+            gl_Position = rotation * scale * translation * vec4(Position, 0.0, 1.0);
         }
     )glsl";
 #endif

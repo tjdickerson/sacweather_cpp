@@ -449,7 +449,7 @@ bool ParseNexradRadarFile(
     }
 
     // SDUS54 means level 3 file.
-    if (strncmp((const char*)buffer, "SDUS54", 6) == 0)
+    if (strncmp((const char*)buffer, "SDUS", 4) == 0)
     {
         BufferInfo l3buffer = {};
         l3buffer.data = &buffer[0];

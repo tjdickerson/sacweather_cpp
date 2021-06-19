@@ -90,7 +90,12 @@ struct ShapeData
     TextMarker featureName{};
 };
 
+#define SHAPE_STATES 0x01
+#define SHAPE_COUNTIES 0x02
+#define SHAPE_ROADS 0x03
+#define SHAPE_RIVERS 0x04
 
+#define SHAPE_TYPE_POLYLINE 3
 #define SHAPE_TYPE_POLYGON 5
 
 struct ShapeFileInfo
@@ -115,6 +120,11 @@ struct ShapeFileInfo
 
     s32 type{};
     bool fill{};
+
+    s32 category{};
+    f32 lineWidth{1.0f};
+
+    f32 showPastScale{0.0f};
 
     color4 fillColor{};
     color4 lineColor{};

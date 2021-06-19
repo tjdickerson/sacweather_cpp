@@ -21,6 +21,17 @@ typedef struct RenderVertData_t
     s32* counts;
 } RenderVertData;
 
+struct MapIcon
+{
+    GLuint texId;
+    v2f32 position;
+};
+
+struct MapIconInfo
+{
+
+};
+
 struct GeoTextMarker
 {
     v2f32 position;
@@ -29,7 +40,6 @@ struct GeoTextMarker
     color4 color;
 
     f32 renderWidth;
-    f32 renderHeight;
 
     u32 startIndex;
     u32 count;
@@ -51,6 +61,20 @@ struct GeoTextRenderInfo
 
     u32 markerCount;
     GeoTextMarker* markers;
+};
+
+struct UiRenderInfo
+{
+    GLuint vao{};
+    GLuint vbo{};
+    GLuint shader{};
+
+    GLint vertexAttribute{};
+    GLint colorAttribute{};
+
+    GLint transUniLoc{};
+    GLint rotUniLoc{};
+    GLint scaleUniLoc{};
 };
 
 struct ShapeRenderInfo

@@ -162,7 +162,7 @@ int CALLBACK WinMain(
     HDC hdc = GetDC(hwnd);
     MSG message;
 
-    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
+    const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kind/sn.last";
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 
     bool testing_level2 = false;
@@ -245,9 +245,6 @@ void HandleKeyDown(unsigned int keyCode)
         Panning = true;
         f32 points[2];
         sacw_GetPolarFromScreen(ClickLast.x, ClickLast.y, points);
-
-        LOGINF("Clicked:  sx: %2.2f  sy: %2.2f   px: %2.2f  py: %2.2f\n",
-            ClickLast.x, ClickLast.y, points[0], points[1]);
     }
 }
 
@@ -628,7 +625,10 @@ LRESULT CALLBACK WinMessageCallback(HWND hwnd, UINT message, WPARAM wParam, LPAR
 
     if(passMessage && ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))        
     {
-        passMessage = false;
+        // @todo
+        // This doesn't seem to work this way.
+        ImGuiIO& io = ImGui::GetIO();
+        passMessage = !io.WantCaptureMouse;
     }
 
     if (passMessage)

@@ -134,6 +134,8 @@ void CreateGeoTextVertices(GeoTextRenderInfo* renderInfo, RenderBufferData* buff
                 toprx = q.x1;
                 topry = -q.y0;
 
+                textMarker->renderWidth += temp_x * bmp_w_factor;                
+
                 f32 scale = 0.5f;
                 botlx *= scale * bmp_w_factor;
                 botly *= scale * bmp_h_factor;
@@ -184,74 +186,6 @@ void CreateGeoTextVertices(GeoTextRenderInfo* renderInfo, RenderBufferData* buff
                 bufferData->vertices[vi++] = topry;
                 bufferData->vertices[vi++] = q.s1;
                 bufferData->vertices[vi++] = q.t0;
-
-
-
-
-                // const stbtt_bakedchar* b = cdata + *c - 32;
-
-                // f32 botlx, botly, toplx, toply, botrx, botry, toprx, topry;
-                // f32 c_h_half, c_w_half, fy0, fy1;
-
-                // c_w_half = (f32)(b->x1 - b->x0) * 0.5f;
-                // c_h_half = (f32)(b->y1 - b->y0) * 0.5f;
-
-                // c_w_half *= bmp_w_factor;
-                // c_h_half *= bmp_h_factor;
-
-                // fy0 = b->y0;
-                // fy1 = b->y1;
-
-                // botlx = temp_x - c_w_half;
-                // botly = temp_y - c_h_half;
-
-                // toplx = temp_x - c_w_half;
-                // toply = temp_y + c_h_half;
-
-                // botrx = temp_x + c_w_half;
-                // botry = temp_y - c_h_half;
-
-                // toprx = temp_x + c_w_half;
-                // topry = temp_y + c_h_half;
-
-                // temp_x += (b->xadvance * bmp_w_factor);
-
-
-                // // bottom left
-                // bufferData->vertices[vi++] = botlx;
-                // bufferData->vertices[vi++] = botly;
-                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
-
-                // // top left
-                // bufferData->vertices[vi++] = toplx;
-                // bufferData->vertices[vi++] = toply;
-                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
-
-                // // bottom right
-                // bufferData->vertices[vi++] = botrx;
-                // bufferData->vertices[vi++] = botry;
-                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
-
-                // // top left
-                // bufferData->vertices[vi++] = toplx;
-                // bufferData->vertices[vi++] = toply;
-                // bufferData->vertices[vi++] = (f32)b->x0 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
-
-                // // top right
-                // bufferData->vertices[vi++] = toprx;
-                // bufferData->vertices[vi++] = topry;
-                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy0 * bmp_h_factor;
-
-                // // bottom right
-                // bufferData->vertices[vi++] = botrx;
-                // bufferData->vertices[vi++] = botry;
-                // bufferData->vertices[vi++] = (f32)b->x1 * bmp_w_factor;
-                // bufferData->vertices[vi++] = fy1 * bmp_h_factor;
 
             }
         }

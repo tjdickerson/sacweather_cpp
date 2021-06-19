@@ -383,7 +383,7 @@
 	],
 	"find":
 	{
-		"height": 44.0
+		"height": 45.3333333333
 	},
 	"find_in_files":
 	{
@@ -607,16 +607,28 @@
 		"selected_items":
 		[
 			[
+				"fon",
+				"sacwlib\\tjd_font.cpp"
+			],
+			[
+				"render",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacw_api",
+				"sacwlib\\sacw_api.h"
+			],
+			[
+				"font",
+				"sacwlib\\tjd_font.cpp"
+			],
+			[
 				"win32",
 				"windows\\win32_main.cpp"
 			],
 			[
 				"st",
 				"sacwlib\\stb_truetype.h"
-			],
-			[
-				"font",
-				"sacwlib\\tjd_font.cpp"
 			],
 			[
 				"shape",
@@ -661,10 +673,6 @@
 			[
 				"tjd_sh",
 				"sacwlib\\tjd_share.h"
-			],
-			[
-				"render",
-				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
 				"win",
@@ -713,10 +721,6 @@
 			[
 				"tjd_ren",
 				"sacwlib\\tjd_gl_render.cpp"
-			],
-			[
-				"sacw_api",
-				"sacwlib\\sacw_api.h"
 			],
 			[
 				"stb",
