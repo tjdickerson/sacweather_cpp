@@ -5,9 +5,13 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "sacw_api.h"
 
 void InitGui(void* window);
-void TestIMGUI(bool show_window);
+void BeginImGui();
+void EndImGui();
+void RenderToolbar();
+void CheckEvents();
 
 #define __tjd_ui_h__
 #endif

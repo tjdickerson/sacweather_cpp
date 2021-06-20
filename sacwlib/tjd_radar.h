@@ -42,14 +42,6 @@ typedef struct RangeBinInfo_t
 } RangeBinInfo;
 
 
-typedef struct WSR88DInfo_t
-{
-    f32     lon;
-    f32     lat;    
-    char    name[5];
-} WSR88DInfo;
-
-
 extern RangeBin* RangeBins;
 
 
@@ -206,10 +198,10 @@ typedef struct SymbologyHeader_t {
 
 
 void tjd_RadarInit();
-s32 tjd_GetRadarRenderData(RenderBufferData* rbd);
+s32 tjd_GetRadarRenderData(RenderBufferData* rbd, NexradProduct* product);
 bool ParseNexradRadarFile(
     const char* filename, 
-    WSR88DInfo* wsrInfo, 
+    RdaSite* wsrInfo,
     NexradProduct* nexradProduct, 
     ProductDescription* pd);
 

@@ -1,32 +1,54 @@
 //
 
+#include <string>
+#include <algorithm>
+
 #ifndef __NWS_INFO_H__
 
 
+constexpr char NWS_NOAA_PROTOCOL[] = "https://\0";
+constexpr char NWS_NOAA_HOSTNAME[] = "tgftp.nws.noaa.gov\0";
+constexpr char NWS_NOAA_RADAR_DIR[] = "/SL.us008001/DF.of/DC.radar\0";
+constexpr char NWS_NOAA_RADAR_DEFAULT_FILE[] = "sn.last";
 
-constexpr char* NWS_NOAA_HOSTNAME = "tgftp.nws.noaa.gov\0";
-constexpr char* NWS_NOAA_RADAR_DIR = "/SL.us008001/DF.of/DC.radar\0";
 
-
-typedef struct NexradProduct_t
+struct NexradProduct
 {
     int productCode;
     float range;
     float resolution;
     char name[128];
     char dir[16];
-} NexradProduct;
+};
 
 
-typedef struct NexradProductInfo_t
+struct NexradProductInfo
 {
     int count;
     NexradProduct nexradProducts[255];
-} NexradProductInfo;
+};
 
 
 extern NexradProductInfo* NexradInfo;
 
+static void GetUrlForProduct(std::string* dest, const char* siteName, NexradProduct* product)
+{
+    dest->append(NWS_NOAA_PROTOCOL);
+    dest->append(NWS_NOAA_HOSTNAME);
+    dest->append(NWS_NOAA_RADAR_DIR);
+
+    dest->append("/");
+    dest->append(product->dir);
+
+    std::string site_name = siteName;
+    transform(site_name.begin(), site_name.end(), site_name.begin(), ::tolower);
+
+    dest->append("/SI.");
+    dest->append(site_name);
+
+    dest->append("/");
+    dest->append(NWS_NOAA_RADAR_DEFAULT_FILE);
+}
 
 // 
 void InitNexradProducts();

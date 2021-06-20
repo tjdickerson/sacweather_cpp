@@ -112,6 +112,7 @@ void CreateGeoTextVertices(GeoTextRenderInfo* renderInfo, RenderBufferData* buff
         textMarker->count = vert_per_quad * textMarker->textLength;
         start_offset += textMarker->count;
 
+        u32 v_start = vi;
         for (int j = 0; j < textMarker->textLength; j++)
         {
             const char* c = &textMarker->text[j];
@@ -136,7 +137,7 @@ void CreateGeoTextVertices(GeoTextRenderInfo* renderInfo, RenderBufferData* buff
 
                 textMarker->renderWidth += temp_x * bmp_w_factor;                
 
-                f32 scale = 0.5f;
+                f32 scale = textMarker->scale;
                 botlx *= scale * bmp_w_factor;
                 botly *= scale * bmp_h_factor;
 

@@ -9,7 +9,7 @@
 #include "tjd_radar.h"
 
 #ifndef __ANDROID__
-#include "tjd_ftp.h"
+#include "tjd_win32_download.h"
 #endif
 
 #include "nws_info.h"
@@ -19,6 +19,8 @@
 
 MapViewInfo g_MapViewInfo;
 GeoTextRenderInfo g_GeoTextRenderInfo;
+RdaSiteInfo g_RdaSiteInfo;
+NexradProduct* g_CurrentProduct;
 
 bool canRenderRadar;
 bool radarIsStale;
@@ -46,12 +48,12 @@ void DownloadRadarFile()
     printf("Site name: %s\n", siteName);
 
     CurrentProduct = GetProductInfo(DefaultProduct);
-    WSR88DInfo wsrInfo = {};  
+    RdaSite wsrInfo = {};
 
     // download file
     char remoteFile[512];
     memset(remoteFile, 0, 512);
-    
+
     strcat(remoteFile, NWS_NOAA_RADAR_DIR);
     strcat(remoteFile, "/");
     strcat(remoteFile, CurrentProduct->dir);
@@ -72,10 +74,81 @@ void DownloadRadarFile()
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 //    URLDownloadToFile(nullptr, file_url, filename, 0, nullptr);
 //
-    sacw_RadarInit(filename, CurrentProduct->productCode);  
+    sacw_RadarInit(filename, CurrentProduct->productCode);
 }
 
 #endif
+
+bool readWsrList()
+{
+    std::string filepath = R"(C:\code\sacweather\resources\wsrlist)";
+    std::string file_contents;
+
+    FILE* fp = fopen(filepath.c_str(), "r");
+
+    if (fp == nullptr)
+    {
+        LOGERR("Failed to open wsrlist.\n");
+        return false;
+    }
+
+    u32 size = 0;
+    fseek(fp, 0, SEEK_END);
+    size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    file_contents.resize(size);
+    auto temp_buffer = (char*)malloc(size);
+    fread(temp_buffer, 1, size, fp);
+
+    file_contents = temp_buffer;
+    free(temp_buffer);
+
+    // parse stuff
+    std::vector<RdaSite> temp_sites;
+    char line[512];
+    u32 idx = 0;
+    u32 pos = 0;
+    while (idx < size)
+    {
+        RdaSite this_site = {};
+
+        pos = file_contents.find_first_of('|', idx + 1);
+        std::string rdaName = file_contents.substr(idx, pos - idx);
+        idx += rdaName.length() + 1;
+        strcpy(this_site.name, rdaName.c_str());
+
+        pos = file_contents.find_first_of('|', idx + 1);
+        std::string name = file_contents.substr(idx, pos - idx);
+        idx += name.length() + 1;
+        strcpy(this_site.displayName, name.c_str());
+
+        pos = file_contents.find_first_of('|', idx + 1);
+        std::string lon = file_contents.substr(idx, pos - idx);
+        idx += lon.length() + 1;
+
+        f32 f_lon = atof(lon.c_str());
+        this_site.location.lon = f_lon;
+
+        pos = file_contents.find_first_of('\n', idx + 1);
+        std::string lat = file_contents.substr(idx, pos - idx);
+        idx += lat.length() + 1;
+
+        f32 f_lat = atof(lat.c_str());
+        this_site.location.lat = f_lat;
+
+        temp_sites.push_back(this_site);
+    }
+
+    g_RdaSiteInfo.count = temp_sites.size();
+    g_RdaSiteInfo.sites = (RdaSite*)malloc(temp_sites.size() * sizeof(RdaSite));
+    for (int i = 0; i < temp_sites.size(); i++)
+    {
+        g_RdaSiteInfo.sites[i] = temp_sites.at(i);
+    }
+
+    return true;
+}
 
 void centerMapAt(f32 lon, f32 lat)
 {
@@ -96,17 +169,16 @@ void shapeFileInit()
     std::string filename = "";
     color4 line_color = {};
 
-
     ShapeFileInfo states = {};
     filename = R"(C:\shapes\weather\st_us)";
-    line_color = {ColorHexToFloat(0x81), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f};
+    line_color = { ColorHexToFloat(0x81), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f };
     ShapeFileInit(&states, filename, line_color, true, "NAME");
     states.lineWidth = 1.2f;
     states.category = SHAPE_STATES;
 
     ShapeFileInfo counties = {};
     filename = R"(C:\shapes\weather\cnt_us)";
-    line_color = {ColorHexToFloat(0x25), ColorHexToFloat(0x30), ColorHexToFloat(0x28), 1.0f};
+    line_color = { ColorHexToFloat(0x25), ColorHexToFloat(0x30), ColorHexToFloat(0x28), 1.0f };
     ShapeFileInit(&counties, filename, line_color);
     counties.lineWidth = 1.2f;
     counties.category = SHAPE_COUNTIES;
@@ -114,7 +186,7 @@ void shapeFileInit()
 
     ShapeFileInfo roads = {};
     filename = R"(C:\shapes\weather\hways)";
-    line_color = {ColorHexToFloat(0x7a), ColorHexToFloat(0x4c), ColorHexToFloat(0x38), 1.0f};
+    line_color = { ColorHexToFloat(0x7a), ColorHexToFloat(0x4c), ColorHexToFloat(0x38), 1.0f };
     ShapeFileInit(&roads, filename, line_color, true, "SIGN1");
     roads.category = SHAPE_ROADS;
     roads.lineWidth = 1.2f;
@@ -122,18 +194,18 @@ void shapeFileInit()
 
     ShapeFileInfo rivers = {};
     filename = R"(C:\shapes\weather\maj_riv)";
-    line_color = {ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x70), 1.0f};
+    line_color = { ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x70), 1.0f };
     ShapeFileInit(&rivers, filename, line_color);
     rivers.category = SHAPE_RIVERS;
-    rivers.lineWidth = 1.7f;
+    rivers.lineWidth = 1.0f;
     rivers.showPastScale = 0.4f;
 
     ShapeFileInfo lakes = {};
     filename = R"(C:\shapes\weather\lk_us)";
-    line_color = {ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x78), 1.0f};
+    line_color = { ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x78), 1.0f };
     ShapeFileInit(&lakes, filename, line_color);
     lakes.category = SHAPE_RIVERS;
-    lakes.lineWidth = 1.7f;
+    lakes.lineWidth = 1.0f;
     lakes.showPastScale = 0.4f;
 
 
@@ -143,7 +215,7 @@ void shapeFileInit()
     g_MapViewInfo.renderInfo[3].shapeFile = lakes;
     g_MapViewInfo.renderInfo[4].shapeFile = states;
 
-    for(int i = 0; i <  shape_file_count; i++)
+    for (int i = 0; i < shape_file_count; i++)
     {
         ShapeFileInfo* this_file = &g_MapViewInfo.renderInfo[i].shapeFile;
 
@@ -155,18 +227,13 @@ void shapeFileInit()
 }
 
 void sacw_Init(void* window)
-{    
+{
     radarIsStale = false;
     g_mapIsStale = false;
 
     g_MapViewInfo = {};
     g_MapViewInfo.worldScreenBounds = {};
-
     g_GeoTextRenderInfo = {};
-
-    shapeFileInit();
-
-    InitNexradProducts();
 
     g_MapViewInfo.scaleFactor = 1.0f; //80.0f;
     g_MapViewInfo.xScale = 1.0f;
@@ -174,15 +241,19 @@ void sacw_Init(void* window)
     g_MapViewInfo.xPan = 0.0f; // -AdjustLonForProjection(-85.790f);
     g_MapViewInfo.yPan = 0.0f; // -AdjustLatForProjection(32.537f);
 
-    RenderInit(window);
-
     centerMapAt(-85.790f, 32.537f);
 
-    #ifndef __ANDROID__
-    // DownloadRadarFile();
-    #endif
-}
 
+    InitNexradProducts();
+
+    g_CurrentProduct = GetProductInfo(94);
+    StartDownload("KIND", g_CurrentProduct);
+
+    shapeFileInit();
+    readWsrList();
+
+    RenderInit(window);
+}
 
 bool sacw_RadarInit(const char* filename, s16 productCode)
 {
@@ -191,9 +262,9 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
     NexradProduct* np = GetProductInfo(productCode);
 
     canRenderRadar = false;
-    radarIsStale = false;   
+    radarIsStale = false;
 
-    WSR88DInfo wsrInfo = {};
+    RdaSite wsrInfo = {};
     gProductDescription = {};
     success = ParseNexradRadarFile(filename, &wsrInfo, np, &gProductDescription);
 
@@ -202,15 +273,14 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
         // g_MapViewInfo.xPan = -AdjustLonForProjection(wsrInfo.lon);
         // g_MapViewInfo.yPan = -AdjustLatForProjection(wsrInfo.lat);
 
-        centerMapAt(wsrInfo.lon, wsrInfo.lat);
+        centerMapAt(wsrInfo.location.lon, wsrInfo.location.lat);
 
         canRenderRadar = success;
-        radarIsStale = success;   
+        radarIsStale = success;
     }
 
-    return success; 
+    return success;
 }
-
 
 void sacw_MainLoop()
 {
@@ -230,16 +300,30 @@ void sacw_MainLoop()
     Render();
 }
 
-
 void sacw_Cleanup()
 {
     RenderCleanup();
 }
 
 
+void AdjustWorldScreenBounds()
+{
+    // @todo
+    // May need a bit of padding on this just to avoid weird cases with comparing floats.
+    v2f32 top_left = ConvertScreenToCoords(&g_MapViewInfo, 0, 0);
+    v2f32 bottom_right =
+        ConvertScreenToCoords(&g_MapViewInfo, (s32)g_MapViewInfo.mapWidthPixels, (s32)g_MapViewInfo.mapHeightPixels);
+
+    g_MapViewInfo.worldScreenBounds.min_x = top_left.x;
+    g_MapViewInfo.worldScreenBounds.max_x = bottom_right.x;
+    g_MapViewInfo.worldScreenBounds.min_y = bottom_right.y;
+    g_MapViewInfo.worldScreenBounds.max_y = top_left.y;
+}
+
 void sacw_UpdateViewport(f32 width, f32 height)
 {
-    RenderViewportUpdate(width, height);    
+    RenderViewportUpdate(width, height);
+    AdjustWorldScreenBounds();
 }
 
 void LogMapInfo()
@@ -256,22 +340,8 @@ void LogMapInfo()
 #endif
 }
 
-void AdjustWorldScreenBounds()
-{
-    // @todo
-    // May need a bit of padding on this just to avoid weird cases with comparing floats.
-    v2f32 top_left = ConvertScreenToCoords(&g_MapViewInfo, 0, 0);
-    v2f32 bottom_right =
-        ConvertScreenToCoords(&g_MapViewInfo, (s32)g_MapViewInfo.mapWidthPixels, (s32)g_MapViewInfo.mapHeightPixels);
-
-    g_MapViewInfo.worldScreenBounds.min_x = top_left.x;
-    g_MapViewInfo.worldScreenBounds.max_x = bottom_right.x;
-    g_MapViewInfo.worldScreenBounds.min_y = bottom_right.y;
-    g_MapViewInfo.worldScreenBounds.max_y = top_left.y;
-}
-
 void sacw_ZoomMap(f32 zoom)
-{      
+{
     if (zoom == 0) return;
 
     f32 speed = 1.0f;
@@ -291,7 +361,6 @@ void sacw_ZoomMap(f32 zoom)
     LogMapInfo();
 }
 
-
 void sacw_PanMap(f32 x, f32 y)
 {
     g_MapViewInfo.xPan += (x / g_MapViewInfo.scaleFactor) * -0.002f;
@@ -300,10 +369,9 @@ void sacw_PanMap(f32 x, f32 y)
     AdjustWorldScreenBounds();
 }
 
-
 void sacw_GetRadarRenderData(RenderBufferData* rbd)
 {
-    tjd_GetRadarRenderData(rbd);
+    tjd_GetRadarRenderData(rbd, g_CurrentProduct);
 }
 
 s64 sacw_GetScanTime()
@@ -320,19 +388,18 @@ void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)
     points[1] = convertedPoint.y;
 }
 
-
 void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, RenderVertData* counties)
 {
 #if 0
     // @todo
     // handle this differently
-    #ifdef __ANDROID__
+#ifdef __ANDROID__
     const char* stateShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/data/st_us";
     const char* countyShapeFile = "/data/user/0/com.tjdickerson.sacweather/files/data/cnt_us";
-    #else
+#else
     const char* stateShapeFile = "C:\\shapes\\weather\\st_us";
     const char* countyShapeFile = "C:\\shapes\\weather\\cnt_us";
-    #endif
+#endif
 
     ShapeFileInfo stateData = {};
     ReadShapeFile(&stateData, stateShapeFile);
@@ -387,8 +454,34 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
             counties->starts[i] = countiesOffset + countyData.parts.at(i);
             counties->counts[i] = countyData.counts.at(i);
         }
-    }    
+    }
 #endif
+}
+
+
+RdaSite* FindClosestRda(v2f32 coords)
+{
+    RdaSite* closestRda = nullptr;
+
+    f32 shortest_distance = 400.0f;
+    for (int i = 0; i < g_RdaSiteInfo.count; i++)
+    {
+        RdaSite* site = &g_RdaSiteInfo.sites[i];
+        f32 distance = abs(DistanceBetween(site->location, coords));
+        if (distance < shortest_distance)
+        {
+            shortest_distance = distance;
+            closestRda = site;
+        }
+    }
+
+    return closestRda;
+}
+
+RdaSite* FindClosestRdaFromScreen(s32 screenX, s32 screenY)
+{
+    v2f32 coords = ConvertScreenToCoords(&g_MapViewInfo, screenX, screenY);
+    return FindClosestRda(coords);
 }
 
 v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y)
@@ -455,3 +548,5 @@ v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y)
     coords.y = ScreenToY(coords.y);
     return coords;
 }
+
+

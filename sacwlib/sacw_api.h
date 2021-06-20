@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include "tjd_share.h"
 #include "tjd_shapefile.h"
-
+#include "nws_info.h"
 
 struct RenderBufferData
 {
@@ -32,6 +32,9 @@ struct MapIconInfo
 
 };
 
+#define GEO_TEXT_STATE      1
+#define GEO_TEXT_RDA        2
+
 struct GeoTextMarker
 {
     v2f32 position;
@@ -39,8 +42,10 @@ struct GeoTextMarker
     char text[256];
     color4 color;
 
-    f32 renderWidth;
+    f32 scale {1.0f};
+    s32 type;
 
+    f32 renderWidth;
     u32 startIndex;
     u32 count;
 };
@@ -93,6 +98,20 @@ struct ShapeRenderInfo
     ShapeFileInfo shapeFile;
 };
 
+
+struct RdaSite
+{
+    v2f32   location;
+    char    name[5];
+    char    displayName[256];
+};
+
+struct RdaSiteInfo
+{
+    u32 count;
+    RdaSite* sites;
+};
+
 struct MapViewInfo
 {
     f32 mapWidthPixels{};
@@ -113,6 +132,8 @@ struct MapViewInfo
 
 extern MapViewInfo g_MapViewInfo;
 extern GeoTextRenderInfo g_GeoTextRenderInfo;
+extern RdaSiteInfo g_RdaSiteInfo;
+extern NexradProduct* g_CurrentProduct;
 
 bool GenerateShapeBufferData(ShapeFileInfo* shapeFileInfo, RenderBufferData* renderData);
 
@@ -143,6 +164,9 @@ void sacw_GetMapRenderData(RenderBufferData* rbd, RenderVertData* states, Render
 void sacw_GetRadarRenderData(RenderBufferData* rbd);
 
 v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y);
+
+RdaSite* FindClosestRdaFromScreen(s32 x, s32 y);
+RdaSite* FindClosestRda(v2f32 coords);
 
 #define _SACW_API_H_
 #endif

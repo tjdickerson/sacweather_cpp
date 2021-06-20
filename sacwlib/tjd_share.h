@@ -129,7 +129,8 @@ typedef struct Vector2s32_t
 
 typedef struct Vector2f32_t
 {
-    f32 x, y;
+    union { f32 x; f32 lon; };
+    union { f32 y; f32 lat; };
 } v2f32;
 
 
@@ -155,9 +156,43 @@ static void InitBuffer(BufferInfo* buffer, void* data, u32 length)
     }
 }
 
+static v2f32 MultiplyVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v1.x * v2.x;
+    r.y = v1.y * v2.y;
+
+    return r;
+}
+
+static f32 DistanceBetween(v2f32 v1, v2f32 v2)
+{
+    return (f32)sqrt(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2));
+}
+
+static v2f32 SubtractVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v2.x - v1.x;
+    r.y = v2.y - v1.y;
+
+    return r;
+}
+
+static v2f32 AddVectorV2f(v2f32 v1, v2f32 v2)
+{
+    v2f32 r = {};
+    r.x = v2.x + v1.x;
+    r.y = v2.y + v1.y;
+
+    return r;
+}
+
+
+
 static void* GetBufferMarker(struct BufferInfo* buffer)
 {
-    return ((unsigned char*)buffer->data + buffer->position);
+    return (void*)((char*)buffer->data + buffer->position);
 }
 
 static bool ReadFromBuffer(void* dest, struct BufferInfo* buffer, s32 length)

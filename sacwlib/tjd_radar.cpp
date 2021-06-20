@@ -5,8 +5,6 @@
 #include <cmath>
 #include <cassert>
 
-#include "bzlib.h"
-
 #include "tjd_conversions.h"
 #include "tjd_radar.h"
 #include "tjd_level2.h"
@@ -28,7 +26,7 @@ bool RadialImagePacket(
     unsigned char* buffer,
     u32 bp,
     NexradProduct* nexradProduct,
-    WSR88DInfo* wsrInfo,
+    RdaSite* wsrInfo,
     ProductDescription* pd,
     s16 packetCode
 );
@@ -39,7 +37,7 @@ bool RasterImagePacket(
     unsigned char* buffer,
     u32 bp,
     NexradProduct* nexradProduct,
-    WSR88DInfo* wsrInfo,
+    RdaSite* wsrInfo,
     ProductDescription* pd,
     s16 packetCode
 );
@@ -64,6 +62,42 @@ s32 getColorFromLevel(u8 level, f32 minDbz, f32 incDbz)
     else if (dbz < 70) color = 13;
     else if (dbz < 75) color = 14;
     else if (dbz >= 75) color = 15;
+
+    return color;
+}
+
+s32 getColorFromSpeed(u8 level, f32 minVal, f32 inc)
+{
+    s8 color = 0;
+    if (level == 0)
+    {
+        color = 0;
+    }
+
+    else if (level == 1)
+    {
+        color = 15;
+    }
+
+    else
+    {
+        f32 vel = minVal + (level * inc);
+
+        if (vel <= -99) color = 1;
+        else if (vel <= -80) color = 2;
+        else if (vel <= -60) color = 3;
+        else if (vel <= -45) color = 4;
+        else if (vel <= -20) color = 5;
+        else if (vel <= -5) color = 6;
+            //else if (vel <= -5) color = 7;???
+        else if (vel <= 0) color = 8;
+        else if (vel <= 5) color = 9;
+        else if (vel <= 20) color = 10;
+        else if (vel <= 45) color = 11;
+        else if (vel <= 60) color = 12;
+        else if (vel <= 80) color = 13;
+        else if (vel <= 99) color = 14;
+    }
 
     return color;
 }
@@ -137,7 +171,7 @@ void calcRangeBinLocation(
     bin->p4.y = AdjustLatForProjection(bin->p4.y);
 }
 
-s32 tjd_GetRadarRenderData(RenderBufferData* rbd)
+s32 tjd_GetRadarRenderData(RenderBufferData* rbd, NexradProduct* product)
 {
     // @todo
     // - Check if the archive struct is populated...
@@ -171,13 +205,23 @@ s32 tjd_GetRadarRenderData(RenderBufferData* rbd)
                 bin_index,
                 g_L3Archive.centerLon,
                 g_L3Archive.centerLat,
-                248.0f,
+                product->range,
                 radial->levelCount,
                 radial->startAngle,
                 radial->angleDelta,
                 &bin);
 
-            bin.colorIndex = (f32)getColorFromLevel(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+
+            if (product->productCode == 99)
+            {
+//                f32 vel = g_L3Archive.radial.minDbz + (level * g_L3Archive.radial.incDbz);
+//                bin.colorIndex = vel;
+                bin.colorIndex = (f32)getColorFromSpeed(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+            }
+            else
+            {
+                bin.colorIndex = (f32)getColorFromLevel(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+            }
 
             rbd->vertices[vi++] = bin.p1.x;
             rbd->vertices[vi++] = bin.p1.y;
@@ -415,7 +459,7 @@ void SetRasterCell(f32 cx, f32 cy, s32 rowCount, s32 ix, s32 iy, f32 res, s32 co
 
 bool ParseNexradRadarFile(
     const char* filename,
-    WSR88DInfo* wsrInfo,
+    RdaSite* wsrInfo,
     NexradProduct* nexradProduct,
     ProductDescription* pd
 )
@@ -459,11 +503,11 @@ bool ParseNexradRadarFile(
         ReadLevel3File(&l3buffer);
 
         // @todo
-        // I don't know if I need this WSR88DInfo stuct or just use the l3 stuff?
+        // I don't know if I need this RdaSite stuct or just use the l3 stuff?
         if (g_L3Archive.valid)
         {
-            wsrInfo->lat = g_L3Archive.centerLat;
-            wsrInfo->lon = g_L3Archive.centerLon;
+            wsrInfo->location.y = g_L3Archive.centerLat;
+            wsrInfo->location.x = g_L3Archive.centerLon;
         }
     }
 
@@ -761,48 +805,14 @@ bool ParseNexradRadarFile(
 
 // @todo
 // Clean this up
-s32 GetColorFromSpeed(u8 level, f32 minVal, f32 inc)
-{
-    s8 color = 0;
-    if (level == 0)
-    {
-        color = 0;
-    }
 
-    else if (level == 1)
-    {
-        color = 15;
-    }
-
-    else
-    {
-        f32 vel = minVal + (level * inc);
-
-        if (vel <= -99) color = 1;
-        else if (vel <= -80) color = 2;
-        else if (vel <= -60) color = 3;
-        else if (vel <= -45) color = 4;
-        else if (vel <= -20) color = 5;
-        else if (vel <= -5) color = 6;
-            //else if (vel <= -5) color = 7;???
-        else if (vel <= 0) color = 8;
-        else if (vel <= 5) color = 9;
-        else if (vel <= 20) color = 10;
-        else if (vel <= 45) color = 11;
-        else if (vel <= 60) color = 12;
-        else if (vel <= 80) color = 13;
-        else if (vel <= 99) color = 14;
-    }
-
-    return color;
-}
 /*
 
 bool RadialImagePacket(
     unsigned char* buffer,
     u32 bp,
     NexradProduct* nexradProduct,
-    WSR88DInfo* wsrInfo,
+    RdaSite* wsrInfo,
     ProductDescription* pd,
     s16 packetCode
 )
@@ -950,7 +960,7 @@ bool RasterImagePacket(
     unsigned char* buffer,
     u32 bp,
     NexradProduct* nexradProduct,
-    WSR88DInfo* wsrInfo,
+    RdaSite* wsrInfo,
     ProductDescription* pd,
     s16 packetCode
 )

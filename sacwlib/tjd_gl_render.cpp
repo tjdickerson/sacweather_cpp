@@ -58,6 +58,26 @@ static f32 ReflectivityMap[] =
         ColorHexToFloat(0xff), ColorHexToFloat(0xff), ColorHexToFloat(0xff), 0.99f,
     };
 
+static f32 VelocityMap[] =
+    {
+         0.20f, 0.20f, 0.20f, 0.20f,   // 0 - black transparent
+         ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.99f ,
+         ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.99f ,
+         ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f ,
+         ColorHexToFloat(0x07), ColorHexToFloat(0xac), ColorHexToFloat(0x04), 0.99f ,
+         ColorHexToFloat(0x06), ColorHexToFloat(0x8f), ColorHexToFloat(0x03), 0.99f ,
+         ColorHexToFloat(0x04), ColorHexToFloat(0x72), ColorHexToFloat(0x02), 0.99f ,
+         ColorHexToFloat(0x7c), ColorHexToFloat(0x97), ColorHexToFloat(0x7b), 0.99f ,
+         ColorHexToFloat(0x98), ColorHexToFloat(0x77), ColorHexToFloat(0x77), 0.99f ,
+         ColorHexToFloat(0x89), ColorHexToFloat(0x00), ColorHexToFloat(0.00), 0.99f ,
+         ColorHexToFloat(0xa2), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
+         ColorHexToFloat(0xb9), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
+         ColorHexToFloat(0xd8), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
+         ColorHexToFloat(0xef), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f ,
+         ColorHexToFloat(0xfe), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f ,
+         ColorHexToFloat(0x90), ColorHexToFloat(0x00), ColorHexToFloat(0xa0), 0.99f ,
+    };
+
 void InitGLExtensions();
 static GLuint CreateShader(GLenum shaderType, GLchar* source);
 GLuint GLCreateShaderProgram(const GLchar* vertexSource, const GLchar* fragSource);
@@ -119,11 +139,11 @@ static GLfloat g_identMatrix[] =
         0.0f, 0.0f, 0.0f, 1.0f
     };
 
-static v4f32 g_clearColor = { 
+static v4f32 g_clearColor = {
     //0x1d2025
-    ColorHexToFloat(0x0d), 
-    ColorHexToFloat(0x10), 
-    ColorHexToFloat(0x15), 
+    ColorHexToFloat(0x0d),
+    ColorHexToFloat(0x10),
+    ColorHexToFloat(0x15),
     1.0f
 };
 
@@ -138,7 +158,6 @@ void logGLString(const char* text, GLenum key)
     LOGINF("GL %s :: %s\n", text, out);
 }
 
-
 void adjScaleMatrix(f32 x, f32 y)
 {
     g_scaleMatrix[0] = x;
@@ -151,7 +170,6 @@ void adjTranslationMatrix(f32 x, f32 y)
     g_transMatrix[13] = y;
 }
 
-
 void useWorldSpace()
 {
     f32 x_scale = (g_MapViewInfo.scaleFactor / g_MapViewInfo.xScale);
@@ -159,7 +177,6 @@ void useWorldSpace()
 
     f32 trans_x = g_MapViewInfo.xPan;
     f32 trans_y = g_MapViewInfo.yPan;
-
 
     adjScaleMatrix(x_scale, y_scale);
     adjTranslationMatrix(trans_x, trans_y);
@@ -173,7 +190,7 @@ void useScreenSpace()
     f32 y_scale = 1.0f / g_MapViewInfo.yScale;
 
     adjScaleMatrix(1.0f / g_MapViewInfo.mapWidthPixels, -1.0f / g_MapViewInfo.mapHeightPixels);
-    
+
     adjTranslationMatrix(
         (2.0f / g_MapViewInfo.mapWidthPixels) - g_MapViewInfo.mapWidthPixels,
         (2.0f / g_MapViewInfo.mapHeightPixels) - g_MapViewInfo.mapHeightPixels
@@ -208,13 +225,13 @@ bool UiBufferInit(UiRenderInfo* renderInfo)
         0.96f, 0.96f, 1.0f, 0.0f, 0.0f, 1.0f,
 
         // box
-        0.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
-        0.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
-        100.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+        0.0f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+        100.0f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 
-        100.0f, 100.0f, 1.0f, 1.0f, 1.0f,1.0f,
-        100.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f, 1.0f,1.0f,
+        100.0f, 100.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+        100.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 
     };
 
@@ -256,7 +273,6 @@ bool UiBufferInit(UiRenderInfo* renderInfo)
     return true;
 }
 
-
 bool GeoTextRenderInit(GeoTextRenderInfo* renderInfo)
 {
     GLuint shader = GLCreateShaderProgram(TextVertShaderSource(), TextFragShaderSource());
@@ -278,10 +294,12 @@ bool GeoTextRenderInit(GeoTextRenderInfo* renderInfo)
         featureWithTextCount += shapeFile->featuresHaveText ? shapeFile->numFeatures : 0;
     }
 
-    renderInfo->markerCount = featureWithTextCount;
+    renderInfo->markerCount = featureWithTextCount + g_RdaSiteInfo.count;
     renderInfo->markers = (GeoTextMarker*)calloc(renderInfo->markerCount, sizeof(GeoTextMarker));
 
     int idx = 0;
+
+    // shape files
     for (int i = 0; i < g_MapViewInfo.shapeFileCount; i++)
     {
         ShapeFileInfo* shapeFile = &g_MapViewInfo.renderInfo[i].shapeFile;
@@ -294,17 +312,38 @@ bool GeoTextRenderInit(GeoTextRenderInfo* renderInfo)
 
                 marker->position = feature->featureName.location;
                 marker->textLength = feature->featureName.textLength;
-                
-                marker->color = { 
-                    ColorHexToFloat(0x54), 
-                    ColorHexToFloat(0x56), 
-                    ColorHexToFloat(0x65), 
-                    1.0f 
+                marker->scale = 0.75f;
+
+                marker->color = {
+                    ColorHexToFloat(0xa4),
+                    ColorHexToFloat(0xb6),
+                    ColorHexToFloat(0xb5),
+                    1.0f
                 };
 
                 memcpy(marker->text, feature->featureName.text, feature->featureName.textLength);
             }
         }
+    }
+
+    // rda sites
+    for (int i = 0; i < g_RdaSiteInfo.count; i++)
+    {
+        RdaSite* site = &g_RdaSiteInfo.sites[i];
+        GeoTextMarker* marker = &renderInfo->markers[idx++];
+
+        marker->position = v2f32 { site->location.lon, site->location.lat };
+        marker->textLength = 4;
+        marker->color = {
+            ColorHexToFloat(0x34),
+            ColorHexToFloat(0xa6),
+            ColorHexToFloat(0xc5),
+            1.0f
+        };
+
+        marker->scale = 0.4f;
+
+        strcpy(marker->text, site->name);
     }
 
     return true;
@@ -485,7 +524,7 @@ bool RenderInit(void* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     MapInit();
-    GeoTextRenderInit(&g_GeoTextRenderInfo);    
+    GeoTextRenderInit(&g_GeoTextRenderInfo);
 
     RadarShader = GLCreateShaderProgram(RadarVertShaderSource(), RadarFragShaderSource());
     g_radarVertexAttr = glGetAttribLocation(RadarShader, "position");
@@ -519,7 +558,6 @@ void RenderUi(UiRenderInfo* renderInfo)
     glDrawArrays(GL_TRIANGLES, 0, 18);
 }
 
-
 void renderShapeFile(ShapeRenderInfo* renderInfo)
 {
     glUseProgram(renderInfo->shader);
@@ -543,7 +581,7 @@ void renderShapeFile(ShapeRenderInfo* renderInfo)
     );
 
     GLint draw_type = GL_LINE_LOOP;
-    if(shape_file->type == SHAPE_TYPE_POLYLINE)
+    if (shape_file->type == SHAPE_TYPE_POLYLINE)
         draw_type = GL_LINE_STRIP;
 
     glLineWidth(shape_file->lineWidth);
@@ -592,7 +630,12 @@ void RenderRadar()
     glUniformMatrix4fv(g_radarRotPos, 1, GL_FALSE, g_rotMatrix);
     glUniformMatrix4fv(g_radarScalePos, 1, GL_FALSE, g_scaleMatrix);
 
-    glUniform4fv(g_radarColorMap, 16, ReflectivityMap);
+    f32* colorMap = ReflectivityMap;
+    if (g_CurrentProduct->productCode == 99)
+    {
+        colorMap = VelocityMap;
+    }
+    glUniform4fv(g_radarColorMap, 16, colorMap);
     glDrawArrays(GL_TRIANGLES, 0, RadarBufferData.vertexCount);
 }
 
@@ -645,33 +688,6 @@ void renderGeoText()
     }
 }
 
-v2f32 MultiplyVectorV2f(v2f32 v1, v2f32 v2)
-{
-    v2f32 r = {};
-    r.x = v1.x * v2.x;
-    r.y = v1.y * v2.y;
-
-    return r;
-}
-
-v2f32 SubtractVectorV2f(v2f32 v1, v2f32 v2)
-{
-    v2f32 r = {};
-    r.x = v2.x - v1.x;
-    r.y = v2.y - v1.y;
-
-    return r;
-}
-
-v2f32 AddVectorV2f(v2f32 v1, v2f32 v2)
-{
-    v2f32 r = {};
-    r.x = v2.x + v1.x;
-    r.y = v2.y + v1.y;
-
-    return r;
-}
-
 bool show_demo = true;
 
 void renderLayers()
@@ -686,10 +702,9 @@ void renderLayers()
     renderMap();
     renderGeoText();
 
-
     {
         // TestIMGUI(show_demo);
-        RenderUi(&g_UiRenderInfo);
+        //RenderUi(&g_UiRenderInfo);
     }
 
 }
@@ -703,6 +718,15 @@ void Render()
     glViewport(0, 0, g_MapViewInfo.mapWidthPixels, g_MapViewInfo.mapHeightPixels);
 
     renderLayers();
+
+    {
+        BeginImGui();
+
+        //RenderToolbar();
+        CheckEvents();
+
+        EndImGui();
+    }
 
     /*bool splitScreen = false;
     if (splitScreen)
@@ -1153,8 +1177,8 @@ static GLchar* UiFragShaderSource()
     return (GLchar*)source;
 }
 
-
-static GLchar* ObjVertShaderSource() {
+static GLchar* ObjVertShaderSource()
+{
     const char* source = R"glsl(
         #version 150
         in vec2 position;
@@ -1170,7 +1194,8 @@ static GLchar* ObjVertShaderSource() {
     return (GLchar*)source;
 }
 
-static GLchar* ObjFragShaderSource() {
+static GLchar* ObjFragShaderSource()
+{
     const char* source = R"glsl(
         #version 150
         in  vec4 frag_color;

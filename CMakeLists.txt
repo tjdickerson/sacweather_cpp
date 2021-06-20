@@ -7,6 +7,7 @@ set(sacw-src-dir sacwlib/)
 set(imgui_dir ${sacw-src-dir}imgui/)
 
 include_directories(${sacw-src-dir})
+include_directories(windows/)
 include_directories(${imgui_dir})
 
 
@@ -72,7 +73,11 @@ add_executable(sacweather
         ${imgui_dir}imgui_impl_opengl3.h
         ${imgui_dir}imgui_impl_win32.h
 
-        sacwlib/tjd_level3.cpp sacwlib/tjd_level3.h)
+        sacwlib/tjd_level3.cpp
+        sacwlib/tjd_level3.h
+        windows/tjd_win32_download.cpp
+        windows/tjd_win32_download.h
+        )
 
 
 # Build BZip2

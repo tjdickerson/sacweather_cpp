@@ -350,7 +350,7 @@ void ReadLevel3File(BufferInfo* buffer)
 
     BufferInfo product_buffer = {};
 
-    if (pd.productCode == 94)
+    if (pd.productCode == 94 || pd.productCode == 99)
     {
         if (pd.brda.compressionMethod == 1)
         {
@@ -380,7 +380,6 @@ void ReadLevel3File(BufferInfo* buffer)
         {
             product_buffer.data = GetBufferMarker(buffer);
             product_buffer.position = 0;
-            product_buffer.length = pd.brda.uncompressedSize;
         }
 
         g_L3Archive.centerLat = pd.lat;
