@@ -61,21 +61,50 @@ static f32 ReflectivityMap[] =
 static f32 VelocityMap[] =
     {
          0.20f, 0.20f, 0.20f, 0.20f,   // 0 - black transparent
-         ColorHexToFloat(0x02), ColorHexToFloat(0xfc), ColorHexToFloat(0x02), 0.99f ,
-         ColorHexToFloat(0x01), ColorHexToFloat(0xe4), ColorHexToFloat(0x01), 0.99f ,
-         ColorHexToFloat(0x01), ColorHexToFloat(0xc5), ColorHexToFloat(0x01), 0.99f ,
-         ColorHexToFloat(0x07), ColorHexToFloat(0xac), ColorHexToFloat(0x04), 0.99f ,
-         ColorHexToFloat(0x06), ColorHexToFloat(0x8f), ColorHexToFloat(0x03), 0.99f ,
-         ColorHexToFloat(0x04), ColorHexToFloat(0x72), ColorHexToFloat(0x02), 0.99f ,
-         ColorHexToFloat(0x7c), ColorHexToFloat(0x97), ColorHexToFloat(0x7b), 0.99f ,
-         ColorHexToFloat(0x98), ColorHexToFloat(0x77), ColorHexToFloat(0x77), 0.99f ,
-         ColorHexToFloat(0x89), ColorHexToFloat(0x00), ColorHexToFloat(0.00), 0.99f ,
-         ColorHexToFloat(0xa2), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
-         ColorHexToFloat(0xb9), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
-         ColorHexToFloat(0xd8), ColorHexToFloat(0.00), ColorHexToFloat(0.00), 0.99f ,
-         ColorHexToFloat(0xef), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f ,
-         ColorHexToFloat(0xfe), ColorHexToFloat(0x00), ColorHexToFloat(0x00), 0.99f ,
          ColorHexToFloat(0x90), ColorHexToFloat(0x00), ColorHexToFloat(0xa0), 0.99f ,
+
+         // #1ebdbb
+         ColorHexToFloat(0x1e), ColorHexToFloat(0xbd), ColorHexToFloat(0xbb), 0.99f ,
+
+         // #7dffac
+         ColorHexToFloat(0x7d), ColorHexToFloat(0xff), ColorHexToFloat(0xac), 0.99f ,
+
+         // #26e628
+         ColorHexToFloat(0x26), ColorHexToFloat(0xe6), ColorHexToFloat(0x28), 0.99f ,
+
+         // #1cb81f
+         ColorHexToFloat(0x1c), ColorHexToFloat(0xb8), ColorHexToFloat(0x1f), 0.99f ,
+
+         // #149617
+         ColorHexToFloat(0x14), ColorHexToFloat(0x96), ColorHexToFloat(0x17), 0.99f ,
+
+         // #368a37
+         ColorHexToFloat(0x36), ColorHexToFloat(0x8a), ColorHexToFloat(0x37), 0.99f ,
+
+         // #a3b2a4
+         ColorHexToFloat(0xa3), ColorHexToFloat(0xb2), ColorHexToFloat(0xa4), 0.99f ,
+
+         // #854458
+         ColorHexToFloat(0x85), ColorHexToFloat(0x44), ColorHexToFloat(0x58), 0.99f ,
+
+         // #8e0008
+         ColorHexToFloat(0x8e), ColorHexToFloat(0x00), ColorHexToFloat(0.08), 0.99f ,
+
+         // #b7000e
+         ColorHexToFloat(0xb7), ColorHexToFloat(0x00), ColorHexToFloat(0x0e), 0.99f ,
+
+         // #e40014
+         ColorHexToFloat(0xe4), ColorHexToFloat(0x00), ColorHexToFloat(0x14), 0.99f ,
+
+         // #fc4522
+         ColorHexToFloat(0xfc), ColorHexToFloat(0x45), ColorHexToFloat(0x22), 0.99f ,
+
+         // #f0ef31
+         ColorHexToFloat(0xf0), ColorHexToFloat(0xef), ColorHexToFloat(0x31), 0.99f ,
+
+         // #e9e995
+         ColorHexToFloat(0xe9), ColorHexToFloat(0xe9), ColorHexToFloat(0x95), 0.99f ,
+         
     };
 
 void InitGLExtensions();
@@ -990,8 +1019,16 @@ static GLchar* RadarVertShaderSource()
 
         out vec4 FragColor;
 
+        vec4 color1;
+        vec4 color2;
+        float blend_amount;
+
         void main() {
-            FragColor = colorMap[int(colorIndex)];
+            blend_amount = colorIndex - floor(colorIndex);
+            color1 = colorMap[int(floor(colorIndex))];
+            color2 = colorMap[int(ceil(colorIndex))];
+            FragColor = mix(color1, color2, blend_amount);
+            
             gl_Position = rotation * scale * translation * vec4(position, 0.0, 1.0);
         }
     )glsl";
@@ -1043,7 +1080,10 @@ static GLchar* TextVertShaderSource()
         out vec4 FragColor;
 
         void main() {
-            FragColor = colorMap[int(colorIndex)];
+            float blend_amount = colorIndex - floor(colorIndex);
+            vec4 color1 = colorMap[int(floor(colorIndex))];
+            vec4 color2 = colorMap[int(ceil(colorIndex))];
+            FragColor = mix(color1, color2, blend_amount);
             gl_Position = Model * vec4(Position, 0.0, 1.0);
         }
     )glsl";

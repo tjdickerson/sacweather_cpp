@@ -4,12 +4,12 @@
 #include <cstdlib>
 #include <cstring>
 
-NexradProductInfo* NexradInfo;
+NexradProductInfo* g_NexradProducts;
 
 void InitNexradProducts()
 {
     NexradProductInfo npi = {};
-    NexradInfo = &npi;
+    g_NexradProducts = &npi;
 
     // Base Reflectivity (124nmi)
     {
@@ -23,7 +23,7 @@ void InitNexradProducts()
         strncpy(br.name, name, strlen(name));
         strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(NexradInfo, br);
+        AddProduct(g_NexradProducts, br);
     }
 
     // Base Reflectivity (248nmi)
@@ -38,7 +38,7 @@ void InitNexradProducts()
         strncpy(br.name, name, strlen(name));
         strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(NexradInfo, br);
+        AddProduct(g_NexradProducts, br);
     }
 
     // Base Radial Velocity - 162 nmi Range
@@ -53,7 +53,7 @@ void InitNexradProducts()
         strncpy(br.name, name, strlen(name));
         strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(NexradInfo, br);
+        AddProduct(g_NexradProducts, br);
     }    
 
     // Composite Reflectivity - 124
@@ -69,7 +69,7 @@ void InitNexradProducts()
         strncpy(br.name, name, strlen(name));
         strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(NexradInfo, br);
+        AddProduct(g_NexradProducts, br);
     }
     
     // Composite Reflectivity - 248
@@ -85,7 +85,7 @@ void InitNexradProducts()
         strncpy(br.name, name, strlen(name));
         strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(NexradInfo, br);
+        AddProduct(g_NexradProducts, br);
     }
 }
 
@@ -99,10 +99,10 @@ void AddProduct(NexradProductInfo* productInfo, NexradProduct product)
 
 NexradProduct* GetProductInfo(int productCode)
 {    
-    for (int i = 0; i < NexradInfo->count; i++)
+    for (int i = 0; i < g_NexradProducts->count; i++)
     {
-        if (NexradInfo->nexradProducts[i].productCode == productCode)
-            return &(NexradInfo->nexradProducts[i]);
+        if (g_NexradProducts->nexradProducts[i].productCode == productCode)
+            return &(g_NexradProducts->nexradProducts[i]);
     }
 
     return NULL;

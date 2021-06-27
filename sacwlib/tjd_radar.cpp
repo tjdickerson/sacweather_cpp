@@ -114,14 +114,14 @@ void calcRangeBinLocation(
 )
 {
     f32 dx1, dy1, dx2, dy2;
-    f32 sweepCenterLeft = angleStart - (angleDelta * 0.5f);
-    f32 sweepCenterRight = angleStart + (angleDelta * 0.5f);
+    f32 sweepCenterLeft = angleStart;
+    f32 sweepCenterRight = angleStart + (angleDelta);
 
-    dx1 = (binIndex) * (range / (float)binCount) / (cos(cy * PI / 180.0f));
-    dy1 = (binIndex) * (range / (float)binCount);
+    dx1 = (binIndex) * (range / (f32)binCount) / (cos(cy * PI / 180.0f));
+    dy1 = (binIndex) * (range / (f32)binCount);
 
-    dx2 = (binIndex + 1) * (range / (float)binCount) / (cos(cy * PI / 180.0f));
-    dy2 = (binIndex + 1) * (range / (float)binCount);
+    dx2 = (binIndex + 1) * (range / (f32)binCount) / (cos(cy * PI / 180.0f));
+    dy2 = (binIndex + 1) * (range / (f32)binCount);
 
 
     // "bottom" left
@@ -214,13 +214,21 @@ s32 tjd_GetRadarRenderData(RenderBufferData* rbd, NexradProduct* product)
 
             if (product->productCode == 99)
             {
-//                f32 vel = g_L3Archive.radial.minDbz + (level * g_L3Archive.radial.incDbz);
-//                bin.colorIndex = vel;
-                bin.colorIndex = (f32)getColorFromSpeed(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+               f32 vel = g_L3Archive.radial.minDbz + (level * g_L3Archive.radial.incDbz);
+
+               if (vel == 0) bin.colorIndex = 0;
+               else if (vel == 1) bin.colorIndex = 1;
+               else
+               {
+                   bin.colorIndex = (((vel * 14.0f) / 104.0f) + 9.0f);
+                   //bin.colorIndex = (f32)getColorFromSpeed(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+               }
             }
             else
             {
-                bin.colorIndex = (f32)getColorFromLevel(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+                f32 blendIndex = g_L3Archive.radial.minDbz + (level * g_L3Archive.radial.incDbz);
+                bin.colorIndex = ((blendIndex * 16.0f) / 80.0f) - 1.0f;
+                // bin.colorIndex = (f32)getColorFromLevel(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
             }
 
             rbd->vertices[vi++] = bin.p1.x;

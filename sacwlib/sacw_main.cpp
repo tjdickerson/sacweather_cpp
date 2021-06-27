@@ -42,7 +42,7 @@ v2f32 ConvertScreenToCoords(s32 x, s32 y);
 void DownloadRadarFile()
 {
     int DefaultProduct = 94;
-    char* DefaultWSR = "KDDC";
+    char* DefaultWSR = "KMXX";
 
     char* siteName = DefaultWSR;
     printf("Site name: %s\n", siteName);
@@ -171,7 +171,7 @@ void shapeFileInit()
 
     ShapeFileInfo states = {};
     filename = R"(C:\shapes\weather\st_us)";
-    line_color = { ColorHexToFloat(0x81), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f };
+    line_color = { ColorHexToFloat(0x73), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f };
     ShapeFileInit(&states, filename, line_color, true, "NAME");
     states.lineWidth = 1.2f;
     states.category = SHAPE_STATES;
@@ -186,7 +186,7 @@ void shapeFileInit()
 
     ShapeFileInfo roads = {};
     filename = R"(C:\shapes\weather\hways)";
-    line_color = { ColorHexToFloat(0x7a), ColorHexToFloat(0x4c), ColorHexToFloat(0x38), 1.0f };
+    line_color = { ColorHexToFloat(0x3a), ColorHexToFloat(0x2c), ColorHexToFloat(0x28), 1.0f };
     ShapeFileInit(&roads, filename, line_color, true, "SIGN1");
     roads.category = SHAPE_ROADS;
     roads.lineWidth = 1.2f;
@@ -194,7 +194,7 @@ void shapeFileInit()
 
     ShapeFileInfo rivers = {};
     filename = R"(C:\shapes\weather\maj_riv)";
-    line_color = { ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x70), 1.0f };
+    line_color = { ColorHexToFloat(0x00), ColorHexToFloat(0x00), ColorHexToFloat(0x10), 1.0f };
     ShapeFileInit(&rivers, filename, line_color);
     rivers.category = SHAPE_RIVERS;
     rivers.lineWidth = 1.0f;
@@ -202,7 +202,7 @@ void shapeFileInit()
 
     ShapeFileInfo lakes = {};
     filename = R"(C:\shapes\weather\lk_us)";
-    line_color = { ColorHexToFloat(0x20), ColorHexToFloat(0x40), ColorHexToFloat(0x78), 1.0f };
+    line_color = { ColorHexToFloat(0x00), ColorHexToFloat(0x00), ColorHexToFloat(0x10), 1.0f };
     ShapeFileInit(&lakes, filename, line_color);
     lakes.category = SHAPE_RIVERS;
     lakes.lineWidth = 1.0f;
@@ -241,13 +241,13 @@ void sacw_Init(void* window)
     g_MapViewInfo.xPan = 0.0f; // -AdjustLonForProjection(-85.790f);
     g_MapViewInfo.yPan = 0.0f; // -AdjustLatForProjection(32.537f);
 
-    centerMapAt(-85.790f, 32.537f);
+    // centerMapAt(-85.790f, 32.537f);
 
 
     InitNexradProducts();
 
     g_CurrentProduct = GetProductInfo(94);
-    StartDownload("KIND", g_CurrentProduct);
+    StartDownload("KMXX", g_CurrentProduct);
 
     shapeFileInit();
     readWsrList();

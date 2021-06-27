@@ -91,6 +91,23 @@ void CheckEvents()
             StartDownload(closestRda->name, g_CurrentProduct);
         }
 
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Products", true))
+        {
+            for (int i = 0; i < g_NexradProducts->count; i++)
+            {
+                NexradProduct* product = &g_NexradProducts->nexradProducts[i];
+                if(ImGui::MenuItem(product->name, "", false))
+                {
+                    g_CurrentProduct = GetProductInfo(product->productCode);
+                    StartDownload(closestRda->name, g_CurrentProduct);
+                    break;
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+
         ImGui::EndPopup();
     }
 }

@@ -398,6 +398,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"getColorFromL",
+			"produc",
+			"converts",
 			"counties",
 			"shapef",
 			"panmap",
@@ -522,10 +525,7 @@
 			"124",
 			"maxRange",
 			"CalcRangeBinLocation",
-			"range",
-			"glViewport",
-			"GLCREATESHA",
-			"sacw_init"
+			"range"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -607,6 +607,38 @@
 		"selected_items":
 		[
 			[
+				"tjd_ren",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacwm",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"tjd_ra",
+				"sacwlib\\tjd_radar.cpp"
+			],
+			[
+				"tjdui",
+				"sacwlib\\tjd_ui.cpp"
+			],
+			[
+				"sacw_main",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"build",
+				"windows\\build.bat"
+			],
+			[
+				"sacw_ma",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"tjd_gl",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
 				"shapefile",
 				"sacwlib\\tjd_shapefile.cpp"
 			],
@@ -655,10 +687,6 @@
 				"sacwlib\\tjd_font.cpp"
 			],
 			[
-				"sacwm",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"shapefil",
 				"sacwlib\\tjd_shapefile.cpp"
 			],
@@ -699,10 +727,6 @@
 				"sacwlib\\tjd_share.h"
 			],
 			[
-				"sacw_ma",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"bui",
 				"windows\\build.bat"
 			],
@@ -719,10 +743,6 @@
 				"sacwlib\\tjd_font.h"
 			],
 			[
-				"tjd_ren",
-				"sacwlib\\tjd_gl_render.cpp"
-			],
-			[
 				"stb",
 				"sacwlib\\stb_truetype.h"
 			],
@@ -731,16 +751,8 @@
 				"sacwlib\\tjd_font.cpp"
 			],
 			[
-				"sacw_main",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"tjd_font.",
 				"sacwlib\\tjd_font.h"
-			],
-			[
-				"build",
-				"windows\\build.bat"
 			],
 			[
 				"tjd_gl.h",
@@ -821,10 +833,6 @@
 			[
 				"sacw_ap",
 				"sacwlib\\sacw_api.h"
-			],
-			[
-				"tjd_ra",
-				"sacwlib\\tjd_radar.h"
 			],
 			[
 				"gr",

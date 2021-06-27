@@ -29,7 +29,7 @@ struct NexradProductInfo
 };
 
 
-extern NexradProductInfo* NexradInfo;
+extern NexradProductInfo* g_NexradProducts;
 
 static void GetUrlForProduct(std::string* dest, const char* siteName, NexradProduct* product)
 {

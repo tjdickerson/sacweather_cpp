@@ -13,7 +13,7 @@ echo %cd%
 echo Building for %BUILD_TYPE%
 
 set prjdir= %cd%
-set includeDirs= /I %prjdir%\sacwlib\
+set includeDirs= /I %prjdir%\sacwlib\ /I %prjdir%\windows\
 
 @rem VisualStudio compiler flags
 set compFlags= /Zi /EHsc /FeSACWeather /MD
