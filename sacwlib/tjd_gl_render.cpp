@@ -752,6 +752,7 @@ void Render()
         BeginImGui();
 
         //RenderToolbar();
+        InfoPanel();
         CheckEvents();
 
         EndImGui();

@@ -12,6 +12,7 @@ void BeginImGui();
 void EndImGui();
 void RenderToolbar();
 void CheckEvents();
+void InfoPanel();
 
 #define __tjd_ui_h__
 #endif

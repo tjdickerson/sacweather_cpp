@@ -112,6 +112,8 @@ void StartDownload(const char* siteName, NexradProduct* nexradProduct)
     std::string file_url;
     GetUrlForProduct(&file_url, siteName, nexradProduct);
 
+    g_CurrentSite = FindSiteByName(siteName);
+
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 
     DeleteUrlCacheEntry(file_url.c_str());

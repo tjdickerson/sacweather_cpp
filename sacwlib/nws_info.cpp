@@ -8,27 +8,12 @@ NexradProductInfo* g_NexradProducts;
 
 void InitNexradProducts()
 {
-    NexradProductInfo npi = {};
+    static NexradProductInfo npi = {};
     g_NexradProducts = &npi;
-
-    // Base Reflectivity (124nmi)
-    {
-        const char* name = "Base reflectivity - 124 nmi Range\0";
-        const char* dir  = "DS.p19r0";
-
-        NexradProduct br = {};
-        br.productCode = 19;      
-        br.range = 124.0f;
-
-        strncpy(br.name, name, strlen(name));
-        strncpy(br.dir, dir, strlen(dir));
-
-        AddProduct(g_NexradProducts, br);
-    }
 
     // Base Reflectivity (248nmi)
     {
-        const char* name = "Base reflectivity - 248 nmi Range\0";
+        const char* name = "Base Reflectivity\0";
         const char* dir  = "DS.p94r0";
 
         NexradProduct br = {};
@@ -43,7 +28,7 @@ void InitNexradProducts()
 
     // Base Radial Velocity - 162 nmi Range
     {
-        const char* name = "Base Radial Velocity - 248 nmi Range\0";
+        const char* name = "Base Velocity\0";
         const char* dir  = "DS.p99v0";
 
         NexradProduct br = {};
@@ -56,37 +41,37 @@ void InitNexradProducts()
         AddProduct(g_NexradProducts, br);
     }    
 
-    // Composite Reflectivity - 124
-    {
-        const char* name = "Composite Reflectivity - 124 nmi Range\0";
-        const char* dir  = "DS.p37cr";
+    // // Composite Reflectivity - 124
+    // {
+    //     const char* name = "Composite Reflectivity 124\0";
+    //     const char* dir  = "DS.p37cr";
 
-        NexradProduct br = {};
-        br.productCode = 37;      
-        br.range = 124.0f;
-        br.resolution = 0.54f;
+    //     NexradProduct br = {};
+    //     br.productCode = 37;      
+    //     br.range = 124.0f;
+    //     br.resolution = 0.54f;
 
-        strncpy(br.name, name, strlen(name));
-        strncpy(br.dir, dir, strlen(dir));
+    //     strncpy(br.name, name, strlen(name));
+    //     strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(g_NexradProducts, br);
-    }
+    //     AddProduct(g_NexradProducts, br);
+    // }
     
-    // Composite Reflectivity - 248
-    {
-        const char* name = "Composite Reflectivity - 248 nmi Range\0";
-        const char* dir  = "DS.p38cr";
+    // // Composite Reflectivity - 248
+    // {
+    //     const char* name = "Composite Reflectivity 248\0";
+    //     const char* dir  = "DS.p38cr";
 
-        NexradProduct br = {};
-        br.productCode = 38;      
-        br.range = 248.0f;
-        br.resolution = 2.2f;
+    //     NexradProduct br = {};
+    //     br.productCode = 38;      
+    //     br.range = 248.0f;
+    //     br.resolution = 2.2f;
 
-        strncpy(br.name, name, strlen(name));
-        strncpy(br.dir, dir, strlen(dir));
+    //     strncpy(br.name, name, strlen(name));
+    //     strncpy(br.dir, dir, strlen(dir));
 
-        AddProduct(g_NexradProducts, br);
-    }
+    //     AddProduct(g_NexradProducts, br);
+    // }
 }
 
 

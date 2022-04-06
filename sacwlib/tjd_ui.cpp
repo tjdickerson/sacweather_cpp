@@ -64,13 +64,43 @@ void RenderToolbar()
 	ImGui::Begin("TOOLBAR", nullptr, window_flags);
 	ImGui::PopStyleVar();
 
-	ImGui::Text("SacWeather");
+	ImGui::PopStyleVar();
 
 	ImGui::SameLine();
 
 	renderSiteCombo(&g_RdaSiteInfo);
 
 	ImGui::End();
+}
+
+void InfoPanel()
+{
+    ImGui::SetNextWindowPos(ImVec2(5, 5));
+    ImGui::SetNextWindowSize(ImVec2(175, 15));
+    ImGui::SetNextWindowBgAlpha(0.5f);
+
+    ImGuiWindowFlags window_flags = 0
+		| ImGuiWindowFlags_NoTitleBar
+		| ImGuiWindowFlags_NoResize
+		| ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoScrollbar
+		| ImGuiWindowFlags_NoSavedSettings;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("SiteInfo", nullptr, window_flags);
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(ImVec2(5, 5), ImVec2(12, 40), IM_COL32(5, 135, 200, 255));
+    ImGui::PopStyleVar(2);
+
+    if (g_CurrentSite != nullptr)
+    {
+        ImGui::SameLine(15.0f);
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("%s %s", g_CurrentSite->name, g_CurrentSite->displayName);
+    }
+
+    ImGui::End();
 }
 
 void CheckEvents()

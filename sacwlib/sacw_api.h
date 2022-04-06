@@ -134,6 +134,7 @@ extern MapViewInfo g_MapViewInfo;
 extern GeoTextRenderInfo g_GeoTextRenderInfo;
 extern RdaSiteInfo g_RdaSiteInfo;
 extern NexradProduct* g_CurrentProduct;
+extern RdaSite* g_CurrentSite;
 
 bool GenerateShapeBufferData(ShapeFileInfo* shapeFileInfo, RenderBufferData* renderData);
 
@@ -165,6 +166,7 @@ void sacw_GetRadarRenderData(RenderBufferData* rbd);
 
 v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y);
 
+RdaSite* FindSiteByName(const char* name);
 RdaSite* FindClosestRdaFromScreen(s32 x, s32 y);
 RdaSite* FindClosestRda(v2f32 coords);
 

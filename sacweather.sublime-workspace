@@ -61,11 +61,15 @@
 		"selected_items":
 		[
 			[
-				"scheme",
-				"UI: Select Color Scheme"
+				"theme",
+				"UI: Select Theme"
 			],
 			[
 				"the",
+				"UI: Select Color Scheme"
+			],
+			[
+				"scheme",
 				"UI: Select Color Scheme"
 			],
 			[
@@ -185,10 +189,6 @@
 				"Package Control: Install Package"
 			],
 			[
-				"theme",
-				"UI: Select Color Scheme"
-			],
-			[
 				"packa",
 				"Package Control: Install Package"
 			],
@@ -252,6 +252,8 @@
 	},
 	"file_history":
 	[
+		"/C/code/sacweather/android/app/src/main/java/com/tjdickerson/sacweather/data/NexradProductInfo.java",
+		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/code/sacweather/sacwlib/tjd_gl_render.cpp",
 		"/C/code/sacweather/sacwlib/tjd_shapefile.cpp",
 		"/C/Users/tjdic/Downloads/kmxx_bref_raw.png.kml",
@@ -313,7 +315,6 @@
 		"/C/code/sacweather/src/win32_main.cpp",
 		"/C/code/sacweather/src/tjd_shapefile.cpp",
 		"/C/code/sacweather/src/nws_info.h",
-		"/C/Users/tjdic/Desktop/todo.md",
 		"/C/code/sacweather/src/tjd_shapefile.h",
 		"/C/code/sacweather/src/main.cpp",
 		"/C/code/sacweather/src/tjd_ftp.cpp",
@@ -378,8 +379,7 @@
 		"/C/Users/tjdic/CLionProjects/WeatherTestBed/src/shapefile.cpp",
 		"/C/Users/tjdic/Downloads/GLSL_Loading/cwc/source/glsl.cpp",
 		"/C/shapes/cb_2018_us_nation_20m/cb_2018_us_nation_20m.shp",
-		"/C/Users/tjdic/Downloads/khrplatform.h",
-		"/C/Users/tjdic/Downloads/glxext.h"
+		"/C/Users/tjdic/Downloads/khrplatform.h"
 	],
 	"find":
 	{
@@ -398,6 +398,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"sacw_init",
 			"getColorFromL",
 			"produc",
 			"converts",
@@ -524,8 +525,7 @@
 			"range",
 			"124",
 			"maxRange",
-			"CalcRangeBinLocation",
-			"range"
+			"CalcRangeBinLocation"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -550,40 +550,11 @@
 	},
 	"incremental_find":
 	{
-		"height": 34.0
+		"height": 35.0
 	},
 	"input":
 	{
 		"height": 49.3333333333
-	},
-	"layout":
-	{
-		"cells":
-		[
-			[
-				0,
-				0,
-				1,
-				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
-			]
-		],
-		"cols":
-		[
-			0.0,
-			0.5,
-			1.0
-		],
-		"rows":
-		[
-			0.0,
-			1.0
-		]
 	},
 	"menu_visible": false,
 	"output.exec":
@@ -597,7 +568,7 @@
 	"pinned_build_system": "Packages/User/sacweather.sublime-build",
 	"replace":
 	{
-		"height": 64.0
+		"height": 66.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -606,6 +577,34 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"nws",
+				"sacwlib\\nws_info.cpp"
+			],
+			[
+				"nexra",
+				"android\\app\\src\\main\\java\\com\\tjdickerson\\sacweather\\data\\NexradProductInfo.java"
+			],
+			[
+				"ui",
+				"sacwlib\\tjd_ui.cpp"
+			],
+			[
+				"nws_info",
+				"sacwlib\\nws_info.h"
+			],
+			[
+				"gl_ren",
+				"sacwlib\\tjd_gl_render.cpp"
+			],
+			[
+				"sacw_m",
+				"sacwlib\\sacw_main.cpp"
+			],
+			[
+				"ra",
+				"sacwlib\\tjd_radar.cpp"
+			],
 			[
 				"tjd_ren",
 				"sacwlib\\tjd_gl_render.cpp"
@@ -641,10 +640,6 @@
 			[
 				"shapefile",
 				"sacwlib\\tjd_shapefile.cpp"
-			],
-			[
-				"gl_ren",
-				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
 				"win32",
@@ -795,10 +790,6 @@
 				"sacwlib\\sacw_main.cpp"
 			],
 			[
-				"sacw_m",
-				"sacwlib\\sacw_main.cpp"
-			],
-			[
 				"",
 				"sacwlib\\tjd_radar.h"
 			],
@@ -839,10 +830,6 @@
 				"sacwlib\\tjd_gl_render.cpp"
 			],
 			[
-				"nws",
-				"sacwlib\\nws_info.cpp"
-			],
-			[
 				"tjd_gl_",
 				"sacwlib\\tjd_gl_render.cpp"
 			],
@@ -857,10 +844,6 @@
 			[
 				"bzlib",
 				"src\\bzlib.h"
-			],
-			[
-				"nws_info",
-				"src\\nws_info.cpp"
 			],
 			[
 				"tjd_radar.",
@@ -1061,7 +1044,7 @@
 	"show_minimap": false,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": false,
+	"side_bar_visible": true,
 	"side_bar_width": 226.0,
 	"status_bar_visible": true,
 	"template_settings":

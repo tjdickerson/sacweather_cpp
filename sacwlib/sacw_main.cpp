@@ -21,6 +21,7 @@ MapViewInfo g_MapViewInfo;
 GeoTextRenderInfo g_GeoTextRenderInfo;
 RdaSiteInfo g_RdaSiteInfo;
 NexradProduct* g_CurrentProduct;
+RdaSite* g_CurrentSite;
 
 bool canRenderRadar;
 bool radarIsStale;
@@ -226,6 +227,7 @@ void shapeFileInit()
     g_mapIsStale = true;
 }
 
+
 void sacw_Init(void* window)
 {
     radarIsStale = false;
@@ -246,11 +248,13 @@ void sacw_Init(void* window)
 
     InitNexradProducts();
 
+    readWsrList();
+    g_CurrentSite = FindSiteByName("KMXX");
+
     g_CurrentProduct = GetProductInfo(94);
     StartDownload("KMXX", g_CurrentProduct);
 
     shapeFileInit();
-    readWsrList();
 
     RenderInit(window);
 }
@@ -482,6 +486,18 @@ RdaSite* FindClosestRdaFromScreen(s32 screenX, s32 screenY)
 {
     v2f32 coords = ConvertScreenToCoords(&g_MapViewInfo, screenX, screenY);
     return FindClosestRda(coords);
+}
+
+RdaSite* FindSiteByName(const char* name)
+{
+    RdaSite* result = nullptr;
+    for (int i = 0; i < g_RdaSiteInfo.count; i++)
+    {
+        if (strncmp(g_RdaSiteInfo.sites[i].name, name, 4) == 0)
+            result = &g_RdaSiteInfo.sites[i];
+    }
+
+    return result;
 }
 
 v2f32 ConvertScreenToCoords(MapViewInfo* map, s32 x, s32 y)
