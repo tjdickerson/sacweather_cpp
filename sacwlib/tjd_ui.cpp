@@ -10,7 +10,7 @@ void InitGui(void* window)
     ImGui_ImplOpenGL3_Init();
 
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF(R"(C:\code\sacweather\resources\fonts\OpenSans-SemiBold.ttf)", 18.0f);
+    io.Fonts->AddFontFromFileTTF(R"(.\resources\fonts\OpenSans-SemiBold.ttf)", 18.0f);
 }
 
 

@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(sacw-src-dir sacwlib/)
 set(imgui_dir ${sacw-src-dir}imgui/)
+set(resources_dir resources/)
+
+file(COPY ${resources_dir} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources)
 
 include_directories(${sacw-src-dir})
 include_directories(windows/)

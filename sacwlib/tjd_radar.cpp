@@ -220,8 +220,8 @@ s32 tjd_GetRadarRenderData(RenderBufferData* rbd, NexradProduct* product)
                else if (vel == 1) bin.colorIndex = 1;
                else
                {
-                   //bin.colorIndex = (((vel * 14.0f) / 104.0f) + 9.0f);
-                   bin.colorIndex = (f32)getColorFromSpeed(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
+                  bin.colorIndex = (((vel * 14.0f) / 104.0f) + 9.0f);
+                  // bin.colorIndex = (f32)getColorFromSpeed(level, g_L3Archive.radial.minDbz, g_L3Archive.radial.incDbz);
                }
             }
             else

@@ -82,7 +82,7 @@ void DownloadRadarFile()
 
 bool readWsrList()
 {
-    std::string filepath = R"(C:\code\sacweather\resources\wsrlist)";
+    std::string filepath = R"(.\resources\wsrlist)";
     std::string file_contents;
 
     FILE* fp = fopen(filepath.c_str(), "r");
@@ -171,14 +171,14 @@ void shapeFileInit()
     color4 line_color = {};
 
     ShapeFileInfo states = {};
-    filename = R"(C:\shapes\weather\st_us)";
+    filename = R"(.\resources\shapes\st_us)";
     line_color = { ColorHexToFloat(0x73), ColorHexToFloat(0x73), ColorHexToFloat(0x73), 1.0f };
     ShapeFileInit(&states, filename, line_color, true, "NAME");
     states.lineWidth = 1.2f;
     states.category = SHAPE_STATES;
 
     ShapeFileInfo counties = {};
-    filename = R"(C:\shapes\weather\cnt_us)";
+    filename = R"(.\resources\shapes\cnt_us)";
     line_color = { ColorHexToFloat(0x25), ColorHexToFloat(0x30), ColorHexToFloat(0x28), 1.0f };
     ShapeFileInit(&counties, filename, line_color);
     counties.lineWidth = 1.2f;
@@ -186,7 +186,7 @@ void shapeFileInit()
     counties.showPastScale = 0.075f;
 
     ShapeFileInfo roads = {};
-    filename = R"(C:\shapes\weather\hways)";
+    filename = R"(.\resources\shapes\hways)";
     line_color = { ColorHexToFloat(0x3a), ColorHexToFloat(0x2c), ColorHexToFloat(0x28), 1.0f };
     ShapeFileInit(&roads, filename, line_color, true, "SIGN1");
     roads.category = SHAPE_ROADS;
@@ -194,7 +194,7 @@ void shapeFileInit()
     roads.showPastScale = 0.075f;
 
     ShapeFileInfo rivers = {};
-    filename = R"(C:\shapes\weather\maj_riv)";
+    filename = R"(.\resources\shapes\maj_riv)";
     line_color = { ColorHexToFloat(0x00), ColorHexToFloat(0x00), ColorHexToFloat(0x10), 1.0f };
     ShapeFileInit(&rivers, filename, line_color);
     rivers.category = SHAPE_RIVERS;
@@ -202,7 +202,7 @@ void shapeFileInit()
     rivers.showPastScale = 0.4f;
 
     ShapeFileInfo lakes = {};
-    filename = R"(C:\shapes\weather\lk_us)";
+    filename = R"(.\resources\shapes\lk_us)";
     line_color = { ColorHexToFloat(0x00), ColorHexToFloat(0x00), ColorHexToFloat(0x10), 1.0f };
     ShapeFileInit(&lakes, filename, line_color);
     lakes.category = SHAPE_RIVERS;
