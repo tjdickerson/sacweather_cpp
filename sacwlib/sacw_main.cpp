@@ -255,6 +255,7 @@ void sacw_Init(void* window)
     StartDownload("KMXX", g_CurrentProduct);
 
     shapeFileInit();
+    centerMapAt(g_CurrentSite->location.lon, g_CurrentSite->location.lat);
 
     RenderInit(window);
 }
@@ -277,7 +278,7 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
         // g_MapViewInfo.xPan = -AdjustLonForProjection(wsrInfo.lon);
         // g_MapViewInfo.yPan = -AdjustLatForProjection(wsrInfo.lat);
 
-        centerMapAt(wsrInfo.location.lon, wsrInfo.location.lat);
+        // centerMapAt(wsrInfo.location.lon, wsrInfo.location.lat);
 
         canRenderRadar = success;
         radarIsStale = success;
