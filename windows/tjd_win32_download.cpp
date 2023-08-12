@@ -90,6 +90,7 @@ public:
 HRESULT WinBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)
 {
     const char* filename = "C:\\tmp\\testing_radar.nx3";
+   // const char* filename = "C:\\tmp\\KMXX_20230223_1429";
     sacw_RadarInit(filename, 94);
     return 0;
 }

@@ -6,6 +6,7 @@
 #include "tjd_share.h"
 #include "tjd_shapefile.h"
 #include "nws_info.h"
+#include "tjd_product_desc.h"
 
 struct RenderBufferData
 {
@@ -134,6 +135,7 @@ extern MapViewInfo g_MapViewInfo;
 extern GeoTextRenderInfo g_GeoTextRenderInfo;
 extern RdaSiteInfo g_RdaSiteInfo;
 extern NexradProduct* g_CurrentProduct;
+extern ReflProductDescription g_ReflProdDesc;
 extern RdaSite* g_CurrentSite;
 
 bool GenerateShapeBufferData(ShapeFileInfo* shapeFileInfo, RenderBufferData* renderData);

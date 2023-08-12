@@ -189,7 +189,6 @@ static v2f32 AddVectorV2f(v2f32 v1, v2f32 v2)
 }
 
 
-
 static void* GetBufferMarker(struct BufferInfo* buffer)
 {
     return (void*)((char*)buffer->data + buffer->position);

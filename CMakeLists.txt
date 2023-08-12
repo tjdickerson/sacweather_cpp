@@ -80,7 +80,7 @@ add_executable(sacweather
         sacwlib/tjd_level3.h
         windows/tjd_win32_download.cpp
         windows/tjd_win32_download.h
-        )
+        sacwlib/tjd_product_desc.h)
 
 
 # Build BZip2

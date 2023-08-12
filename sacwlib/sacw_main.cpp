@@ -22,13 +22,13 @@ GeoTextRenderInfo g_GeoTextRenderInfo;
 RdaSiteInfo g_RdaSiteInfo;
 NexradProduct* g_CurrentProduct;
 RdaSite* g_CurrentSite;
+ReflProductDescription g_ReflProdDesc;
 
 bool canRenderRadar;
 bool radarIsStale;
 bool g_mapIsStale;
 
 static NexradProduct* CurrentProduct;
-static ProductDescription gProductDescription;
 
 v2f32 ConvertScreenToCoords(s32 x, s32 y);
 
@@ -66,12 +66,12 @@ void DownloadRadarFile()
 
     printf("Download file: %s\n", remoteFile);
 
-    // DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
+    //DownloadFile(NWS_NOAA_HOSTNAME, remoteFile);
     const char* file_url = "https://tgftp.nws.noaa.gov/SL.us008001/DF.of/DC.radar/DS.p94r0/SI.kmxx/sn.last";
 
 
     //const char* filename = "C:\\shapes\\KIND_20210526_1423";
-    //const char* filename = "C:\\tmp\\test_vel.last";
+    //const char* filename = "C:\\tmp\\KMXX_20230223_1429";
     const char* filename = "C:\\tmp\\testing_radar.nx3";
 //    URLDownloadToFile(nullptr, file_url, filename, 0, nullptr);
 //
@@ -270,8 +270,8 @@ bool sacw_RadarInit(const char* filename, s16 productCode)
     radarIsStale = false;
 
     RdaSite wsrInfo = {};
-    gProductDescription = {};
-    success = ParseNexradRadarFile(filename, &wsrInfo, np, &gProductDescription);
+    g_ReflProdDesc = {};
+    success = ParseNexradRadarFile(filename, &wsrInfo, np, &g_ReflProdDesc);
 
     if (success)
     {
@@ -381,7 +381,7 @@ void sacw_GetRadarRenderData(RenderBufferData* rbd)
 
 s64 sacw_GetScanTime()
 {
-    return gProductDescription.volScanTimestamp;
+    return g_ReflProdDesc.volScanTimestamp;
 }
 
 void sacw_GetPolarFromScreen(f32 x, f32 y, f32* points)

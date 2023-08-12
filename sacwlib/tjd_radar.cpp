@@ -27,7 +27,7 @@ bool RadialImagePacket(
     u32 bp,
     NexradProduct* nexradProduct,
     RdaSite* wsrInfo,
-    ProductDescription* pd,
+    ReflProductDescription* pd,
     s16 packetCode
 );
 
@@ -38,7 +38,7 @@ bool RasterImagePacket(
     u32 bp,
     NexradProduct* nexradProduct,
     RdaSite* wsrInfo,
-    ProductDescription* pd,
+    ReflProductDescription* pd,
     s16 packetCode
 );
 
@@ -469,7 +469,7 @@ bool ParseNexradRadarFile(
     const char* filename,
     RdaSite* wsrInfo,
     NexradProduct* nexradProduct,
-    ProductDescription* pd
+    ReflProductDescription* pd
 )
 {
     u32 bp = 0;
@@ -508,7 +508,7 @@ bool ParseNexradRadarFile(
         l3buffer.position = 0;
         l3buffer.length = file_length;
 
-        ReadLevel3File(&l3buffer);
+        ReadLevel3File(&l3buffer, pd);
 
         // @todo
         // I don't know if I need this RdaSite stuct or just use the l3 stuff?

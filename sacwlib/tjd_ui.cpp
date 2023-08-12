@@ -76,7 +76,7 @@ void RenderToolbar()
 void InfoPanel()
 {
     ImGui::SetNextWindowPos(ImVec2(5, 5));
-    ImGui::SetNextWindowSize(ImVec2(175, 15));
+    ImGui::SetNextWindowSize(ImVec2(250, 75));
     ImGui::SetNextWindowBgAlpha(0.5f);
 
     ImGuiWindowFlags window_flags = 0
@@ -90,14 +90,18 @@ void InfoPanel()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("SiteInfo", nullptr, window_flags);
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    draw_list->AddRectFilled(ImVec2(5, 5), ImVec2(12, 40), IM_COL32(5, 135, 200, 255));
+    draw_list->AddRectFilled(ImVec2(5, 5), ImVec2(10, 75), IM_COL32(5, 135, 200, 255));
     ImGui::PopStyleVar(2);
 
     if (g_CurrentSite != nullptr)
     {
         ImGui::SameLine(15.0f);
         ImGui::AlignTextToFramePadding();
-        ImGui::Text("%s %s", g_CurrentSite->name, g_CurrentSite->displayName);
+        ImGui::Text("%s %s\n%s\n%lld",
+            g_CurrentSite->name,
+            g_CurrentSite->displayName,
+            g_CurrentProduct->name,
+            g_ReflProdDesc.volScanTimestamp);
     }
 
     ImGui::End();

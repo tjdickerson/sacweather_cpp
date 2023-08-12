@@ -6,6 +6,7 @@
 #define _TJD_LEVEL3_H_
 
 #include "tjd_share.h"
+#include "tjd_product_desc.h"
 
 struct L3Radial
 {
@@ -44,6 +45,6 @@ struct Level3Archive
 
 extern Level3Archive g_L3Archive;
 
-void ReadLevel3File(BufferInfo* buffer);
+void ReadLevel3File(BufferInfo* buffer, ReflProductDescription* pd);
 
 #endif //_TJD_LEVEL3_H_

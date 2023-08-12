@@ -51,7 +51,7 @@ void readProductMessageHeader(BufferInfo* buffer)
     num_blocks = swapBytes(num_blocks);
 }
 
-void parseHalfWordForProduct(ProductDescription* pd, s32 hw)
+void parseHalfWordForProduct(ReflProductDescription* pd, s32 hw)
 {
     if (hw == 47)
     {
@@ -92,7 +92,7 @@ void parseHalfWordForProduct(ProductDescription* pd, s32 hw)
     }
 }
 
-void readProductDescription(ProductDescription* pd, BufferInfo* buffer)
+void readProductDescription(ReflProductDescription* pd, BufferInfo* buffer)
 {
     s32 lat;
     ReadFromBuffer(&lat, buffer, 4);
@@ -323,11 +323,10 @@ s32 readSymbologyBlock(BufferInfo* buffer)
     return 0;
 }
 
-void ReadLevel3File(BufferInfo* buffer)
+void ReadLevel3File(BufferInfo* buffer, ReflProductDescription* pd)
 {
     g_L3Archive = {};
     g_L3Archive.radial = {};
-    ProductDescription pd = {};
 
     unsigned char text_header[31];
     ReadFromBuffer(text_header, buffer, 30);
@@ -343,23 +342,23 @@ void ReadLevel3File(BufferInfo* buffer)
 
     assert(divider == -1);
 
-    readProductDescription(&pd, buffer);
+    readProductDescription(pd, buffer);
 
     // @todo
     // Figure out how to organize this stuff below
 
     BufferInfo product_buffer = {};
 
-    if (pd.productCode == 94 || pd.productCode == 99)
+    if (pd->productCode == 94 || pd->productCode == 99)
     {
-        if (pd.brda.compressionMethod == 1)
+        if (pd->brda.compressionMethod == 1)
         {
             s32 compressed_size = (s32)buffer->length - buffer->position;
             // unsigned char* buffer_entry = &buffer->data[buffer->position];
             auto buffer_entry = GetBufferMarker(buffer);
-            auto t_product_buffer = (unsigned char*)malloc(pd.brda.uncompressedSize * sizeof(unsigned char));
+            auto t_product_buffer = (unsigned char*)malloc(pd->brda.uncompressedSize * sizeof(unsigned char));
 
-            unsigned int* plen = &pd.brda.uncompressedSize;
+            unsigned int* plen = &pd->brda.uncompressedSize;
             int ret =
                 BZ2_bzBuffToBuffDecompress((char*)t_product_buffer, plen, (char*)buffer_entry, compressed_size, 0, 4);
 
@@ -372,7 +371,7 @@ void ReadLevel3File(BufferInfo* buffer)
             {
                 product_buffer.data = t_product_buffer;
                 product_buffer.position = 0;
-                product_buffer.length = pd.brda.uncompressedSize;
+                product_buffer.length = pd->brda.uncompressedSize;
             }
         }
 
@@ -382,15 +381,15 @@ void ReadLevel3File(BufferInfo* buffer)
             product_buffer.position = 0;
         }
 
-        g_L3Archive.centerLat = pd.lat;
-        g_L3Archive.centerLon = pd.lon;
+        g_L3Archive.centerLat = pd->lat;
+        g_L3Archive.centerLon = pd->lon;
 
         g_L3Archive.valid = true;
 
-        if (pd.symbologyOffset != 0)
+        if (pd->symbologyOffset != 0)
         {
             // In most cases this seems to be 0, but just in case...
-            s32 offset = (pd.symbologyOffset * 2) - (buffer->position - product_messages_start);
+            s32 offset = (pd->symbologyOffset * 2) - (buffer->position - product_messages_start);
             SetBufferPos(&product_buffer, offset);
 
             readSymbologyBlock(&product_buffer);
